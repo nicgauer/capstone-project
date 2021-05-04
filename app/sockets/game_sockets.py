@@ -1,0 +1,51 @@
+from flask_socketio import SocketIO, emit, join_room, leave_room
+from __main__ import socketio
+
+
+open_games = []
+
+
+@socketio.on("connect")
+def handle_connect():
+    print("Client Connected")
+
+
+@socketio.on("find_game")
+def host_room(data):
+    # data includes - user_id(of user making action)
+    if len(open_games) > 0:
+        room_id = open_games.pop(0)
+        join_room(room_id)
+        data["turn_order"] = [room_id, data["user_id"]]
+        emit('setup_game', data, room=room_id, broadcast=True)
+    else:
+        open_games.append(data["user_id"])
+        join_room(data['user_id'])
+        emit('waiting_for_game', data, room=room_id, broadcast=True)
+
+
+@socketio.on("draw_card")
+def draw_card(data):
+    # data includes - user_id(of user making action), hand_size, deck_size, room_id
+    emit('card_drawn', data, room=data['room_id'], broadcast=True)
+
+
+@socketio.on("place_unit")
+def place_card(data):
+    # data includes - 
+    # user_id(of user making action), 
+    # card_type(obj, will have all relevant info on card),  
+    # unit_slot(int, where to render card)
+    # room_id
+    emit('unit_placed', data, room=data['room_id'], broadcast=True)
+
+
+@socketio.on("place_trap")
+def place_trap(data):
+    # data includes - 
+    # user_id(of user making action), 
+    # card_type(obj, will have all relevant info on card),  
+    # trap_slot(int, where to render card)
+    emit('trap_placed', data, room=data['room_id'], broadcast=True)
+
+
