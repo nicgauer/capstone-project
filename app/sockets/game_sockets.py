@@ -14,12 +14,16 @@ def handle_connect():
 def host_room(data):
     # data includes - user_id(of user making action)
     if len(open_games) > 0:
-        room_id = open_games.pop(0)
+        host = open_games.pop(0)
+        room_id = host['user_id']
         join_room(room_id)
+        data["room_id"] = room_id
+        data["host_username"] = host['username']
         data["turn_order"] = [room_id, data["user_id"]]
+        data['guest_username'] = data["username"]
         emit('setup_game', data, room=room_id, broadcast=True)
     else:
-        open_games.append(data["user_id"])
+        open_games.append({'user_id': data["user_id"], 'username': data["username"] })
         data['room_id'] = data["user_id"]
         join_room(data['user_id'])
         emit('waiting_for_game', data, room=data['room_id'], broadcast=True)

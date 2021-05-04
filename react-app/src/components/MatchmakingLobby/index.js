@@ -10,10 +10,12 @@ const MatchmakingLobby = () => {
     const user = useSelector(state => state.session.user);
     const [gameFound, setGameFound] = useState(false);
     const [waiting, setWaiting] = useState(false);
+    const [gameData, setGameData] = useState(null);
     
     const findGame = () => {
         socket.emit('find_game', {
-            user_id: user.id
+            user_id: user.id,
+            username: user.username,
         })
     }
 
@@ -23,14 +25,23 @@ const MatchmakingLobby = () => {
     })
 
     socket.on("setup_game", data => {
-        console.log('setup game fired')
+        const gd = {
+            room_id:data.room_id,
+            turn_order:data.turn_order
+        }
+        if(data.room_id === user.id){
+            gd.opponent_name = data.guest_username
+        }else {
+            gd.opponent_name = data.host_username
+        }
+        setGameData(gd)
         setGameFound(true)
     })
 
     return (
         <div>
-            {gameFound && (
-                <GameBoard socket={socket} />
+            {gameFound && gameData && (
+                <GameBoard socket={socket} gameData={gameData} />
             )}
             {!gameFound && !waiting && 
                 (<div>
