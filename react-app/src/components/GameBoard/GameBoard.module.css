@@ -1,0 +1,27 @@
+.handWrapper {
+    display:flex;
+}
+
+.playerUnitBoard {
+    display:flex;
+}
+
+.playerUnit {
+    padding:5px;
+    height: 175px;
+    width: 150px;    
+    border: 1px solid black;
+    box-sizing: border-box;
+}
+
+.opponentUnitBoard {
+    display:flex;
+}
+
+.opponentUnit {
+    padding:5px;
+    height: 175px;
+    width: 150px;    
+    border: 1px solid black;
+    box-sizing: border-box;
+}

@@ -9,6 +9,7 @@ import UsersList from "./components/UsersList";
 import User from "./components/User";
 // import { authenticate } from "./services/auth";
 import { authenticate } from "./store/session";
+import MatchmakingLobby from "./components/MatchmakingLobby";
 
 function App() {
   // const [authenticated, setAuthenticated] = useState(false);
@@ -44,6 +45,7 @@ function App() {
         </ProtectedRoute>
         <ProtectedRoute path="/" exact={true}>
           <h1>My Home Page</h1>
+          <MatchmakingLobby />
         </ProtectedRoute>
       </Switch>
     </BrowserRouter>
