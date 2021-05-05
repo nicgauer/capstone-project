@@ -357,39 +357,60 @@ const GameBoard = ({socket, gameData}) => {
     }
 
     const opponentUnitSlotHandler = (int) => {
-        if(int === 1 && !opponentUnitSlot1) return;
-        if(int === 2 && !opponentUnitSlot2) return;
-        if(int === 3 && !opponentUnitSlot3) return;
-        if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
-            hasAttacked.push(int)
-            let results
-            if(int === 1){
-                results = selectedUnit.attack - opponentUnitSlot1.defense
-            }
-            if(int === 2){
-                results = selectedUnit.attack - opponentUnitSlot2.defense
-            }
-            if(int === 3){
-                results = selectedUnit.attack - opponentUnitSlot3.defense
-            }
-            let userHealth = playerHealth
-            let targetHealth = opponentHealth
-            if(results > 0){
-                targetHealth -= results;
-            }else{
-                userHealth -= results;
-            }
+        if(opponentUnitSlot1 || opponentUnitSlot2 || opponentUnitSlot3){
+            if(int === 1 && !opponentUnitSlot1) return;
+            if(int === 2 && !opponentUnitSlot2) return;
+            if(int === 3 && !opponentUnitSlot3) return;
 
-            socket.emit('attack', {
-                room_id:room_id,
-                user_id:user.id,
-                attacker_slot:selUnitSlot,
-                defender_slot:int,
-                results:results,
-                user_health:userHealth,
-                target_health:targetHealth,
-            })
-        }
+            if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+                hasAttacked.push(int)
+                let results
+                if(int === 1){
+                    results = selectedUnit.attack - opponentUnitSlot1.defense
+                }
+                if(int === 2){
+                    results = selectedUnit.attack - opponentUnitSlot2.defense
+                }
+                if(int === 3){
+                    results = selectedUnit.attack - opponentUnitSlot3.defense
+                }
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+                if(results > 0){
+                    targetHealth -= results;
+                }else{
+                    userHealth -= results;
+                }
+    
+                socket.emit('attack', {
+                    room_id:room_id,
+                    user_id:user.id,
+                    attacker_slot:selUnitSlot,
+                    defender_slot:int,
+                    results:results,
+                    user_health:userHealth,
+                    target_health:targetHealth,
+                })
+            }
+        }else{
+            if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+                hasAttacked.push(int)
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+
+                targetHealth -= selectedUnit.attack
+
+                socket.emit('attack', {
+                    room_id:room_id,
+                    user_id:user.id,
+                    attacker_slot:selUnitSlot,
+                    defender_slot:int,
+                    results:selectedUnit.attack,
+                    user_health:userHealth,
+                    target_health:targetHealth,
+                })
+            }
+        }        
     }
 
 
