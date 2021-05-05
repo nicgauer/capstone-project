@@ -4,48 +4,83 @@ import { useSelector } from 'react-redux';
 import styles from './GameBoard.module.css'
 import HandDisplay from '../HandDisplay';
 import CardDisplay from '../CardDisplay';
+import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 
 const testDeck = [
-    {name: "card 1",
+    {name: "Unit Card 1",
+    type:'unit',
     attack:100,
     defense:300,
     id:1},
-    {name: "card 2",
+    {name: "Unit Card 2",
+    type:'unit',
     attack:200,
     defense:600,
     id:2},
-    {name: "card 3",
+    {name: "Unit Card 3",
+    type:'unit',
     attack:300,
     defense:800,
     id:3},
-    {name: "card 4",
+    {name: "Unit Card 4",
+    type:'unit',
     attack:400,
     defense:400,
     id:4},
-    {name: "card 5",
+    {name: "Unit Card 5",
+    type:'unit',
     attack:500,
     defense:300,
     id:5},
-    {name: "card 6",
+    {name: "Unit Card 6",
+    type:'unit',
     attack:600,
     defense:200,
     id:6},
-    {name: "card 7",
+    {name: "Unit Card 7",
+    type:'unit',
     attack:700,
     defense:500,
     id:7},
-    {name: "card 8",
+    {name: "Unit Card 8",
+    type:'unit',
     attack:800,
     defense:700,
     id:8},
-    {name: "card 9",
+    {name: "Unit Card 9",
+    type:'unit',
     attack:900,
     defense:500,
     id:9},
-    {name: "card 10",
+    {name: "Unit Card 10",
+    type:'unit',
     attack:1000,
     defense:400,
     id:10},
+    {name:"Heal S",
+    type:'spell',
+    effect:'heal:200',
+    id:11},
+    {name:"Heal M",
+    type:'spell',
+    effect:'heal:500',
+    id:12},
+    {name:"Heal L",
+    type:'spell',
+    effect:'heal:800',
+    id:13},
+    {name:"Damage S",
+    type:'spell',
+    effect:'damage:200',
+    id:14},
+    {name:"Damage M",
+    type:'spell',
+    effect:'damage:500',
+    id:15},
+    {name:"Damage L",
+    type:'spell',
+    effect:'damage:800',
+    id:16},
 ]
 
 const shuffle = (array) => {
@@ -115,12 +150,22 @@ const GameBoard = ({socket, gameData}) => {
     const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null)
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
 
-    // ---------- USE EFFECTS ---------- \\
-
+    // ---------- HELPERS ---------- \\
     const handSelector = (int) => {
         setSelected(hand[int])
+        if(placementPhase && hand[int].type === 'spell'){
+            spellEffect(hand[int])
+            removeFromHand(hand[int])
+        }
     }
 
+    const removeFromHand = (card) => {
+        let h = [...hand]
+        h.splice(h.findIndex(c => c.id === card.id), 1);
+        setHand(h);
+    }
+    
+    // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
 
         if(turnOrder[0] === user.id){
@@ -174,12 +219,7 @@ const GameBoard = ({socket, gameData}) => {
                 if(data.unit_slot == 3){
                     setPlayerUnitSlot3(data.card_type)
                 }
-    
-                //Remove played card from hand
-                const h = hand.filter(( card ) => {
-                    return card.id !== data.card_type.id;
-                });
-                setHand(h);
+                removeFromHand(data.card_type)
             }else{
                 if(data.unit_slot == 1){
                     setOpponentUnitSlot1(data.card_type)
@@ -191,6 +231,24 @@ const GameBoard = ({socket, gameData}) => {
                     setOpponentUnitSlot3(data.card_type)
                 }
                 setOpponentHand(data.hand_size)
+            }
+        })
+
+        socket.on("spell_used", data => {
+            if(data.user_id === user.id){
+                if(data.opp_health) {
+                    setOpponentHealth(data.opp_health)
+                }
+                if(data.user_health) {
+                    setPlayerHealth(data.user_health)
+                }
+            }else {
+                if(data.opp_health) {
+                    setPlayerHealth(data.opp_health)
+                }
+                if(data.user_health) {
+                    setOpponentHealth(data.user_health)
+                }
             }
         })
 
@@ -250,7 +308,6 @@ const GameBoard = ({socket, gameData}) => {
     })
 
     // ---------- END TURN ---------- \\
-    
         socket.on('turn_ended', data => {
             if (data.user_id === user.id){
                 setCombatPhase(false)
@@ -310,7 +367,7 @@ const GameBoard = ({socket, gameData}) => {
     // ---------- PLACEMENT PHASE ---------- \\
 
     const playerUnitSlotHandler = (int) => {
-        if(placementPhase && selected && !unitPlaced){
+        if(placementPhase && selected && (selected.type === 'unit') && !unitPlaced){
             if(int === 1 && playerUnitSlot1) return;
             if(int === 2 && playerUnitSlot2) return;
             if(int === 3 && playerUnitSlot3) return;
@@ -336,6 +393,34 @@ const GameBoard = ({socket, gameData}) => {
                 setSelectedUnit(playerUnitSlot3);
                 selUnitSlot = int
             }
+        }
+    }
+
+    const spellEffect = (card) => {
+        const effArr = card.effect.split(':')
+        const effType = effArr[0]
+        const effAmt = effArr[1]
+
+        switch(effType) {
+            case 'damage':
+                const oh = opponentHealth - Number(effAmt);
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    hand_size: hand.length,
+                    effect:'damage',
+                    opp_health:oh
+                })
+                break;
+            case 'heal':
+                const ph = playerHealth + Number(effAmt)
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    effect:'heal',
+                    user_health:ph
+                })
+                break;
         }
     }
 
@@ -426,14 +511,22 @@ const GameBoard = ({socket, gameData}) => {
 
     return (
         <div>
-            <h1>Hello from the Game Board!</h1>
-            <h4>Playing against {gameData.opponent_name}</h4>
-            <p>{gameData.opponent_name} hand size - {opponentHand}</p>
-            <p>{gameData.opponent_name} deck size - {opponentDeck}</p>
-            <p>{gameData.opponent_name} health points - {opponentHealth}</p>
-            <p>Your health points - {playerHealth}</p>
+            <GamePlayerInfoContainer 
+                playerName={gameData.opponent_name}
+                handSize={opponentHand}
+                deckSize={opponentDeck}
+                health={opponentHealth} />
+
+            <GamePlayerInfoContainer 
+                playerName={user.username}
+                handSize={hand.length}
+                deckSize={deck.length}
+                health={playerHealth} />
+
+
             {selected && <p> Selected Hand = {selected.name} </p>}
             {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
+
 
             <div className={styles.opponentUnitBoard}>
                 <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
