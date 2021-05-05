@@ -32,7 +32,7 @@ app.cli.add_command(seed_commands)
 
 app.config.from_object(Config)
 
-Payload.max_decode_packets = 1000
+Payload.max_decode_packets = 50
 socketio = SocketIO(app, cors_allowed_origins='*')
 from .sockets import game_sockets
 

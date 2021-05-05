@@ -240,6 +240,12 @@ const GameBoard = ({socket, gameData}) => {
                     setOpponentHealth(data.opp_health)
                 }
                 if(data.user_health) {
+                    if(data.user_health <= 0) {
+                        socket.emit('end_game', {
+                            loser_id:user.id,
+                            room_id:room_id,
+                        })
+                    }
                     setPlayerHealth(data.user_health)
                 }
             }else {
