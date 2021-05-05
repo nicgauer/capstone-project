@@ -106,3 +106,9 @@ def activate_trap(data):
     # data includes- user_id, room_id
     # turn number
     emit("turn_ended", data, room=data['room_id'], broadcast=True)
+
+
+@socketio.on("end_game")
+def end_game(data):
+    # data includes- loser_id, room_id
+    emit('game_ended', data, room=data['room_id'], broadcast=True)

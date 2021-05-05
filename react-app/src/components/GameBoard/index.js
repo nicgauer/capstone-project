@@ -88,8 +88,8 @@ const GameBoard = ({socket, gameData}) => {
     const [hand, setHand] = useState(initialHand)
     const [deck, setDeck] = useState(shuffledDeck)
 
-    const [playerHealth, setPlayerHealth] = useState(2000)
-    const [opponentHealth, setOpponentHealth] = useState(2000)
+    const [playerHealth, setPlayerHealth] = useState(1000)
+    const [opponentHealth, setOpponentHealth] = useState(1000)
 
 
     const [drawPhase, setDrawPhase] = useState(false)
@@ -131,9 +131,13 @@ const GameBoard = ({socket, gameData}) => {
             })
         }
 
+        // ---------- DRAW PHASE ---------- \\
+
         socket.on("draw_phase_start", data => {
             if(data.user_id === user.id) {
-                setDrawPhase(true);
+                if(deckCheck()){
+                    setDrawPhase(true);
+                }
             }
             setTurnNumber(data.turn_number);
         })
@@ -150,6 +154,8 @@ const GameBoard = ({socket, gameData}) => {
                 setOpponentDeck(data.deck_size);
             }
         })
+
+        // ---------- PLACEMENT PHASE ---------- \\
 
         socket.on("placement_phase_start", data => {
             if(data.user_id === user.id) {
@@ -188,6 +194,8 @@ const GameBoard = ({socket, gameData}) => {
             }
         })
 
+        // ---------- COMBAT PHASE ---------- \\
+
         socket.on("combat_phase_start", data => {
             if (data.user_id === user.id){
                 setPlacementPhase(false)
@@ -196,10 +204,24 @@ const GameBoard = ({socket, gameData}) => {
         })
 
         socket.on('unit_attack', data => {
+            console.log(data);
             if(data.user_id === user.id){
                 if(Number(data.results) > 0){
-                    let oh = opponentHealth;
-                    setOpponentHealth(oh - data.results)
+                    if(data.target_health < 1){
+                        let loserId;
+                        if(turnOrder[0] === user.id){
+                            loserId = turnOrder[1]
+                        }else{
+                            loserId = turnOrder[0]
+                        }
+                        socket.emit('end_game', {
+                            loser_id:loserId,
+                            room_id:room_id
+                        })
+                        return;
+                    }
+                    setOpponentHealth(data.target_health);
+                    setPlayerHealth(data.user_health);
                     if(data.defender_slot === 1){
                         setOpponentUnitSlot1(null);
                     }
@@ -212,8 +234,8 @@ const GameBoard = ({socket, gameData}) => {
                 }
             }else {
                 if(Number(data.results) > 0){
-                    let ph = playerHealth;
-                    setPlayerHealth(ph - data.results)
+                    setPlayerHealth(data.target_health);
+                    setOpponentHealth(data.user_health);
                     if(data.defender_slot === 1){
                         setPlayerUnitSlot1(null);
                     }
@@ -226,6 +248,8 @@ const GameBoard = ({socket, gameData}) => {
             }
         }
     })
+
+    // ---------- END TURN ---------- \\
     
         socket.on('turn_ended', data => {
             if (data.user_id === user.id){
@@ -254,26 +278,15 @@ const GameBoard = ({socket, gameData}) => {
 
     // ---------- DRAW PHASE ---------- \\
 
-    // socket.on("draw_phase_start", data => {
-    //     if(data.user_id === user.id) {
-    //         setDrawPhase(true);
-    //     }
-    //     setTurnNumber(data.turn_number);
-    // })
-
-    // socket.on("card_drawn", data => {
-    //     if(data.user_id === user.id) {
-    //         drawCard();
-    //         setDrawPhase(false);
-    //         socket.emit("start_placement_phase", {
-    //             user_id: user.id,
-    //             room_id: room_id,
-    //         })
-    //     }else {
-    //         setOpponentHand(data.hand_size);
-    //         setOpponentDeck(data.deck_size);
-    //     }
-    // })
+    const deckCheck = () => {
+        if(deck.length === 0){
+            socket.emit("end_game", {
+                loser_id:user.id,
+                room_id:room_id
+            })
+        }
+        return true;
+    }
 
     const drawButtonHandler = () => {
         drawCard()
@@ -295,12 +308,6 @@ const GameBoard = ({socket, gameData}) => {
     }
 
     // ---------- PLACEMENT PHASE ---------- \\
-    
-    // socket.on("placement_phase_start", data => {
-    //     if(data.user_id === user.id) {
-    //         setPlacementPhase(true);
-    //     }
-    // })
 
     const playerUnitSlotHandler = (int) => {
         if(placementPhase && selected && !unitPlaced){
@@ -316,7 +323,6 @@ const GameBoard = ({socket, gameData}) => {
             })
             setSelected(null);
         }
-
         if(combatPhase){
             if(int === 1 && playerUnitSlot1) {
                 setSelectedUnit(playerUnitSlot1);
@@ -333,39 +339,7 @@ const GameBoard = ({socket, gameData}) => {
         }
     }
 
-    // socket.on("unit_placed", data => {
-    //     if(data.user_id === user.id) {
-    //         if(data.unit_slot == 1){
-    //             setPlayerUnitSlot1(data.card_type)
-    //         }
-    //         if(data.unit_slot == 2){
-    //             setPlayerUnitSlot2(data.card_type)
-    //         }
-    //         if(data.unit_slot == 3){
-    //             setPlayerUnitSlot3(data.card_type)
-    //         }
-
-    //         //Remove played card from hand
-    //         const h = hand.filter(( card ) => {
-    //             return card.id !== data.card_type.id;
-    //         });
-    //         setHand(h);
-    //     }else{
-    //         if(data.unit_slot == 1){
-    //             setOpponentUnitSlot1(data.card_type)
-    //         }
-    //         if(data.unit_slot == 2){
-    //             setOpponentUnitSlot2(data.card_type)
-    //         }
-    //         if(data.unit_slot == 3){
-    //             setOpponentUnitSlot3(data.card_type)
-    //         }
-    //         setOpponentHand(data.hand_size)
-    //     }
-    // })
-
     // ---------- COMBAT PHASE ---------- \\
-
     const beginCombatPhase = () => {
         if(turnNumber === 1){
             setPlacementPhase(false)
@@ -381,13 +355,6 @@ const GameBoard = ({socket, gameData}) => {
             })
         }
     }
-
-    // socket.on("combat_phase_start", data => {
-    //     if (data.user_id === user.id){
-    //         setPlacementPhase(false)
-    //         setCombatPhase(true)
-    //     }
-    // })
 
     const opponentUnitSlotHandler = (int) => {
         if(int === 1 && !opponentUnitSlot1) return;
@@ -405,71 +372,26 @@ const GameBoard = ({socket, gameData}) => {
             if(int === 3){
                 results = selectedUnit.attack - opponentUnitSlot3.defense
             }
+            let userHealth = playerHealth
+            let targetHealth = opponentHealth
+            if(results > 0){
+                targetHealth -= results;
+            }else{
+                userHealth -= results;
+            }
 
             socket.emit('attack', {
                 room_id:room_id,
                 user_id:user.id,
                 attacker_slot:selUnitSlot,
                 defender_slot:int,
-                results:results
+                results:results,
+                user_health:userHealth,
+                target_health:targetHealth,
             })
         }
     }
 
-//     socket.on('unit_attack', data => {
-//         if(data.user_id === user.id){
-//             if(Number(data.results) > 0){
-//                 let oh = opponentHealth;
-//                 setOpponentHealth(oh - data.results)
-//                 if(data.defender_slot === 1){
-//                     setOpponentUnitSlot1(null);
-//                 }
-//                 if(data.defender_slot === 2){
-//                     setOpponentUnitSlot2(null);
-//                 }
-//                 if(data.defender_slot === 3){
-//                     setOpponentUnitSlot3(null);
-//                 }
-//             }
-//         }else {
-//             if(Number(data.results) > 0){
-//                 let ph = playerHealth;
-//                 setPlayerHealth(ph - data.results)
-//                 if(data.defender_slot === 1){
-//                     setPlayerUnitSlot1(null);
-//                 }
-//                 if(data.defender_slot === 2){
-//                     setPlayerUnitSlot2(null);
-//                 }
-//                 if(data.defender_slot === 3){
-//                     setPlayerUnitSlot3(null);
-//                 }
-//         }
-//     }
-// })
-
-//     socket.on('turn_ended', data => {
-//         if (data.user_id === user.id){
-//             setCombatPhase(false)
-//             setUnitPlaced(false)
-//             setTrapPlaced(false)
-//             setSelectedUnit(null)
-//             selUnitSlot = null;
-//             hasAttacked = [];
-//             setSelected(null)
-//             let userId;
-//             if(turnOrder[0] === user.id){
-//                 userId = turnOrder[1]
-//             }else{
-//                 userId = turnOrder[0]
-//             }
-//             socket.emit("start_draw_phase", {
-//                 room_id:room_id,
-//                 user_id: userId,
-//                 turn_number: turnNumber + 1
-//             })
-//         }
-//     })
 
     const endTurnHandler = () => {
         socket.emit('end_turn', {
