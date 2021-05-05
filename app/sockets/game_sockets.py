@@ -31,7 +31,7 @@ def host_room(data):
 
 @socketio.on("start_draw_phase")
 def start_draw_phase(data):
-    # data includes - user_id, room_id
+    # data includes - user_id, room_id, turn_number
     emit("draw_phase_start", data, room=data['room_id'], broadcast=True)
 
 
@@ -89,9 +89,8 @@ def attack(data):
     # data includes- user_id (attacker), room_id
     # attacker_slot
     # defender_slot
-    # loser(attacker/defender)
-    # damage
-    emit("attack", data, room=data['room_id'], broadcast=True)
+    # results
+    emit("unit_attack", data, room=data['room_id'], broadcast=True)
 
 
 @socketio.on("activate_trap")

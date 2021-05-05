@@ -7,24 +7,44 @@ import CardDisplay from '../CardDisplay';
 
 const testDeck = [
     {name: "card 1",
+    attack:100,
+    defense:300,
     id:1},
     {name: "card 2",
+    attack:200,
+    defense:600,
     id:2},
     {name: "card 3",
+    attack:300,
+    defense:800,
     id:3},
     {name: "card 4",
+    attack:400,
+    defense:400,
     id:4},
     {name: "card 5",
+    attack:500,
+    defense:300,
     id:5},
     {name: "card 6",
+    attack:600,
+    defense:200,
     id:6},
     {name: "card 7",
+    attack:700,
+    defense:500,
     id:7},
     {name: "card 8",
+    attack:800,
+    defense:700,
     id:8},
     {name: "card 9",
+    attack:900,
+    defense:500,
     id:9},
     {name: "card 10",
+    attack:1000,
+    defense:400,
     id:10},
 ]
 
@@ -49,9 +69,15 @@ const GameBoard = ({socket, gameData}) => {
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = useSelector(state => state.session.user)
+
+    // ---------- STATES ---------- \\
     const [turnNumber, setTurnNumber] = useState(1)
     const [hand, setHand] = useState([])
     const [deck, setDeck] = useState(shuffle(testDeck))
+
+    const [playerHealth, setPlayerHealth] = useState(2000)
+    const [opponentHealth, setOpponentHealth] = useState(2000)
+
 
     const [drawPhase, setDrawPhase] = useState(false)
     const [placementPhase, setPlacementPhase] = useState(false)
@@ -65,7 +91,9 @@ const GameBoard = ({socket, gameData}) => {
     const [trapPlaced, setTrapPlaced] = useState(false)
 
     const [selectedUnit, setSelectedUnit] = useState(null)
+    let selUnitSlot = null;
 
+    let hasAttacked = [];
     const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null)
     const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null)
     const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null)
@@ -73,6 +101,8 @@ const GameBoard = ({socket, gameData}) => {
     const [opponentUnitSlot1, setOpponentUnitSlot1] = useState(null)
     const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null)
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
+
+    // ---------- USE EFFECTS ---------- \\
     
     useEffect(() => {
         let d = [...deck]
@@ -162,9 +192,18 @@ const GameBoard = ({socket, gameData}) => {
         }
 
         if(combatPhase){
-            if(int === 1 && playerUnitSlot1) setSelectedUnit(playerUnitSlot1);
-            if(int === 2 && playerUnitSlot2) setSelectedUnit(playerUnitSlot2);
-            if(int === 3 && playerUnitSlot3) setSelectedUnit(playerUnitSlot3);
+            if(int === 1 && playerUnitSlot1) {
+                setSelectedUnit(playerUnitSlot1);
+                selUnitSlot = int
+            }
+            if(int === 2 && playerUnitSlot2) {
+                setSelectedUnit(playerUnitSlot2);
+                selUnitSlot = int
+            }
+            if(int === 3 && playerUnitSlot3) {
+                setSelectedUnit(playerUnitSlot3);
+                selUnitSlot = int
+            }
         }
     }
 
@@ -199,7 +238,7 @@ const GameBoard = ({socket, gameData}) => {
         }
     })
 
-    // ---------- PLACEMENT PHASE ---------- \\
+    // ---------- COMBAT PHASE ---------- \\
 
     const beginCombatPhase = () => {
         if(turnNumber === 1){
@@ -224,6 +263,191 @@ const GameBoard = ({socket, gameData}) => {
         }
     })
 
+    const opponentUnitSlotHandler = (int) => {
+        if(int === 1 && !opponentUnitSlot1) return;
+        if(int === 2 && !opponentUnitSlot2) return;
+        if(int === 3 && !opponentUnitSlot3) return;
+        if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+            hasAttacked.push(int)
+            let results
+            if(int === 1){
+                results = selectedUnit.attack - opponentUnitSlot1.defense
+            }
+            if(int === 2){
+                results = selectedUnit.attack - opponentUnitSlot2.defense
+            }
+            if(int === 3){
+                results = selectedUnit.attack - opponentUnitSlot3.defense
+            }
+
+            socket.emit('attack', {
+                room_id:room_id,
+                user_id:user.id,
+                attacker_slot:selUnitSlot,
+                defender_slot:int,
+                results:results
+            })
+        }
+    }
+
+    socket.on('unit_attack', data => {
+        if(data.user_id === user.id){
+            if(Number(data.results) > 0){
+                let oh = opponentHealth;
+                setOpponentHealth(oh - data.results)
+                if(data.defender_slot === 1){
+                    setOpponentUnitSlot1(null);
+                }
+                if(data.defender_slot === 2){
+                    setOpponentUnitSlot2(null);
+                }
+                if(data.defender_slot === 3){
+                    setOpponentUnitSlot3(null);
+                }
+            }
+        }else {
+            if(Number(data.results) > 0){
+                let ph = playerHealth;
+                setPlayerHealth(ph - data.results)
+                if(data.defender_slot === 1){
+                    setPlayerUnitSlot1(null);
+                }
+                if(data.defender_slot === 2){
+                    setPlayerUnitSlot2(null);
+                }
+                if(data.defender_slot === 3){
+                    setPlayerUnitSlot3(null);
+                }
+        }
+    }
+})
+
+    // const calculateCombat = (attacker_slot, defender_slot, playerAttacking) => {
+    //     if(playerAttacking){
+    //         if(attacker_slot === 1){
+    //             if(defender_slot === 1 && opponentUnitSlot1){
+    //                 let result = playerUnitSlot1.attack - opponentUnitSlot1.defense
+    //                 console.log(result)
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 if(result > 0) setOpponentUnitSlot1(null)
+    //             }
+    //             if(defender_slot === 2){
+    //                 let result = playerUnitSlot1.attack - opponentUnitSlot2.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot2(null)
+    //             }
+    //             if(defender_slot === 3){
+    //                 let result = playerUnitSlot1.attack - opponentUnitSlot3.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot3(null)
+    //             }
+    //         }
+    //         if(attacker_slot === 2){
+    //             if(defender_slot === 1){
+    //                 let result = playerUnitSlot2.attack - opponentUnitSlot1.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot1(null)
+    //             }
+    //             if(defender_slot === 2){
+    //                 let result = playerUnitSlot2.attack - opponentUnitSlot2.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot2(null)
+    //             }
+    //             if(defender_slot === 3){
+    //                 let result = playerUnitSlot2.attack - opponentUnitSlot3.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot3(null)
+    //             }
+    //         }
+    //         if(attacker_slot === 3){
+    //             if(defender_slot === 1){
+    //                 let result = playerUnitSlot3.attack - opponentUnitSlot1.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot1(null)
+    //             }
+    //             if(defender_slot === 2){
+    //                 let result = playerUnitSlot3.attack - opponentUnitSlot2.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot2(null)
+    //             }
+    //             if(defender_slot === 3){
+    //                 let result = playerUnitSlot3.attack - opponentUnitSlot3.defense
+    //                 setOpponentHealth(opponentHealth - result)
+    //                 console.log(result)
+    //                 if(result > 0) setOpponentUnitSlot3(null)
+    //             }
+    //         }
+    //     }else {
+    //         if(attacker_slot === 1){
+    //             if(defender_slot === 1){
+    //                 let result = opponentUnitSlot1.attack - playerUnitSlot1.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot1(null)
+    //             }
+    //             if(defender_slot === 2){
+    //                 let result = opponentUnitSlot1.attack - playerUnitSlot2.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot2(null)
+    //             }
+    //             if(defender_slot === 3){
+    //                 let result = opponentUnitSlot1.attack - playerUnitSlot3.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot3(null)
+    //             }
+    //         }
+    //         if(attacker_slot === 2){
+    //             if(defender_slot === 1){
+    //                 let result = opponentUnitSlot2.attack - playerUnitSlot1.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot1(null)
+    //             }
+    //             if(defender_slot === 2){
+    //                 let result = opponentUnitSlot2.attack - playerUnitSlot2.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot2(null)
+    //             }
+    //             if(defender_slot === 3){
+    //                 let result = opponentUnitSlot2.attack - playerUnitSlot3.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot3(null)
+    //             }
+    //         }
+    //         if(attacker_slot === 3){
+    //             if(defender_slot === 1){
+    //                 let result = opponentUnitSlot3.attack - playerUnitSlot1.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot1(null)
+    //             }
+    //             if(defender_slot === 2){
+    //                 let result = opponentUnitSlot3.attack - playerUnitSlot2.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot2(null)
+    //             }
+    //             if(defender_slot === 3){
+    //                 let result = opponentUnitSlot3.attack - playerUnitSlot3.defense
+    //                 setPlayerHealth(playerHealth - result);
+    //                 console.log(result)
+    //                 if(result > 0) setPlayerUnitSlot3(null)
+    //             }
+    //         }
+    //     }
+    // }
+
 
     socket.on('turn_ended', data => {
         if (data.user_id === user.id){
@@ -231,6 +455,8 @@ const GameBoard = ({socket, gameData}) => {
             setUnitPlaced(false)
             setTrapPlaced(false)
             setSelectedUnit(null)
+            selUnitSlot = null;
+            hasAttacked = [];
             setSelected(null)
             let userId;
             if(turnOrder[0] === user.id){
@@ -246,23 +472,35 @@ const GameBoard = ({socket, gameData}) => {
         }
     })
 
+    const endTurnHandler = () => {
+        socket.emit('end_turn', {
+            room_id: room_id,
+            user_id: user.id,
+            turn_number: turnNumber
+        })
+    }
+
+    // ---------- JSX ---------- \\
+
     return (
         <div>
             <h1>Hello from the Game Board!</h1>
             <h4>Playing against {gameData.opponent_name}</h4>
             <p>{gameData.opponent_name} hand size - {opponentHand}</p>
             <p>{gameData.opponent_name} deck size - {opponentDeck}</p>
+            <p>{gameData.opponent_name} health points - {opponentHealth}</p>
+            <p>Your health points - {playerHealth}</p>
             {selected && <p> Selected Hand = {selected.name} </p>}
             {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
 
             <div className={styles.opponentUnitBoard}>
-                <div className={styles.opponentUnit}>
+                <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
                     {opponentUnitSlot1 && <CardDisplay card={opponentUnitSlot1} />}
                 </div>
-                <div className={styles.opponentUnit}>
+                <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
                     {opponentUnitSlot2 && <CardDisplay card={opponentUnitSlot2} />}
                 </div>
-                <div className={styles.opponentUnit}>
+                <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
                     {opponentUnitSlot3 && <CardDisplay card={opponentUnitSlot3} />}
                 </div>
             </div>
@@ -294,6 +532,9 @@ const GameBoard = ({socket, gameData}) => {
 
             {placementPhase && (
                 <button onClick={beginCombatPhase}>Start Combat Phase!</button>
+            )}
+            {combatPhase && (
+                <button onClick={endTurnHandler}>End Turn</button>
             )}
         </div>
     )

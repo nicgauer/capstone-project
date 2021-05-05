@@ -9,6 +9,10 @@ const CardDisplay = ({card}) => {
             <div>
                 <h3>{card.name}</h3>
             </div>
+            <div className={styles.statWrapper}>
+                <h6>Attack - {card.attack}</h6>
+                <h6>Defense - {card.defense}</h6>
+            </div>
         </div>
     )
 }

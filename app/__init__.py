@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_login import LoginManager
 from flask_socketio import SocketIO
+from engineio.payload import Payload
 
 from .models import db, User
 from .api.user_routes import user_routes
@@ -31,6 +32,7 @@ app.cli.add_command(seed_commands)
 
 app.config.from_object(Config)
 
+Payload.max_decode_packets = 1000
 socketio = SocketIO(app, cors_allowed_origins='*')
 from .sockets import game_sockets
 

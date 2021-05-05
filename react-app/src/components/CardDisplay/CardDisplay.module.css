@@ -1,3 +1,9 @@
 .cardWrapper {
     border:1px solid black;
 }
+
+.statWrapper {
+    /* display:flex;
+    flex-direction:column;
+    justify-content:center; */
+}
