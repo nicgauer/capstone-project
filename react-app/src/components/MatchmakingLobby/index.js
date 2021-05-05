@@ -11,19 +11,15 @@ const MatchmakingLobby = () => {
     const [gameFound, setGameFound] = useState(false);
     const [waiting, setWaiting] = useState(false);
     const [gameData, setGameData] = useState(null);
-    
-    const findGame = () => {
-        socket.emit('find_game', {
-            user_id: user.id,
-            username: user.username,
-        })
-    }
+    const [gameLost, setGameLost] = useState(false);
+    const [gameWon, setGameWon] = useState(false);
 
+    useEffect(() => {    
     socket.on("waiting_for_game", data => {
         console.log('waiting for game fired')
         setWaiting(true)
     })
-
+    
     socket.on("setup_game", data => {
         const gd = {
             room_id:data.room_id,
@@ -38,16 +34,44 @@ const MatchmakingLobby = () => {
         setGameFound(true)
     })
 
+    socket.on("game_ended", data => {
+        if(data.loser_id === user.id){
+            setGameLost(true);
+        }else{
+            setGameWon(true);
+        }
+    })
+    }, [])
+
+    const findGame = () => {
+        socket.emit('find_game', {
+        user_id: user.id,
+        username: user.username,
+    })
+}
+
     return (
         <div>
-            {gameFound && gameData && (
+            {gameLost && (
+                <div>
+                    <h1>GAME OVER</h1>
+                    <h3>YOU LOST</h3>
+                </div>
+            )}
+            {gameWon && (
+                <div>
+                    <h1>CONGRATULATIONS</h1>
+                    <h3>YOU WON!!!!</h3>
+                </div>
+            )}
+            {!gameLost && !gameWon && gameFound && gameData && (
                 <GameBoard socket={socket} gameData={gameData} />
             )}
-            {!gameFound && !waiting && 
+            {!gameLost && !gameWon && !gameFound && !waiting && 
                 (<div>
                     <button onClick={findGame}>Find Game...</button>
                 </div>)}
-            {!gameFound && waiting && 
+            {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>
                     <h1>Waiting for game...</h1>
                 </div>)}

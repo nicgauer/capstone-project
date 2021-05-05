@@ -4,48 +4,83 @@ import { useSelector } from 'react-redux';
 import styles from './GameBoard.module.css'
 import HandDisplay from '../HandDisplay';
 import CardDisplay from '../CardDisplay';
+import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 
 const testDeck = [
-    {name: "card 1",
+    {name: "Unit Card 1",
+    type:'unit',
     attack:100,
     defense:300,
     id:1},
-    {name: "card 2",
+    {name: "Unit Card 2",
+    type:'unit',
     attack:200,
     defense:600,
     id:2},
-    {name: "card 3",
+    {name: "Unit Card 3",
+    type:'unit',
     attack:300,
     defense:800,
     id:3},
-    {name: "card 4",
+    {name: "Unit Card 4",
+    type:'unit',
     attack:400,
     defense:400,
     id:4},
-    {name: "card 5",
+    {name: "Unit Card 5",
+    type:'unit',
     attack:500,
     defense:300,
     id:5},
-    {name: "card 6",
+    {name: "Unit Card 6",
+    type:'unit',
     attack:600,
     defense:200,
     id:6},
-    {name: "card 7",
+    {name: "Unit Card 7",
+    type:'unit',
     attack:700,
     defense:500,
     id:7},
-    {name: "card 8",
+    {name: "Unit Card 8",
+    type:'unit',
     attack:800,
     defense:700,
     id:8},
-    {name: "card 9",
+    {name: "Unit Card 9",
+    type:'unit',
     attack:900,
     defense:500,
     id:9},
-    {name: "card 10",
+    {name: "Unit Card 10",
+    type:'unit',
     attack:1000,
     defense:400,
     id:10},
+    {name:"Heal S",
+    type:'spell',
+    effect:'heal:200',
+    id:11},
+    {name:"Heal M",
+    type:'spell',
+    effect:'heal:500',
+    id:12},
+    {name:"Heal L",
+    type:'spell',
+    effect:'heal:800',
+    id:13},
+    {name:"Damage S",
+    type:'spell',
+    effect:'damage:200',
+    id:14},
+    {name:"Damage M",
+    type:'spell',
+    effect:'damage:500',
+    id:15},
+    {name:"Damage L",
+    type:'spell',
+    effect:'damage:800',
+    id:16},
 ]
 
 const shuffle = (array) => {
@@ -88,8 +123,8 @@ const GameBoard = ({socket, gameData}) => {
     const [hand, setHand] = useState(initialHand)
     const [deck, setDeck] = useState(shuffledDeck)
 
-    const [playerHealth, setPlayerHealth] = useState(2000)
-    const [opponentHealth, setOpponentHealth] = useState(2000)
+    const [playerHealth, setPlayerHealth] = useState(1000)
+    const [opponentHealth, setOpponentHealth] = useState(1000)
 
 
     const [drawPhase, setDrawPhase] = useState(false)
@@ -115,12 +150,22 @@ const GameBoard = ({socket, gameData}) => {
     const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null)
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
 
-    // ---------- USE EFFECTS ---------- \\
-
+    // ---------- HELPERS ---------- \\
     const handSelector = (int) => {
         setSelected(hand[int])
+        if(placementPhase && hand[int].type === 'spell'){
+            spellEffect(hand[int])
+            removeFromHand(hand[int])
+        }
     }
 
+    const removeFromHand = (card) => {
+        let h = [...hand]
+        h.splice(h.findIndex(c => c.id === card.id), 1);
+        setHand(h);
+    }
+    
+    // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
 
         if(turnOrder[0] === user.id){
@@ -131,9 +176,13 @@ const GameBoard = ({socket, gameData}) => {
             })
         }
 
+        // ---------- DRAW PHASE ---------- \\
+
         socket.on("draw_phase_start", data => {
             if(data.user_id === user.id) {
-                setDrawPhase(true);
+                if(deckCheck()){
+                    setDrawPhase(true);
+                }
             }
             setTurnNumber(data.turn_number);
         })
@@ -150,6 +199,8 @@ const GameBoard = ({socket, gameData}) => {
                 setOpponentDeck(data.deck_size);
             }
         })
+
+        // ---------- PLACEMENT PHASE ---------- \\
 
         socket.on("placement_phase_start", data => {
             if(data.user_id === user.id) {
@@ -168,12 +219,7 @@ const GameBoard = ({socket, gameData}) => {
                 if(data.unit_slot == 3){
                     setPlayerUnitSlot3(data.card_type)
                 }
-    
-                //Remove played card from hand
-                const h = hand.filter(( card ) => {
-                    return card.id !== data.card_type.id;
-                });
-                setHand(h);
+                removeFromHand(data.card_type)
             }else{
                 if(data.unit_slot == 1){
                     setOpponentUnitSlot1(data.card_type)
@@ -188,6 +234,26 @@ const GameBoard = ({socket, gameData}) => {
             }
         })
 
+        socket.on("spell_used", data => {
+            if(data.user_id === user.id){
+                if(data.opp_health) {
+                    setOpponentHealth(data.opp_health)
+                }
+                if(data.user_health) {
+                    setPlayerHealth(data.user_health)
+                }
+            }else {
+                if(data.opp_health) {
+                    setPlayerHealth(data.opp_health)
+                }
+                if(data.user_health) {
+                    setOpponentHealth(data.user_health)
+                }
+            }
+        })
+
+        // ---------- COMBAT PHASE ---------- \\
+
         socket.on("combat_phase_start", data => {
             if (data.user_id === user.id){
                 setPlacementPhase(false)
@@ -196,10 +262,24 @@ const GameBoard = ({socket, gameData}) => {
         })
 
         socket.on('unit_attack', data => {
+            console.log(data);
             if(data.user_id === user.id){
                 if(Number(data.results) > 0){
-                    let oh = opponentHealth;
-                    setOpponentHealth(oh - data.results)
+                    if(data.target_health < 1){
+                        let loserId;
+                        if(turnOrder[0] === user.id){
+                            loserId = turnOrder[1]
+                        }else{
+                            loserId = turnOrder[0]
+                        }
+                        socket.emit('end_game', {
+                            loser_id:loserId,
+                            room_id:room_id
+                        })
+                        return;
+                    }
+                    setOpponentHealth(data.target_health);
+                    setPlayerHealth(data.user_health);
                     if(data.defender_slot === 1){
                         setOpponentUnitSlot1(null);
                     }
@@ -212,8 +292,8 @@ const GameBoard = ({socket, gameData}) => {
                 }
             }else {
                 if(Number(data.results) > 0){
-                    let ph = playerHealth;
-                    setPlayerHealth(ph - data.results)
+                    setPlayerHealth(data.target_health);
+                    setOpponentHealth(data.user_health);
                     if(data.defender_slot === 1){
                         setPlayerUnitSlot1(null);
                     }
@@ -226,7 +306,8 @@ const GameBoard = ({socket, gameData}) => {
             }
         }
     })
-    
+
+    // ---------- END TURN ---------- \\
         socket.on('turn_ended', data => {
             if (data.user_id === user.id){
                 setCombatPhase(false)
@@ -254,26 +335,15 @@ const GameBoard = ({socket, gameData}) => {
 
     // ---------- DRAW PHASE ---------- \\
 
-    // socket.on("draw_phase_start", data => {
-    //     if(data.user_id === user.id) {
-    //         setDrawPhase(true);
-    //     }
-    //     setTurnNumber(data.turn_number);
-    // })
-
-    // socket.on("card_drawn", data => {
-    //     if(data.user_id === user.id) {
-    //         drawCard();
-    //         setDrawPhase(false);
-    //         socket.emit("start_placement_phase", {
-    //             user_id: user.id,
-    //             room_id: room_id,
-    //         })
-    //     }else {
-    //         setOpponentHand(data.hand_size);
-    //         setOpponentDeck(data.deck_size);
-    //     }
-    // })
+    const deckCheck = () => {
+        if(deck.length === 0){
+            socket.emit("end_game", {
+                loser_id:user.id,
+                room_id:room_id
+            })
+        }
+        return true;
+    }
 
     const drawButtonHandler = () => {
         drawCard()
@@ -295,15 +365,9 @@ const GameBoard = ({socket, gameData}) => {
     }
 
     // ---------- PLACEMENT PHASE ---------- \\
-    
-    // socket.on("placement_phase_start", data => {
-    //     if(data.user_id === user.id) {
-    //         setPlacementPhase(true);
-    //     }
-    // })
 
     const playerUnitSlotHandler = (int) => {
-        if(placementPhase && selected && !unitPlaced){
+        if(placementPhase && selected && (selected.type === 'unit') && !unitPlaced){
             if(int === 1 && playerUnitSlot1) return;
             if(int === 2 && playerUnitSlot2) return;
             if(int === 3 && playerUnitSlot3) return;
@@ -316,7 +380,6 @@ const GameBoard = ({socket, gameData}) => {
             })
             setSelected(null);
         }
-
         if(combatPhase){
             if(int === 1 && playerUnitSlot1) {
                 setSelectedUnit(playerUnitSlot1);
@@ -333,39 +396,35 @@ const GameBoard = ({socket, gameData}) => {
         }
     }
 
-    // socket.on("unit_placed", data => {
-    //     if(data.user_id === user.id) {
-    //         if(data.unit_slot == 1){
-    //             setPlayerUnitSlot1(data.card_type)
-    //         }
-    //         if(data.unit_slot == 2){
-    //             setPlayerUnitSlot2(data.card_type)
-    //         }
-    //         if(data.unit_slot == 3){
-    //             setPlayerUnitSlot3(data.card_type)
-    //         }
+    const spellEffect = (card) => {
+        const effArr = card.effect.split(':')
+        const effType = effArr[0]
+        const effAmt = effArr[1]
 
-    //         //Remove played card from hand
-    //         const h = hand.filter(( card ) => {
-    //             return card.id !== data.card_type.id;
-    //         });
-    //         setHand(h);
-    //     }else{
-    //         if(data.unit_slot == 1){
-    //             setOpponentUnitSlot1(data.card_type)
-    //         }
-    //         if(data.unit_slot == 2){
-    //             setOpponentUnitSlot2(data.card_type)
-    //         }
-    //         if(data.unit_slot == 3){
-    //             setOpponentUnitSlot3(data.card_type)
-    //         }
-    //         setOpponentHand(data.hand_size)
-    //     }
-    // })
+        switch(effType) {
+            case 'damage':
+                const oh = opponentHealth - Number(effAmt);
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    hand_size: hand.length,
+                    effect:'damage',
+                    opp_health:oh
+                })
+                break;
+            case 'heal':
+                const ph = playerHealth + Number(effAmt)
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    effect:'heal',
+                    user_health:ph
+                })
+                break;
+        }
+    }
 
     // ---------- COMBAT PHASE ---------- \\
-
     const beginCombatPhase = () => {
         if(turnNumber === 1){
             setPlacementPhase(false)
@@ -382,94 +441,63 @@ const GameBoard = ({socket, gameData}) => {
         }
     }
 
-    // socket.on("combat_phase_start", data => {
-    //     if (data.user_id === user.id){
-    //         setPlacementPhase(false)
-    //         setCombatPhase(true)
-    //     }
-    // })
-
     const opponentUnitSlotHandler = (int) => {
-        if(int === 1 && !opponentUnitSlot1) return;
-        if(int === 2 && !opponentUnitSlot2) return;
-        if(int === 3 && !opponentUnitSlot3) return;
-        if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
-            hasAttacked.push(int)
-            let results
-            if(int === 1){
-                results = selectedUnit.attack - opponentUnitSlot1.defense
-            }
-            if(int === 2){
-                results = selectedUnit.attack - opponentUnitSlot2.defense
-            }
-            if(int === 3){
-                results = selectedUnit.attack - opponentUnitSlot3.defense
-            }
+        if(opponentUnitSlot1 || opponentUnitSlot2 || opponentUnitSlot3){
+            if(int === 1 && !opponentUnitSlot1) return;
+            if(int === 2 && !opponentUnitSlot2) return;
+            if(int === 3 && !opponentUnitSlot3) return;
 
-            socket.emit('attack', {
-                room_id:room_id,
-                user_id:user.id,
-                attacker_slot:selUnitSlot,
-                defender_slot:int,
-                results:results
-            })
-        }
+            if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+                hasAttacked.push(int)
+                let results
+                if(int === 1){
+                    results = selectedUnit.attack - opponentUnitSlot1.defense
+                }
+                if(int === 2){
+                    results = selectedUnit.attack - opponentUnitSlot2.defense
+                }
+                if(int === 3){
+                    results = selectedUnit.attack - opponentUnitSlot3.defense
+                }
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+                if(results > 0){
+                    targetHealth -= results;
+                }else{
+                    userHealth -= results;
+                }
+    
+                socket.emit('attack', {
+                    room_id:room_id,
+                    user_id:user.id,
+                    attacker_slot:selUnitSlot,
+                    defender_slot:int,
+                    results:results,
+                    user_health:userHealth,
+                    target_health:targetHealth,
+                })
+            }
+        }else{
+            if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+                hasAttacked.push(int)
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+
+                targetHealth -= selectedUnit.attack
+
+                socket.emit('attack', {
+                    room_id:room_id,
+                    user_id:user.id,
+                    attacker_slot:selUnitSlot,
+                    defender_slot:int,
+                    results:selectedUnit.attack,
+                    user_health:userHealth,
+                    target_health:targetHealth,
+                })
+            }
+        }        
     }
 
-//     socket.on('unit_attack', data => {
-//         if(data.user_id === user.id){
-//             if(Number(data.results) > 0){
-//                 let oh = opponentHealth;
-//                 setOpponentHealth(oh - data.results)
-//                 if(data.defender_slot === 1){
-//                     setOpponentUnitSlot1(null);
-//                 }
-//                 if(data.defender_slot === 2){
-//                     setOpponentUnitSlot2(null);
-//                 }
-//                 if(data.defender_slot === 3){
-//                     setOpponentUnitSlot3(null);
-//                 }
-//             }
-//         }else {
-//             if(Number(data.results) > 0){
-//                 let ph = playerHealth;
-//                 setPlayerHealth(ph - data.results)
-//                 if(data.defender_slot === 1){
-//                     setPlayerUnitSlot1(null);
-//                 }
-//                 if(data.defender_slot === 2){
-//                     setPlayerUnitSlot2(null);
-//                 }
-//                 if(data.defender_slot === 3){
-//                     setPlayerUnitSlot3(null);
-//                 }
-//         }
-//     }
-// })
-
-//     socket.on('turn_ended', data => {
-//         if (data.user_id === user.id){
-//             setCombatPhase(false)
-//             setUnitPlaced(false)
-//             setTrapPlaced(false)
-//             setSelectedUnit(null)
-//             selUnitSlot = null;
-//             hasAttacked = [];
-//             setSelected(null)
-//             let userId;
-//             if(turnOrder[0] === user.id){
-//                 userId = turnOrder[1]
-//             }else{
-//                 userId = turnOrder[0]
-//             }
-//             socket.emit("start_draw_phase", {
-//                 room_id:room_id,
-//                 user_id: userId,
-//                 turn_number: turnNumber + 1
-//             })
-//         }
-//     })
 
     const endTurnHandler = () => {
         socket.emit('end_turn', {
@@ -483,14 +511,22 @@ const GameBoard = ({socket, gameData}) => {
 
     return (
         <div>
-            <h1>Hello from the Game Board!</h1>
-            <h4>Playing against {gameData.opponent_name}</h4>
-            <p>{gameData.opponent_name} hand size - {opponentHand}</p>
-            <p>{gameData.opponent_name} deck size - {opponentDeck}</p>
-            <p>{gameData.opponent_name} health points - {opponentHealth}</p>
-            <p>Your health points - {playerHealth}</p>
+            <GamePlayerInfoContainer 
+                playerName={gameData.opponent_name}
+                handSize={opponentHand}
+                deckSize={opponentDeck}
+                health={opponentHealth} />
+
+            <GamePlayerInfoContainer 
+                playerName={user.username}
+                handSize={hand.length}
+                deckSize={deck.length}
+                health={playerHealth} />
+
+
             {selected && <p> Selected Hand = {selected.name} </p>}
             {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
+
 
             <div className={styles.opponentUnitBoard}>
                 <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
