@@ -49,16 +49,22 @@ const GameBoard = ({socket, gameData}) => {
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = useSelector(state => state.session.user)
+    const [turnNumber, setTurnNumber] = useState(1)
     const [hand, setHand] = useState([])
     const [deck, setDeck] = useState(shuffle(testDeck))
 
     const [drawPhase, setDrawPhase] = useState(false)
     const [placementPhase, setPlacementPhase] = useState(false)
+    const [combatPhase, setCombatPhase] = useState(false)
 
     const [opponentHand, setOpponentHand] = useState(5)
     const [opponentDeck, setOpponentDeck] = useState(5)
 
     const [selected, setSelected] = useState(null)
+    const [unitPlaced, setUnitPlaced] = useState(false)
+    const [trapPlaced, setTrapPlaced] = useState(false)
+
+    const [selectedUnit, setSelectedUnit] = useState(null)
 
     const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null)
     const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null)
@@ -81,7 +87,8 @@ const GameBoard = ({socket, gameData}) => {
         if(turnOrder[0] === user.id){
             socket.emit('start_draw_phase', {
                 user_id: user.id,
-                room_id: room_id
+                room_id: room_id,
+                turn_number:1
             })
         }
     }, [])
@@ -96,6 +103,7 @@ const GameBoard = ({socket, gameData}) => {
         if(data.user_id === user.id) {
             setDrawPhase(true);
         }
+        setTurnNumber(data.turn_number);
     })
 
     socket.on("card_drawn", data => {
@@ -138,12 +146,105 @@ const GameBoard = ({socket, gameData}) => {
         }
     })
 
-    const unitSlotHandler = () => {
-        if(placementPhase && selected){
+    const playerUnitSlotHandler = (int) => {
+        if(placementPhase && selected && !unitPlaced){
+            if(int === 1 && playerUnitSlot1) return;
+            if(int === 2 && playerUnitSlot2) return;
+            if(int === 3 && playerUnitSlot3) return;
+            socket.emit('place_unit', {
+                room_id:room_id,
+                user_id: user.id,
+                hand_size: (hand.length - 1),
+                card_type: selected,
+                unit_slot: int
+            })
+            setSelected(null);
+        }
 
+        if(combatPhase){
+            if(int === 1 && playerUnitSlot1) setSelectedUnit(playerUnitSlot1);
+            if(int === 2 && playerUnitSlot2) setSelectedUnit(playerUnitSlot2);
+            if(int === 3 && playerUnitSlot3) setSelectedUnit(playerUnitSlot3);
         }
     }
 
+    socket.on("unit_placed", data => {
+        if(data.user_id === user.id) {
+            if(data.unit_slot == 1){
+                setPlayerUnitSlot1(data.card_type)
+            }
+            if(data.unit_slot == 2){
+                setPlayerUnitSlot2(data.card_type)
+            }
+            if(data.unit_slot == 3){
+                setPlayerUnitSlot3(data.card_type)
+            }
+
+            //Remove played card from hand
+            const h = hand.filter(( card ) => {
+                return card.id !== data.card_type.id;
+            });
+            setHand(h);
+        }else{
+            if(data.unit_slot == 1){
+                setOpponentUnitSlot1(data.card_type)
+            }
+            if(data.unit_slot == 2){
+                setOpponentUnitSlot2(data.card_type)
+            }
+            if(data.unit_slot == 3){
+                setOpponentUnitSlot3(data.card_type)
+            }
+            setOpponentHand(data.hand_size)
+        }
+    })
+
+    // ---------- PLACEMENT PHASE ---------- \\
+
+    const beginCombatPhase = () => {
+        if(turnNumber === 1){
+            setPlacementPhase(false)
+            socket.emit('end_turn', {
+                room_id: room_id,
+                user_id: user.id,
+                turn_number: turnNumber
+            })
+        }else {
+            socket.emit('start_combat_phase', {
+                room_id:room_id,
+                user_id: user.id,
+            })
+        }
+    }
+
+    socket.on("combat_phase_start", data => {
+        if (data.user_id === user.id){
+            setPlacementPhase(false)
+            setCombatPhase(true)
+        }
+    })
+
+
+    socket.on('turn_ended', data => {
+        if (data.user_id === user.id){
+            setCombatPhase(false)
+            setUnitPlaced(false)
+            setTrapPlaced(false)
+            setSelectedUnit(null)
+            setSelected(null)
+            let userId;
+            if(turnOrder[0] === user.id){
+                userId = turnOrder[1]
+            }else{
+                userId = turnOrder[0]
+            }
+            socket.emit("start_draw_phase", {
+                room_id:room_id,
+                user_id: userId,
+                turn_number: turnNumber + 1
+            })
+        }
+    })
 
     return (
         <div>
@@ -151,7 +252,8 @@ const GameBoard = ({socket, gameData}) => {
             <h4>Playing against {gameData.opponent_name}</h4>
             <p>{gameData.opponent_name} hand size - {opponentHand}</p>
             <p>{gameData.opponent_name} deck size - {opponentDeck}</p>
-            {selected && <p> Selected card = {selected.name} </p>}
+            {selected && <p> Selected Hand = {selected.name} </p>}
+            {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
 
             <div className={styles.opponentUnitBoard}>
                 <div className={styles.opponentUnit}>
@@ -167,13 +269,13 @@ const GameBoard = ({socket, gameData}) => {
 
 
             <div className={styles.playerUnitBoard}>
-                <div className={styles.playerUnit}>
+                <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
                     {playerUnitSlot1 && <CardDisplay card={playerUnitSlot1} />}
                 </div>
-                <div className={styles.playerUnit}>
+                <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
                     {playerUnitSlot2 && <CardDisplay card={playerUnitSlot2} />}
                 </div>
-                <div className={styles.playerUnit}>
+                <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
                     {playerUnitSlot3 && <CardDisplay card={playerUnitSlot3} />}
                 </div>
             </div>
@@ -188,6 +290,10 @@ const GameBoard = ({socket, gameData}) => {
 
             {drawPhase && (
                 <button onClick={drawButtonHandler}>Draw Card!!</button>
+            )}
+
+            {placementPhase && (
+                <button onClick={beginCombatPhase}>Start Combat Phase!</button>
             )}
         </div>
     )

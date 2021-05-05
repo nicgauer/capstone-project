@@ -51,6 +51,7 @@ def start_placement_phase(data):
 @socketio.on("place_unit")
 def place_card(data):
     # data includes - 
+    # hand_size
     # user_id(of user making action), 
     # card_type(obj, will have all relevant info on card),  
     # unit_slot(int, where to render card)
@@ -92,14 +93,17 @@ def attack(data):
     # damage
     emit("attack", data, room=data['room_id'], broadcast=True)
 
+
 @socketio.on("activate_trap")
 def activate_trap(data):
     # data includes- user_id, room_id
     # card_type(obj, will have all relevant info on card)
     # trap_slot
-    emit("spell_used", data, room=data['room_id'], broadcast=True)
+    emit("trap_used", data, room=data['room_id'], broadcast=True)
+
 
 @socketio.on("end_turn")
 def activate_trap(data):
     # data includes- user_id, room_id
+    # turn number
     emit("turn_ended", data, room=data['room_id'], broadcast=True)
