@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { useSelector } from 'react-redux';
 import { boosterPack, buyBoosterFC } from '../../services/card_store'
 import CardDisplay from '../CardDisplay';
+import styles from './CardStore.module.css'
 
 const rng = (max) => {
     return Math.floor(Math.random() * max)
@@ -42,7 +43,7 @@ const CardStore = ({cards}) => {
                 }
             }
             await boosterPack(ids)
-            setNewPack(cards)
+            setNewPack(pack)
         }
     }
 
@@ -53,7 +54,7 @@ const CardStore = ({cards}) => {
             <div>
                 <h3>Purchase Booster Pack for $500</h3>
                 <button onClick={fcPullBooster} disabled={freeCurrency < 500}>Buy Booster</button>
-                <div>
+                <div className={styles.newPackDisplay}>
                     {newPack && newPack.map(card => 
                         (
                             <CardDisplay card={card} />

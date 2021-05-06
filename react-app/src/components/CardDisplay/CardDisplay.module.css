@@ -1,9 +1,26 @@
 .cardWrapper {
     border:1px solid black;
+    width: 175px;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.infoWrapper {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.cardImage {
+    height:150px;
+    width:150px;
+    object-fit: cover;
 }
 
 .statWrapper {
-    /* display:flex;
+    display:flex;
     flex-direction:column;
-    justify-content:center; */
+    align-items:center;
 }

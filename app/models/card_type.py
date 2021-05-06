@@ -13,7 +13,7 @@ class CardType(db.Model):
     effect = db.Column(db.String(100))
     rarity = db.Column(db.Integer)
     picture_url = db.Column(db.String(255))
-    evolution_id = db.Column(db.Integer)
+    evolution_name = db.Column(db.String(150))
 
     def to_dict(self):
         return {
@@ -24,6 +24,7 @@ class CardType(db.Model):
             "defense": self.defense,
             "description": self.description,
             "effect": self.effect,
-            "evolution_id": self.evolution_id,
+            "evolution_name": self.evolution_name,
             "rarity": self.rarity,
+            "picture_url": self.picture_url,
         }

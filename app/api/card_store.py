@@ -42,6 +42,6 @@ def booster_pack():
 @login_required
 def fc_buy_booster(id):
     user = User.query.filter(User.id == id).one()
-    user.to_dict()['free_currency'] -= 500
+    user.free_currency -= 500
     db.session.commit()
     return user.to_dict()
