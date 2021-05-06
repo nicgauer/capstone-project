@@ -15,7 +15,7 @@ const CardCollection = () => {
             if(allCards) setCards(allCards.cards);
             setLoading(false);
         })()
-    })
+    }, [])
 
     return (
         <div>

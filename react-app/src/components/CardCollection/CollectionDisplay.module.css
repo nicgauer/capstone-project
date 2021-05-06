@@ -1,5 +1,4 @@
 .collectionWrapper {
-    overflow:scroll;
-    min-height: 500px;
-    max-height: 1500px;
+    display:flex;
+    flex-wrap:wrap;
 }
