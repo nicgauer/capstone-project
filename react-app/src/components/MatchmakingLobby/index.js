@@ -56,12 +56,14 @@ const MatchmakingLobby = () => {
                 <div>
                     <h1>GAME OVER</h1>
                     <h3>YOU LOST</h3>
+                    <button onClick={findGame}>Try Again...</button>
                 </div>
             )}
             {gameWon && (
                 <div>
                     <h1>CONGRATULATIONS</h1>
                     <h3>YOU WON!!!!</h3>
+                    <button onClick={findGame}>Play Again...</button>
                 </div>
             )}
             {!gameLost && !gameWon && gameFound && gameData && (
