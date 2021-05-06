@@ -20,10 +20,9 @@ const CardStoreWrapper = () => {
             }
             const allCards = await getCards()
             allCards.cards.forEach(card => {
-            let rarity = `r${card.rarity}`
-            organizedObj[rarity].push(card)
+                let rarity = `r${card.rarity}`
+                organizedObj[rarity].push(card)
             })
-            console.log(organizedObj)
             setOrganized(organizedObj);
             setLoading(false);
         })()

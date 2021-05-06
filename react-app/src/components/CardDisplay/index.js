@@ -3,7 +3,6 @@ import styles from './CardDisplay.module.css';
 
 
 const CardDisplay = ({card}) => {
-    console.log(card.picture_url)
     return (
         <div className={styles.cardWrapper}>
             <div className={styles.infoWrapper}>

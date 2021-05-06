@@ -11,8 +11,23 @@ const CardCollection = () => {
 
     useEffect(() => {
         (async () => {
+            let organizedCards = {
+                box:[]
+            }
             const allCards = await getUserCards(user.id);
-            if(allCards) setCards(allCards.cards);
+            organizedCards.allCards = allCards.cards;
+            allCards.cards.forEach(card => {
+                if(card.deck_id){
+                    if(organizedCards[card.deck_id]) {
+                        organizedCards[card.deck_id].push(card);
+                    }else {
+                        organizedCards[card.deck_id] = [card];
+                    }
+                }else {
+                    organizedCards.box.push(card)
+                }
+            })
+            setCards(organizedCards);
             setLoading(false);
         })()
     }, [])
