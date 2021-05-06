@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from app.models import CardType, Card, User, db
 
@@ -27,19 +27,21 @@ def new_card(id):
 @card_store_routes.route('/boost', methods=['POST'])
 @login_required
 def booster_pack():
-    cards = request.json
-    for card in cards:
+    req = request.json
+    for card in req['cards']:
         new_card = Card(
             user_id=current_user.id,
-            card_type=card
+            card_type=int(card)
         )
         db.session.add(new_card)
     db.session.commit()
-    
+    return {'success': True}
+
 
 @card_store_routes.route('/boost/fc/<int:id>')
 @login_required
 def fc_buy_booster(id):
     user = User.query.filter(User.id == id).one()
-    user['free_currency'] -= 500
+    user.to_dict()['free_currency'] -= 500
     db.session.commit()
+    return user.to_dict()

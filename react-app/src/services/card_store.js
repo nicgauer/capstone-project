@@ -10,6 +10,7 @@ export const getCards = async () => {
 export const boosterPack = async (cards) => {
     //Cards = array of ids
     const response = await fetch('/api/store/boost', {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },

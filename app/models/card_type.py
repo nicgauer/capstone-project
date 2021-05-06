@@ -25,4 +25,5 @@ class CardType(db.Model):
             "description": self.description,
             "effect": self.effect,
             "evolution_id": self.evolution_id,
+            "rarity": self.rarity,
         }
