@@ -27,7 +27,7 @@ def new_card(id):
 @card_store_routes.route('/boost', methods=['POST'])
 @login_required
 def booster_pack():
-    cards = request.body.cards
+    cards = request.json
     for card in cards:
         new_card = Card(
             user_id=current_user.id,
