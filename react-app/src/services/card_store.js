@@ -19,3 +19,12 @@ export const boosterPack = async (cards) => {
     })
     return await response.json();
 }
+
+export const buyBoosterFC = async (id) => {
+    const response = await fetch(`/api/store/boost/fc/${id}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    return await response.json();
+}

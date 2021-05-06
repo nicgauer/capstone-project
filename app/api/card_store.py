@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
-from app.models import CardType, Card, db
+from app.models import CardType, Card, User, db
 
 card_store_routes = Blueprint('store', __name__)
 
@@ -34,4 +34,12 @@ def booster_pack():
             card_type=card
         )
         db.session.add(new_card)
+    db.session.commit()
+    
+
+@card_store_routes.route('/boost/fc/<int:id>')
+@login_required
+def fc_buy_booster(id):
+    user = User.query.filter(User.id == id).one()
+    user['free_currency'] -= 500
     db.session.commit()
