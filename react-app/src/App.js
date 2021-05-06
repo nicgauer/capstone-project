@@ -11,6 +11,7 @@ import User from "./components/User";
 import { authenticate } from "./store/session";
 import MatchmakingLobby from "./components/MatchmakingLobby";
 import CardStore from './components/CardStore'
+import CardCollection from './components/CardCollection';
 
 function App() {
   // const [authenticated, setAuthenticated] = useState(false);
@@ -50,6 +51,9 @@ function App() {
         </ProtectedRoute>
         <ProtectedRoute path="/store" exact={true}>
           <CardStore />
+        </ProtectedRoute>
+        <ProtectedRoute path="/collection" exact={true}>
+          <CardCollection />
         </ProtectedRoute>
       </Switch>
     </BrowserRouter>

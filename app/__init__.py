@@ -11,6 +11,7 @@ from .models import db, User
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
 from .api.card_store import card_store_routes
+from .api.cards import card_routes
 
 from .seeds import seed_commands
 
@@ -40,6 +41,7 @@ from .sockets import game_sockets
 app.register_blueprint(user_routes, url_prefix='/api/users')
 app.register_blueprint(auth_routes, url_prefix='/api/auth')
 app.register_blueprint(card_store_routes, url_prefix='/api/store')
+app.register_blueprint(card_routes, url_prefix='/api/cards')
 db.init_app(app)
 Migrate(app, db)
 

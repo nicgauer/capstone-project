@@ -10,11 +10,13 @@ class Card(db.Model):
     deck_id = db.Column(db.Integer, db.ForeignKey("decks.id"))
     owner = db.relationship("User", back_populates="cards")
     deck = db.relationship("Deck", back_populates="cards")
+    ct = db.relationship("CardType")
 
     def to_dict(self):
         return{
             "id": self.id,
             "user_id": self.user_id,
             "deck_id": self.deck_id,
-            "owner": self.owner.to_dict(),
+            # "owner": self.owner.to_dict(),
+            "card_type": self.ct.to_dict(),
         }
