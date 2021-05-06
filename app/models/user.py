@@ -14,6 +14,7 @@ class User(db.Model, UserMixin):
   wins = db.Column(db.Integer, default=0)
   losses = db.Column(db.Integer, default=0)
   cards = db.relationship("Card", back_populates="owner")
+  decks = db.relationship("Deck", back_populates="user")
 
 
   @property
