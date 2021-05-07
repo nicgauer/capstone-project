@@ -68,7 +68,7 @@ def seed_card_types():
         description="Mom said it's my turn to use the xbox",
         rarity=0,
         picture_url='https://i.imgur.com/zDuMDuW.jpg',
-        evolution_id=5
+        evolution_name='doge'
     )
 
     db.session.add(muscle_doge)
@@ -93,7 +93,7 @@ def seed_card_types():
         description="He's always had them",
         rarity=2,
         picture_url='https://ih1.redbubble.net/image.653773798.4533/flat,750x,075,f-pad,750x1000,f8f8f8.u18.jpg',
-        evolution_id=7
+        evolution_name='Kirby with Human Feet'
     )
 
     db.session.add(kirby_with_human_legs)
@@ -106,7 +106,7 @@ def seed_card_types():
         description="oh god oh no where did he get that",
         rarity=3,
         picture_url='https://i.redd.it/a14170iksok41.png',
-        evolution_id=8
+        evolution_name='Kirby With Human Legs'
     )
 
     db.session.add(kirby_with_a_knife)
@@ -177,9 +177,9 @@ def seed_card_types():
         attack=700,
         defense=650,
         description='A bigger lizard!!',
-        rarity=0,
+        rarity=1,
         picture_url='https://i.imgur.com/QfL328L.jpg?fb',
-        evolution_id=14
+        evolution_name='a Small Lizard'
     )
 
     db.session.add(big_lizard)
@@ -192,7 +192,7 @@ def seed_card_types():
         description='oh dang that\'s godzilla',
         rarity=3,
         picture_url='https://i.imgur.com/tlxIpwU.jpg',
-        evolution_id=15
+        evolution_name='a Big Lizard'
     )
 
     db.session.add(massive_lizard)
@@ -214,7 +214,7 @@ def seed_card_types():
         type='unit',
         attack=1000,
         defense=1450,
-        rarity=4,
+        rarity=3,
         description='Half egg, half dog',
         picture_url='https://i.imgur.com/CLlulF3.jpg?fb'
     )

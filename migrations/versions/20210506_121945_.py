@@ -1,8 +1,8 @@
-"""capstone database
+"""empty message
 
-Revision ID: 553064c3c81c
+Revision ID: f9f30fd0e9b8
 Revises: 
-Create Date: 2021-05-05 15:36:16.640467
+Create Date: 2021-05-06 12:19:45.424557
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '553064c3c81c'
+revision = 'f9f30fd0e9b8'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,7 +28,7 @@ def upgrade():
     sa.Column('effect', sa.String(length=100), nullable=True),
     sa.Column('rarity', sa.Integer(), nullable=True),
     sa.Column('picture_url', sa.String(length=255), nullable=True),
-    sa.Column('evolution_id', sa.Integer(), nullable=True),
+    sa.Column('evolution_name', sa.String(length=150), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
@@ -54,7 +54,9 @@ def upgrade():
     op.create_table('cards',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('card_type', sa.Integer(), nullable=False),
     sa.Column('deck_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['card_type'], ['card_types.id'], ),
     sa.ForeignKeyConstraint(['deck_id'], ['decks.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')

@@ -2,12 +2,15 @@ import React, {useEffect, useState} from 'react';
 import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
+import {getUserDecks} from '../../services/deck';
 
 const endPoint = "http://localhost:5000"
 const socket = io(endPoint);
 
 const MatchmakingLobby = () => {
     const user = useSelector(state => state.session.user);
+    const [decks, setDecks] = useState(null);
+    const [selectedDeck, setSelectedDeck] = useState(null);
     const [gameFound, setGameFound] = useState(false);
     const [waiting, setWaiting] = useState(false);
     const [gameData, setGameData] = useState(null);
@@ -15,15 +18,22 @@ const MatchmakingLobby = () => {
     const [gameWon, setGameWon] = useState(false);
 
     useEffect(() => {    
+    (async () => {
+        const d = await getUserDecks(user.id);
+        console.log(d.decks)
+        console.log(d.decks[0])
+        setDecks(d.decks)
+        setSelectedDeck(d.decks[0])
+    })()
     socket.on("waiting_for_game", data => {
         console.log('waiting for game fired')
         setWaiting(true)
-    })
+    }, [])
     
     socket.on("setup_game", data => {
         const gd = {
             room_id:data.room_id,
-            turn_order:data.turn_order
+            turn_order:data.turn_order,
         }
         if(data.room_id === user.id){
             gd.opponent_name = data.guest_username
@@ -50,6 +60,7 @@ const MatchmakingLobby = () => {
     })
 }
 
+
     return (
         <div>
             {gameLost && (
@@ -67,11 +78,18 @@ const MatchmakingLobby = () => {
                 </div>
             )}
             {!gameLost && !gameWon && gameFound && gameData && (
-                <GameBoard socket={socket} gameData={gameData} />
+                <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />
             )}
-            {!gameLost && !gameWon && !gameFound && !waiting && 
+            {!gameLost && !gameWon && !gameFound && !waiting && decks &&
                 (<div>
-                    <button onClick={findGame}>Find Game...</button>
+                    <select
+                        value={selectedDeck}
+                        onChange={(e) => setSelectedDeck(decks[e.target.value])}
+                        >
+                            {console.log(selectedDeck)}
+                            {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.id}</option>)}
+                    </select>
+                    <button onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>
