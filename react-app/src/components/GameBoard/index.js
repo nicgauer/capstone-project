@@ -6,117 +6,149 @@ import HandDisplay from '../HandDisplay';
 import CardDisplay from '../CardDisplay';
 import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 
-const testDeck = [
-    {name: "Unit Card 1",
-    type:'unit',
-    attack:100,
-    defense:300,
-    id:1},
-    {name: "Unit Card 2",
-    type:'unit',
-    attack:200,
-    defense:600,
-    id:2},
-    {name: "Unit Card 3",
-    type:'unit',
-    attack:300,
-    defense:800,
-    id:3},
-    {name: "Unit Card 4",
-    type:'unit',
-    attack:400,
-    defense:400,
-    id:4},
-    {name: "Unit Card 5",
-    type:'unit',
-    attack:500,
-    defense:300,
-    id:5},
-    {name: "Unit Card 6",
-    type:'unit',
-    attack:600,
-    defense:200,
-    id:6},
-    {name: "Unit Card 7",
-    type:'unit',
-    attack:700,
-    defense:500,
-    id:7},
-    {name: "Unit Card 8",
-    type:'unit',
-    attack:800,
-    defense:700,
-    id:8},
-    {name: "Unit Card 9",
-    type:'unit',
-    attack:900,
-    defense:500,
-    id:9},
-    {name: "Unit Card 10",
-    type:'unit',
-    attack:1000,
-    defense:400,
-    id:10},
-    {name:"Heal S",
-    type:'spell',
-    effect:'heal:200',
-    id:11},
-    {name:"Heal M",
-    type:'spell',
-    effect:'heal:500',
-    id:12},
-    {name:"Heal L",
-    type:'spell',
-    effect:'heal:800',
-    id:13},
-    {name:"Damage S",
-    type:'spell',
-    effect:'damage:200',
-    id:14},
-    {name:"Damage M",
-    type:'spell',
-    effect:'damage:500',
-    id:15},
-    {name:"Damage L",
-    type:'spell',
-    effect:'damage:800',
-    id:16},
-]
+// const testDeck = [
+//     {name: "Unit Card 1",
+//     type:'unit',
+//     attack:100,
+//     defense:300,
+//     id:1},
+//     {name: "Unit Card 2",
+//     type:'unit',
+//     attack:200,
+//     defense:600,
+//     id:2},
+//     {name: "Unit Card 3",
+//     type:'unit',
+//     attack:300,
+//     defense:800,
+//     id:3},
+//     {name: "Unit Card 4",
+//     type:'unit',
+//     attack:400,
+//     defense:400,
+//     id:4},
+//     {name: "Unit Card 5",
+//     type:'unit',
+//     attack:500,
+//     defense:300,
+//     id:5},
+//     {name: "Unit Card 6",
+//     type:'unit',
+//     attack:600,
+//     defense:200,
+//     id:6},
+//     {name: "Unit Card 7",
+//     type:'unit',
+//     attack:700,
+//     defense:500,
+//     id:7},
+//     {name: "Unit Card 8",
+//     type:'unit',
+//     attack:800,
+//     defense:700,
+//     id:8},
+//     {name: "Unit Card 9",
+//     type:'unit',
+//     attack:900,
+//     defense:500,
+//     id:9},
+//     {name: "Unit Card 10",
+//     type:'unit',
+//     attack:1000,
+//     defense:400,
+//     id:10},
+//     {name:"Heal S",
+//     type:'spell',
+//     effect:'heal:200',
+//     id:11},
+//     {name:"Heal M",
+//     type:'spell',
+//     effect:'heal:500',
+//     id:12},
+//     {name:"Heal L",
+//     type:'spell',
+//     effect:'heal:800',
+//     id:13},
+//     {name:"Damage S",
+//     type:'spell',
+//     effect:'damage:200',
+//     id:14},
+//     {name:"Damage M",
+//     type:'spell',
+//     effect:'damage:500',
+//     id:15},
+//     {name:"Damage L",
+//     type:'spell',
+//     effect:'damage:800',
+//     id:16},
+// ]
 
-const shuffle = (array) => {
+// const shuffle = (array) => {
+//     //Fisher-Yates (aka Knuth) Shuffle
+//     //from http://sedition.com/perl/javascript-fy.html
+//     var currentIndex = array.length, temporaryValue, randomIndex;
+//     // While there remain elements to shuffle...
+//     while (currentIndex !== 0) {
+//     // Pick a remaining element...
+//     randomIndex = Math.floor(Math.random() * currentIndex);
+//     currentIndex -= 1;
+//     // Swap it with the current element.
+//     temporaryValue = array[currentIndex];
+//     array[currentIndex] = array[randomIndex];
+//     array[randomIndex] = temporaryValue;
+//     }
+//     return array;
+// }
+
+// const drawHand = (deck) => {
+//     let h = []
+//         for(let i = 0; i < 5; i++) {
+//             let card = deck.pop()
+//             h.push(card)
+//         }
+//     return h
+// }
+
+// let shuffledDeck = shuffle(testDeck);
+// let initialHand = drawHand(shuffledDeck)
+
+
+
+const shuffle = (arr) => {
     //Fisher-Yates (aka Knuth) Shuffle
     //from http://sedition.com/perl/javascript-fy.html
+    let array = arr.map(c => c.card_type)
     var currentIndex = array.length, temporaryValue, randomIndex;
     // While there remain elements to shuffle...
     while (currentIndex !== 0) {
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-    // Swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        // Swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
     }
     return array;
 }
 
 const drawHand = (deck) => {
     let h = []
-        for(let i = 0; i < 5; i++) {
-            let card = deck.pop()
-            h.push(card)
-        }
+    for(let i = 0; i < 5; i++) {
+        let card = deck.pop()
+        h.push(card)
+    }
+    console.log(h)
     return h
 }
 
-let shuffledDeck = shuffle(testDeck);
-let initialHand = drawHand(shuffledDeck)
-
-
-const GameBoard = ({socket, gameData}) => {
+const GameBoard = ({socket, gameData, playerdeck}) => {
+    console.log(gameData, 'game Data')
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = useSelector(state => state.session.user)
+    let shuffledDeck = shuffle(playerdeck);
+    let initialHand = drawHand(shuffledDeck)
 
     // ---------- STATES ---------- \\
     const [turnNumber, setTurnNumber] = useState(1)
@@ -151,6 +183,8 @@ const GameBoard = ({socket, gameData}) => {
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
 
     // ---------- HELPERS ---------- \\
+
+
     const handSelector = (int) => {
         setSelected(hand[int])
         if(placementPhase && hand[int].type === 'spell'){
