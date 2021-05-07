@@ -144,7 +144,6 @@ const drawHand = (deck) => {
 }
 
 const GameBoard = ({socket, gameData, playerdeck}) => {
-    console.log(gameData, 'game Data')
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = useSelector(state => state.session.user)
@@ -183,6 +182,9 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null)
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
 
+    const [log, setLog] = useState(["Game Started!"]);
+    const [logToggle, setLogToggle] = useState(false);
+
     // ---------- HELPERS ---------- \\
 
 
@@ -217,6 +219,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             if(data.user_id === user.id) {
                 if(deckCheck()){
                     setDrawPhase(true);
+                    setLog((prev) => ['draw phase start!', data.log, ...prev])
                 }
             }
             setTurnNumber(data.turn_number);
@@ -233,12 +236,14 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 setOpponentHand(data.hand_size);
                 setOpponentDeck(data.deck_size);
             }
+            setLog((prev) => [data.log, ...prev])
         })
 
         // ---------- PLACEMENT PHASE ---------- \\
 
         socket.on("placement_phase_start", data => {
             if(data.user_id === user.id) {
+                setLog((prev) => ['Placement Phase Start!', ...prev])
                 setPlacementPhase(true);
             }
         })
@@ -267,6 +272,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 }
                 setOpponentHand(data.hand_size)
             }
+            setLog((prev) => [data.log, ...prev])
         })
 
         socket.on("spell_used", data => {
@@ -291,6 +297,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     setOpponentHealth(data.user_health)
                 }
             }
+            setLog((prev) => [data.log, ...prev])
         })
 
         // ---------- COMBAT PHASE ---------- \\
@@ -300,6 +307,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 setPlacementPhase(false)
                 setCombatPhase(true)
             }
+            setLog((prev) => [data.log, ...prev])
         })
 
         socket.on('unit_attack', data => {
@@ -346,6 +354,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     }
             }
         }
+        setLog((prev) => [data.log, ...prev])
     })
 
     // ---------- END TURN ---------- \\
@@ -370,6 +379,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     turn_number: turnNumber + 1
                 })
             }
+            setLog((prev) => [data.log, ...prev])
         })
 
     }, [])
@@ -393,6 +403,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             user_id: user.id,
             hand_size: (hand.length + 1),
             deck_size: (deck.length - 1),
+            log: `${user.username} draws card!`
         })
     }
 
@@ -417,7 +428,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 user_id: user.id,
                 hand_size: (hand.length - 1),
                 card_type: selected,
-                unit_slot: int
+                unit_slot: int,
+                log: `${user.username} places ${selected.name}`
             })
             setSelected(null);
         }
@@ -450,7 +462,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     user_id: user.id,
                     hand_size: hand.length,
                     effect:'damage',
-                    opp_health:oh
+                    opp_health:oh,
+                    log: `${user.username} activates ${card.name}!  ${effAmt} Damage!`
                 })
                 break;
             case 'heal':
@@ -459,7 +472,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     room_id: room_id,
                     user_id: user.id,
                     effect:'heal',
-                    user_health:ph
+                    user_health:ph,
+                    log: `${user.username} activates ${card.name}!  ${effAmt} Healed!`
                 })
                 break;
         }
@@ -472,12 +486,14 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             socket.emit('end_turn', {
                 room_id: room_id,
                 user_id: user.id,
-                turn_number: turnNumber
+                turn_number: turnNumber,
+                log: `${user.username} ends their turn.`
             })
         }else {
             socket.emit('start_combat_phase', {
                 room_id:room_id,
                 user_id: user.id,
+                log: `${user.username} begins their combat phase!`
             })
         }
     }
@@ -490,15 +506,19 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
             if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
                 hasAttacked.push(int)
-                let results
+                let results;
+                let targetName;
                 if(int === 1){
                     results = selectedUnit.attack - opponentUnitSlot1.defense
+                    targetName = opponentUnitSlot1.name
                 }
                 if(int === 2){
                     results = selectedUnit.attack - opponentUnitSlot2.defense
+                    targetName = opponentUnitSlot1.name
                 }
                 if(int === 3){
                     results = selectedUnit.attack - opponentUnitSlot3.defense
+                    targetName = opponentUnitSlot1.name
                 }
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
@@ -516,6 +536,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     results:results,
                     user_health:userHealth,
                     target_health:targetHealth,
+                    log: `${user.username} attacks ${targetName} with ${selUnitSlot.name}!`
                 })
             }
         }else{
@@ -534,6 +555,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     results:selectedUnit.attack,
                     user_health:userHealth,
                     target_health:targetHealth,
+                    log: `${user.username} attacks ${gameData.opponent_name} directly with ${selUnitSlot.name}!!!`
                 })
             }
         }        
@@ -544,66 +566,70 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         socket.emit('end_turn', {
             room_id: room_id,
             user_id: user.id,
-            turn_number: turnNumber
+            turn_number: turnNumber,
+            log: `${user.username} ends their turn.`
         })
+    }
+
+    let logStyle = styles.logWrapperSmall
+    let lsToggle = false;
+    const expandLogHandler = () => {
+        setLogToggle((prev) => !prev)
     }
 
     // ---------- JSX ---------- \\
 
     return (
         <div className={styles.boardWrapper}>
-            {/* <GamePlayerInfoContainer 
-                playerName={gameData.opponent_name}
-                handSize={opponentHand}
-                deckSize={opponentDeck}
-                health={opponentHealth} /> */}
-
-            {/* <GamePlayerInfoContainer 
-                playerName={user.username}
-                handSize={hand.length}
-                deckSize={deck.length}
-                health={playerHealth} /> */}
+            <div className={logToggle ? styles.logWrapperSmall : styles.logWrapperLarge} onClick={expandLogHandler}>
+                {log.length > 0 && log.map(message => <p>{message}</p>)}
+            </div>
 
 
             {selected && <p> Selected Hand = {selected.name} </p>}
             {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
 
-
-            <div className={styles.opponentUnitBoard}>
-                <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
-                    {opponentUnitSlot1 && <BoardCardDisplay card={opponentUnitSlot1} />}
-                </div>
-                <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
-                    {opponentUnitSlot2 && <BoardCardDisplay card={opponentUnitSlot2} />}
-                </div>
-                <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
-                    {opponentUnitSlot3 && <BoardCardDisplay card={opponentUnitSlot3} />}
-                </div>
-
-                <GamePlayerInfoContainer 
-                playerName={gameData.opponent_name}
-                handSize={opponentHand}
-                deckSize={opponentDeck}
-                health={opponentHealth} />
-            </div>
-
-
-            <div className={styles.playerUnitBoard}>
-                <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
-                    {playerUnitSlot1 && <BoardCardDisplay card={playerUnitSlot1} />}
-                </div>
-                <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
-                    {playerUnitSlot2 && <BoardCardDisplay card={playerUnitSlot2} />}
-                </div>
-                <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
-                    {playerUnitSlot3 && <BoardCardDisplay card={playerUnitSlot3} />}
+            <div className={styles.boardContainer}>
+                <div className={styles.opponentUnitBoard}>
+                    <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
+                        {opponentUnitSlot1 && <BoardCardDisplay card={opponentUnitSlot1} />}
+                    </div>
+                    <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
+                        {opponentUnitSlot2 && <BoardCardDisplay card={opponentUnitSlot2} />}
+                    </div>
+                    <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
+                        {opponentUnitSlot3 && <BoardCardDisplay card={opponentUnitSlot3} />}
+                    </div>
+                    <div className={styles.infoWrapper}>
+                        <GamePlayerInfoContainer 
+                        playerName={gameData.opponent_name}
+                        handSize={opponentHand}
+                        deckSize={opponentDeck}
+                        health={opponentHealth} />
+                    </div>
                 </div>
 
-                <GamePlayerInfoContainer 
-                playerName={user.username}
-                handSize={hand.length}
-                deckSize={deck.length}
-                health={playerHealth} />
+
+                <div className={styles.playerUnitBoard}>
+                    <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
+                        {playerUnitSlot1 && <BoardCardDisplay card={playerUnitSlot1} />}
+                    </div>
+                    <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
+                        {playerUnitSlot2 && <BoardCardDisplay card={playerUnitSlot2} />}
+                    </div>
+                    <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
+                        {playerUnitSlot3 && <BoardCardDisplay card={playerUnitSlot3} />}
+                    </div>
+
+                    <div className={styles.infoWrapper}>
+                        <GamePlayerInfoContainer 
+                        playerName={user.username}
+                        handSize={hand.length}
+                        deckSize={deck.length}
+                        health={playerHealth} />
+
+                    </div>
+                </div>
             </div>
 
             <div className={styles.handWrapper}>
