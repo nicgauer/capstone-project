@@ -35,8 +35,16 @@ app.cli.add_command(seed_commands)
 
 app.config.from_object(Config)
 
+if os.environ.get("FLASK_ENV") == "production":
+    origins = [
+        "https://super-battle-cards.herokuapp.com",
+        "http://super-battle-cards.herokuapp.com",
+    ]
+else:
+    origins = '*'
+
 Payload.max_decode_packets = 50
-socketio = SocketIO(app, cors_allowed_origins='*')
+socketio = SocketIO(app, cors_allowed_origins=origins)
 from .sockets import game_sockets
 
 app.register_blueprint(user_routes, url_prefix='/api/users')

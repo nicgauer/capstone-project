@@ -5,6 +5,7 @@ import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
 
 const endPoint = "http://localhost:5000"
+// const endPoint = "https://super-battle-cards.herokuapp.com"
 const socket = io(endPoint);
 
 const MatchmakingLobby = () => {
@@ -20,13 +21,13 @@ const MatchmakingLobby = () => {
     useEffect(() => {    
     (async () => {
         const d = await getUserDecks(user.id);
-        console.log(d.decks)
-        console.log(d.decks[0])
+        // console.log(d.decks)
+        // console.log(d.decks[0])
         setDecks(d.decks)
         setSelectedDeck(d.decks[0])
     })()
     socket.on("waiting_for_game", data => {
-        console.log('waiting for game fired')
+        // console.log('waiting for game fired')
         setWaiting(true)
     }, [])
     
@@ -86,7 +87,7 @@ const MatchmakingLobby = () => {
                         value={selectedDeck}
                         onChange={(e) => setSelectedDeck(decks[e.target.value])}
                         >
-                            {console.log(selectedDeck)}
+                            {/* {console.log(selectedDeck)} */}
                             {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.id}</option>)}
                     </select>
                     <button onClick={findGame} disabled={!selectedDeck}>Find Game...</button>

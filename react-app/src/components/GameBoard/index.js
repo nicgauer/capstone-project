@@ -115,10 +115,11 @@ import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 
 
 
-const shuffle = (arr) => {
+const shuffle = (array) => {
+    // console.log(array, "SHUFFLE");
     //Fisher-Yates (aka Knuth) Shuffle
     //from http://sedition.com/perl/javascript-fy.html
-    let array = arr.map(c => c.card_type)
+    // let array = arr.map(c => c.card_type)
     var currentIndex = array.length, temporaryValue, randomIndex;
     // While there remain elements to shuffle...
     while (currentIndex !== 0) {
@@ -139,7 +140,8 @@ const drawHand = (deck) => {
         let card = deck.pop()
         h.push(card)
     }
-    console.log(h)
+    // console.log(h)
+    // console.log(deck)
     return h
 }
 
@@ -147,13 +149,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = useSelector(state => state.session.user)
-    let shuffledDeck = shuffle(playerdeck);
-    let initialHand = drawHand(shuffledDeck)
 
     // ---------- STATES ---------- \\
     const [turnNumber, setTurnNumber] = useState(1)
-    const [hand, setHand] = useState(initialHand)
-    const [deck, setDeck] = useState(shuffledDeck)
+    const [hand, setHand] = useState([])
+    const [deck, setDeck] = useState(playerdeck)
 
     const [playerHealth, setPlayerHealth] = useState(1000)
     const [opponentHealth, setOpponentHealth] = useState(1000)
@@ -171,9 +171,9 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const [trapPlaced, setTrapPlaced] = useState(false)
 
     const [selectedUnit, setSelectedUnit] = useState(null)
-    let selUnitSlot = null;
+    const [ selUnitSlot, setSelUnitSlot ] = useState(null)
 
-    let hasAttacked = [];
+    const [hasAttacked, setHasAttacked] = useState([])
     const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null)
     const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null)
     const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null)
@@ -190,20 +190,30 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
     const handSelector = (int) => {
         setSelected(hand[int])
-        if(placementPhase && hand[int].type === 'spell'){
-            spellEffect(hand[int])
+        console.log(hand[int])
+        if(placementPhase && hand[int].card_type.type === 'spell'){
+            spellEffect(hand[int].card_type)
             removeFromHand(hand[int])
         }
     }
 
     const removeFromHand = (card) => {
         let h = [...hand]
-        h.splice(h.findIndex(c => c.id === card.id), 1);
-        setHand(h);
+        console.log('REMOVE FROM HAND CARD', card)
+        console.log('REMOVE FROM HAND HAND', h)
+        h.filter(c => c.id != card.id)
+        console.log('REMOVE FROM HAND POST FILTER HAND', h)
+        setHand(h.filter(c => c.id != card.id));
     }
     
     // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
+
+        let shuffledDeck = shuffle(playerdeck);
+        let initialHand = drawHand(shuffledDeck)
+        setDeck(shuffledDeck);
+        setHand(initialHand);
+        console.log(initialHand)
 
         if(turnOrder[0] === user.id){
             socket.emit('start_draw_phase', {
@@ -259,7 +269,6 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if(data.unit_slot == 3){
                     setPlayerUnitSlot3(data.card_type)
                 }
-                removeFromHand(data.card_type)
             }else{
                 if(data.unit_slot == 1){
                     setOpponentUnitSlot1(data.card_type)
@@ -294,6 +303,12 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     setPlayerHealth(data.opp_health)
                 }
                 if(data.user_health) {
+                    if(data.user_health <= 0) {
+                        socket.emit('end_game', {
+                            loser_id:user.id,
+                            room_id:room_id,
+                        })
+                    }
                     setOpponentHealth(data.user_health)
                 }
             }
@@ -313,46 +328,107 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         socket.on('unit_attack', data => {
             console.log(data);
             if(data.user_id === user.id){
-                if(Number(data.results) > 0){
-                    if(data.target_health < 1){
-                        let loserId;
-                        if(turnOrder[0] === user.id){
-                            loserId = turnOrder[1]
-                        }else{
-                            loserId = turnOrder[0]
-                        }
-                        socket.emit('end_game', {
-                            loser_id:loserId,
-                            room_id:room_id
-                        })
-                        return;
+                if(data.target_health < 1){
+                    let loserId;
+                    if(turnOrder[0] === user.id){
+                        loserId = turnOrder[1]
+                    }else{
+                        loserId = turnOrder[0]
                     }
-                    setOpponentHealth(data.target_health);
-                    setPlayerHealth(data.user_health);
-                    if(data.defender_slot === 1){
-                        setOpponentUnitSlot1(null);
+                    socket.emit('end_game', {
+                        loser_id:loserId,
+                        room_id:room_id
+                    })
+                    return;
+                }
+                setOpponentHealth(data.target_health);
+                setPlayerHealth(data.user_health);
+                if(data.loss){
+                    if(data.attacker_slot === 1) setPlayerUnitSlot1(null)
+                    if(data.attacker_slot === 2) setPlayerUnitSlot2(null)
+                    if(data.attacker_slot === 3) setPlayerUnitSlot3(null)
+                }
+                if((data.defender_slot === 1) && !data.loss){
+                    setOpponentUnitSlot1(null);
+                    if(data.tie && data.attacker_slot === 1){
+                        setPlayerUnitSlot1(null);
                     }
-                    if(data.defender_slot === 2){
-                        setOpponentUnitSlot2(null);
+                    if(data.tie && data.attacker_slot === 2){
+                        setPlayerUnitSlot2(null);
                     }
-                    if(data.defender_slot === 3){
-                        setOpponentUnitSlot3(null);
+                    if(data.tie && data.attacker_slot === 3){
+                        setPlayerUnitSlot3(null);
+                    }
+                }
+                if((data.defender_slot === 2) && !data.loss){
+                    setOpponentUnitSlot2(null);
+                    if(data.tie && data.attacker_slot === 1){
+                        setPlayerUnitSlot1(null);
+                    }
+                    if(data.tie && data.attacker_slot === 2){
+                        setPlayerUnitSlot2(null);
+                    }
+                    if(data.tie && data.attacker_slot === 3){
+                        setPlayerUnitSlot3(null);
+                    }
+                }
+                if((data.defender_slot === 3) && !data.loss){
+                    setOpponentUnitSlot3(null);
+                    if(data.tie && data.attacker_slot === 1){
+                        setPlayerUnitSlot1(null);
+                    }
+                    if(data.tie && data.attacker_slot === 2){
+                        setPlayerUnitSlot2(null);
+                    }
+                    if(data.tie && data.attacker_slot === 3){
+                        setPlayerUnitSlot3(null);
                     }
                 }
             }else {
-                if(Number(data.results) > 0){
-                    setPlayerHealth(data.target_health);
-                    setOpponentHealth(data.user_health);
-                    if(data.defender_slot === 1){
-                        setPlayerUnitSlot1(null);
+                setPlayerHealth(data.target_health);
+                setOpponentHealth(data.user_health);
+                if(data.loss){
+                    if(data.attacker_slot === 1) setOpponentUnitSlot1(null)
+                    if(data.attacker_slot === 2) setOpponentUnitSlot2(null)
+                    if(data.attacker_slot === 3) setOpponentUnitSlot3(null)
+                }
+                if(data.defender_slot === 1  && !data.loss){
+                    setPlayerUnitSlot1(null);
+                    if(data.tie && data.attacker_slot === 1){
+                        setOpponentUnitSlot1(null);
                     }
-                    if(data.defender_slot === 2){
-                        setPlayerUnitSlot2(null);
+                    if(data.tie && data.attacker_slot === 2){
+                        setOpponentUnitSlot2(null);
                     }
-                    if(data.defender_slot === 3){
-                        setPlayerUnitSlot3(null);
+                    if(data.tie && data.attacker_slot === 3){
+                        setOpponentUnitSlot3(null);
                     }
-            }
+                }
+                if(data.defender_slot === 2  && !data.loss){
+                    setPlayerUnitSlot2(null);
+                    if(data.tie && data.attacker_slot === 1){
+                        setOpponentUnitSlot1(null);
+                    }
+                    if(data.tie && data.attacker_slot === 2){
+                        setOpponentUnitSlot2(null);
+                    }
+                    if(data.tie && data.attacker_slot === 3){
+                        setOpponentUnitSlot3(null);
+                    }
+                }
+                if(data.defender_slot === 3  && !data.loss){
+                    setPlayerUnitSlot3(null);
+                    if(data.tie && data.attacker_slot === 1){
+                        setOpponentUnitSlot1(null);
+                    }
+                    if(data.tie && data.attacker_slot === 2){
+                        setOpponentUnitSlot2(null);
+                    }
+                    if(data.tie && data.attacker_slot === 3){
+                        setOpponentUnitSlot3(null);
+                    }
+                }
+            
         }
         setLog((prev) => [data.log, ...prev])
     })
@@ -364,8 +440,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 setUnitPlaced(false)
                 setTrapPlaced(false)
                 setSelectedUnit(null)
-                selUnitSlot = null;
-                hasAttacked = [];
+                setSelUnitSlot(null)
+                setHasAttacked([])
                 setSelected(null)
                 let userId;
                 if(turnOrder[0] === user.id){
@@ -387,6 +463,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     // ---------- DRAW PHASE ---------- \\
 
     const deckCheck = () => {
+        console.log('Deck check!!', deck)
         if(deck.length === 0){
             socket.emit("end_game", {
                 loser_id:user.id,
@@ -419,7 +496,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     // ---------- PLACEMENT PHASE ---------- \\
 
     const playerUnitSlotHandler = (int) => {
-        if(placementPhase && selected && (selected.type === 'unit') && !unitPlaced){
+        if(placementPhase && selected && (selected.card_type.type === 'unit') && !unitPlaced){
             if(int === 1 && playerUnitSlot1) return;
             if(int === 2 && playerUnitSlot2) return;
             if(int === 3 && playerUnitSlot3) return;
@@ -427,24 +504,26 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 room_id:room_id,
                 user_id: user.id,
                 hand_size: (hand.length - 1),
-                card_type: selected,
+                card_type: selected.card_type,
                 unit_slot: int,
                 log: `${user.username} places ${selected.name}`
             })
             setSelected(null);
+            setUnitPlaced(true);
+            removeFromHand(selected)
         }
         if(combatPhase){
             if(int === 1 && playerUnitSlot1) {
                 setSelectedUnit(playerUnitSlot1);
-                selUnitSlot = int
+                setSelUnitSlot(int)
             }
             if(int === 2 && playerUnitSlot2) {
                 setSelectedUnit(playerUnitSlot2);
-                selUnitSlot = int
+                setSelUnitSlot(int)
             }
             if(int === 3 && playerUnitSlot3) {
                 setSelectedUnit(playerUnitSlot3);
-                selUnitSlot = int
+                setSelUnitSlot(int)
             }
         }
     }
@@ -514,18 +593,25 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 }
                 if(int === 2){
                     results = selectedUnit.attack - opponentUnitSlot2.defense
-                    targetName = opponentUnitSlot1.name
+                    targetName = opponentUnitSlot2.name
                 }
                 if(int === 3){
                     results = selectedUnit.attack - opponentUnitSlot3.defense
-                    targetName = opponentUnitSlot1.name
+                    targetName = opponentUnitSlot3.name
                 }
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
+                let loss = false;
                 if(results > 0){
                     targetHealth -= results;
                 }else{
-                    userHealth -= results;
+                    loss = true;
+                    userHealth += results;
+                }
+
+                let tie = false;
+                if (results === 0){
+                    tie = true;
                 }
     
                 socket.emit('attack', {
@@ -536,7 +622,9 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     results:results,
                     user_health:userHealth,
                     target_health:targetHealth,
-                    log: `${user.username} attacks ${targetName} with ${selUnitSlot.name}!`
+                    tie:tie,
+                    loss:loss,
+                    log: `${user.username} attacks ${targetName} with ${selectedUnit.name}!`
                 })
             }
         }else{
@@ -555,7 +643,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     results:selectedUnit.attack,
                     user_health:userHealth,
                     target_health:targetHealth,
-                    log: `${user.username} attacks ${gameData.opponent_name} directly with ${selUnitSlot.name}!!!`
+                    log: `${user.username} attacks ${gameData.opponent_name} directly with ${selectedUnit.name}!!!`
                 })
             }
         }        
@@ -586,7 +674,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             </div>
 
 
-            {selected && <p> Selected Hand = {selected.name} </p>}
+            {selected && <p> Selected Hand = {selected.card_type.name} </p>}
             {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
 
             <div className={styles.boardContainer}>
@@ -635,7 +723,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             <div className={styles.handWrapper}>
             {hand && hand.map((card, i) => (
                 <div onClick={() => handSelector(i)}>
-                    <CardDisplay card={card} />
+                    <CardDisplay card={card.card_type} />
                 </div>
                 )) }
             </div>
