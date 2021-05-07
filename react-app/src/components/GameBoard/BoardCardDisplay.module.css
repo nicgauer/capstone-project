@@ -1,0 +1,26 @@
+.cardWrapper {
+    border:1px solid black;
+    width: 150px;
+    /* padding: 10px; */
+    margin: 10px;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.infoWrapper {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.cardImage {
+    height:100px;
+    width:100px;
+    object-fit: cover;
+}
+
+.statWrapper {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}

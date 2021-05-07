@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import styles from './GameBoard.module.css'
 import HandDisplay from '../HandDisplay';
 import CardDisplay from '../CardDisplay';
+import BoardCardDisplay from './BoardCardDisplay'
 import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 
 // const testDeck = [
@@ -550,18 +551,18 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     // ---------- JSX ---------- \\
 
     return (
-        <div>
-            <GamePlayerInfoContainer 
+        <div className={styles.boardWrapper}>
+            {/* <GamePlayerInfoContainer 
                 playerName={gameData.opponent_name}
                 handSize={opponentHand}
                 deckSize={opponentDeck}
-                health={opponentHealth} />
+                health={opponentHealth} /> */}
 
-            <GamePlayerInfoContainer 
+            {/* <GamePlayerInfoContainer 
                 playerName={user.username}
                 handSize={hand.length}
                 deckSize={deck.length}
-                health={playerHealth} />
+                health={playerHealth} /> */}
 
 
             {selected && <p> Selected Hand = {selected.name} </p>}
@@ -570,27 +571,39 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
             <div className={styles.opponentUnitBoard}>
                 <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
-                    {opponentUnitSlot1 && <CardDisplay card={opponentUnitSlot1} />}
+                    {opponentUnitSlot1 && <BoardCardDisplay card={opponentUnitSlot1} />}
                 </div>
                 <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
-                    {opponentUnitSlot2 && <CardDisplay card={opponentUnitSlot2} />}
+                    {opponentUnitSlot2 && <BoardCardDisplay card={opponentUnitSlot2} />}
                 </div>
                 <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
-                    {opponentUnitSlot3 && <CardDisplay card={opponentUnitSlot3} />}
+                    {opponentUnitSlot3 && <BoardCardDisplay card={opponentUnitSlot3} />}
                 </div>
+
+                <GamePlayerInfoContainer 
+                playerName={gameData.opponent_name}
+                handSize={opponentHand}
+                deckSize={opponentDeck}
+                health={opponentHealth} />
             </div>
 
 
             <div className={styles.playerUnitBoard}>
                 <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
-                    {playerUnitSlot1 && <CardDisplay card={playerUnitSlot1} />}
+                    {playerUnitSlot1 && <BoardCardDisplay card={playerUnitSlot1} />}
                 </div>
                 <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
-                    {playerUnitSlot2 && <CardDisplay card={playerUnitSlot2} />}
+                    {playerUnitSlot2 && <BoardCardDisplay card={playerUnitSlot2} />}
                 </div>
                 <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
-                    {playerUnitSlot3 && <CardDisplay card={playerUnitSlot3} />}
+                    {playerUnitSlot3 && <BoardCardDisplay card={playerUnitSlot3} />}
                 </div>
+
+                <GamePlayerInfoContainer 
+                playerName={user.username}
+                handSize={hand.length}
+                deckSize={deck.length}
+                health={playerHealth} />
             </div>
 
             <div className={styles.handWrapper}>
@@ -602,14 +615,14 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             </div>
 
             {drawPhase && (
-                <button onClick={drawButtonHandler}>Draw Card!!</button>
+                <button className={styles.actionButton} onClick={drawButtonHandler}>Draw Card!!</button>
             )}
 
             {placementPhase && (
-                <button onClick={beginCombatPhase}>Start Combat Phase!</button>
+                <button className={styles.actionButton} onClick={beginCombatPhase}>Start Combat Phase!</button>
             )}
             {combatPhase && (
-                <button onClick={endTurnHandler}>End Turn</button>
+                <button className={styles.actionButton} onClick={endTurnHandler}>End Turn</button>
             )}
         </div>
     )
