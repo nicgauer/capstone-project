@@ -31,7 +31,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <NavBar />
+      {/* <NavBar /> */}
       <Switch>
         <Route path="/login" exact={true}>
           <LoginForm />
@@ -46,7 +46,7 @@ function App() {
           <User />
         </ProtectedRoute>
         <ProtectedRoute path="/" exact={true}>
-          <h1>My Home Page</h1>
+          {/* <h1>My Home Page</h1> */}
           <MatchmakingLobby />
         </ProtectedRoute>
         <ProtectedRoute path="/store" exact={true}>

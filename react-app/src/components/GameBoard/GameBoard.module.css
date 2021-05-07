@@ -1,27 +1,126 @@
+.boardWrapper {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    /* background: rgb(0,0,0);
+    background: linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(55,111,122,1) 50%, rgba(0,0,0,1) 100%); */
+    background-image:url('../../assets/abstract_blue_background_vector_set.jpg');
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.logWrapperSmall {
+    display:flex;
+    flex-direction:column-reverse;
+    height:40px;
+    position:sticky;
+    top:0;
+    width:100%;
+    overflow-y:scroll;
+    background-color:rgba(0, 0, 0, 0.6);
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    text-align: center;
+}
+
+::-webkit-scrollbar {
+    display:none;
+}
+
+.logWrapperLarge {
+    display:flex;
+    flex-direction:column-reverse;
+    height:33%;
+    position:sticky;
+    top:0;
+    width:100%;
+    overflow-y:scroll;
+    background-color:rgba(0, 0, 0, 0.6);
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    text-align: center;
+}
+
+.boardContainer {
+    border: 1px solid black;
+    /* width: 100%; */
+}
+
+.infoWrapper {
+    margin: 15px;
+    margin-top:30px;
+}
+
 .handWrapper {
     display:flex;
+    justify-content:center;
+    width:100%;
+    flex-wrap: wrap;
 }
 
 .playerUnitBoard {
     display:flex;
+    justify-content:center;
 }
 
 .playerUnit {
+    display:flex;
+    justify-content:center;
+    align-items:center;
     padding:5px;
-    height: 175px;
-    width: 150px;    
+    height: 275px;
+    width: 205px;    
     border: 1px solid black;
     box-sizing: border-box;
+    margin: 15px;
+    background:rgba(70, 54, 211, 0.5);
 }
 
 .opponentUnitBoard {
     display:flex;
+    justify-content:center;
 }
 
 .opponentUnit {
+    display:flex;
+    justify-content:center;
+    align-items:center;
     padding:5px;
-    height: 175px;
-    width: 150px;    
+    height: 275px;
+    width: 205px;      
     border: 1px solid black;
     box-sizing: border-box;
+    margin: 15px;
+    background:rgba(158, 1, 1, 0.267);
 }
+
+.actionButton {
+    background-color:rgba(206, 0, 0, 0.75);
+    color:white;
+    font-size: 14px;
+    font-weight:700;
+    cursor:pointer;
+    position: fixed;
+    bottom:10%;
+    right:5%;
+    border-radius:50%;
+    height:120px;
+    width:120px;
+    transition-property: all;
+    transition-duration: .3s;
+    transition-delay: .1s;
+}
+
+.actionButton:hover {
+    box-shadow: 0px 0px 14px rgba(121, 0, 0, 0.8);
+    background-color:  rgb(155, 0, 0);
+    color:rgb(199, 199, 199);
+    font-weight:700;
+    font-size: 16px;
+    transform-origin:center;
+    transform: scale(1.05, 1.05);
+    }
+
