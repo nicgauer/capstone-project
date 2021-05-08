@@ -9,7 +9,7 @@ def seed_card_types():
         defense=500,
         description="After being bit by a radioactive tiger, Tony was transported to a different dimension.  Now, he battles endlessly in search of his favorite comfort food, frosted flakes.",
         rarity=0,
-        picture_url='http://clipart-library.com/clipart/8TAbaX8Ac.htm'
+        picture_url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2GKjvCuMeGNRTkm_GmThmck38dLnUGAS77A&usqp=CAU'
     )
     db.session.add(tiger_man)
 
@@ -220,6 +220,42 @@ def seed_card_types():
     )
 
     db.session.add(eggdog)
+
+    anakin_swordwalker = CardType(
+        name="Anakin Swordwalker",
+        type='unit',
+        attack='1300',
+        defense='900',
+        rarity=4,
+        description='A long time ago in a galaxy far far away',
+        picture_url='https://i.imgur.com/w5xOV55.jpg'
+    )
+
+    db.session.add(anakin_swordwalker)
+
+    generic_sword_guy = CardType(
+        name='Generic Sword Guy',
+        type='unit',
+        attack='550',
+        defense='750',
+        rarity=1,
+        description='A guy with a sword',
+        picture_url='https://i.imgur.com/JG9ihvA.jpg'
+    )
+
+    db.session.add(generic_sword_guy)
+
+    obi_wan = CardType(
+        name="Obi Revalor",
+        type='unit',
+        attack='1550',
+        defense='750',
+        rarity=3,
+        description="He's got a bad feeling about this",
+        picture_url="https://i.imgur.com/hYLdtNl.jpg"
+    )
+
+    db.session.add(obi_wan)
 
     eat_a_sandwich = CardType(
         name='Eat A Sandwich',

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect } from 'react-router-dom';
 import { signUp } from '../../store/session';
+import { newDeck } from '../../services/deck';
 
 const SignUpForm = () => {
   const dispatch = useDispatch();
@@ -35,7 +36,7 @@ const SignUpForm = () => {
   };
 
   if (user) {
-    return <Redirect to="/" />;
+    return <Redirect to="/store" />;
   }
 
   return (

@@ -19,8 +19,14 @@ def new_deck(id):
         user_id=id,
     )
     db.session.add(new_deck)
+    new_card = Card(
+        user_id=id,
+        deck_id=new_deck.to_dict().id,
+        card_type=4
+    )
+    db.session.add(new_card)
     db.session.commit()
-    return {'success': True}
+    return new_deck.to_dict()
 
 
 @deck_routes.route('/<int:card_id>/<int:deck_id>')

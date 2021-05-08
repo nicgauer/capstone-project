@@ -17,3 +17,24 @@ def users():
 def user(id):
     user = User.query.get(id)
     return user.to_dict()
+
+
+@user_routes.route('/w/<int:id>')
+@login_required
+def add_win(id):
+    user = User.query.get(id)
+    user.free_currency += 100
+    user.wins += 1
+    db.session.commit()
+    return user.to_dict()
+
+
+
+@user_routes.route('/l/<int:id>')
+@login_required
+def add_loss(id):
+    user = User.query.get(id)
+    user.free_currency += 50
+    user.losses += 1
+    db.session.commit()
+    return user.to_dict()
