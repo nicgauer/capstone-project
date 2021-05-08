@@ -1,3 +1,7 @@
+body {
+    margin:0;
+}
+
 .boardWrapper {
     display:flex;
     flex-direction:column;
@@ -32,7 +36,7 @@
 .logWrapperLarge {
     display:flex;
     flex-direction:column-reverse;
-    height:33%;
+    height:33vh;
     position:sticky;
     top:0;
     width:100%;

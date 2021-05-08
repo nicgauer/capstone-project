@@ -1,0 +1,25 @@
+.chatRoom {
+    position:fixed;
+    bottom:7%;
+    left:5%;
+}
+
+
+.chatWrapperVisible {
+    background:rgba(255,255,255, 0.4);
+}
+
+.chatWrapperHidden {
+    display: none;
+}
+
+.messageContainer {
+    height:200px;
+    max-width:20vw;
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+.chatToggle {
+
+}
