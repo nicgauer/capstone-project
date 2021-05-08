@@ -6,6 +6,7 @@ import HandDisplay from '../HandDisplay';
 import CardDisplay from '../CardDisplay';
 import BoardCardDisplay from './BoardCardDisplay'
 import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
+import GameChat from './chat';
 
 
 const shuffle = (array) => {
@@ -637,7 +638,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
     return (
         <div className={styles.boardWrapper}>
-            <div className={logToggle ? styles.logWrapperSmall : styles.logWrapperLarge} onClick={expandLogHandler}>
+            <div className={logToggle ? styles.logWrapperLarge : styles.logWrapperSmall} onClick={expandLogHandler}>
                 {log.length > 0 && log.map(message => <p>{message}</p>)}
             </div>
 
@@ -706,6 +707,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             {combatPhase && (
                 <button className={styles.actionButton} onClick={endTurnHandler}>End Turn</button>
             )}
+
+            <GameChat socket={socket} username={user.username} room_id={room_id} />
         </div>
     )
 }
