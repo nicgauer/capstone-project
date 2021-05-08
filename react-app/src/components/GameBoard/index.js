@@ -8,6 +8,8 @@ import BoardCardDisplay from './BoardCardDisplay'
 import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 import GameChat from './chat';
 
+import explosion from '../../assets/explosion.gif';
+
 
 const shuffle = (array) => {
     // console.log(array, "SHUFFLE");
@@ -75,12 +77,18 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     //Has Attacked state contains array of unit slots that have attacked this turn
     const [hasAttacked, setHasAttacked] = useState([])
     const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null)
+    const [explosionEffect1, setExplosionEffect1] = useState(false)
     const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null)
+    const [explosionEffect2, setExplosionEffect2] = useState(false)
     const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null)
+    const [explosionEffect3, setExplosionEffect3] = useState(false)
 
     const [opponentUnitSlot1, setOpponentUnitSlot1] = useState(null)
+    const [explosionEffect4, setExplosionEffect4] = useState(false)
     const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null)
+    const [explosionEffect5, setExplosionEffect5] = useState(false)
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
+    const [explosionEffect6, setExplosionEffect6] = useState(false)
 
     //Log controls
     const [log, setLog] = useState(["Game Started!"]);
@@ -295,17 +303,21 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     if(data.attacker_slot === 1) setPlayerUnitSlot1(null)
                     if(data.attacker_slot === 2) setPlayerUnitSlot2(null)
                     if(data.attacker_slot === 3) setPlayerUnitSlot3(null)
+                    explosionHandler(data.attacker_slot)
                 }
 
                 //If combat was a win or tie, destroys opponent's monster
                 if((data.defender_slot === 1) && !data.loss){
                     setOpponentUnitSlot1(null);
+                    explosionHandler(data.defender_slot + 3)
                 }
                 if((data.defender_slot === 2) && !data.loss){
                     setOpponentUnitSlot2(null);
+                    explosionHandler(data.defender_slot + 3)
                 }
                 if((data.defender_slot === 3) && !data.loss){
                     setOpponentUnitSlot3(null);
+                    explosionHandler(data.defender_slot + 3)
                 }
             }else {
                 //If other user attacked
@@ -318,17 +330,22 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     if(data.attacker_slot === 1) setOpponentUnitSlot1(null)
                     if(data.attacker_slot === 2) setOpponentUnitSlot2(null)
                     if(data.attacker_slot === 3) setOpponentUnitSlot3(null)
+                    explosionHandler(data.attacker_slot + 3)
                 }
 
                 //Destroy defending monster if loss or tie
                 if(data.defender_slot === 1  && !data.loss){
                     setPlayerUnitSlot1(null);
+                    explosionHandler(data.defender_slot)
+                    
                 }
                 if(data.defender_slot === 2  && !data.loss){
                     setPlayerUnitSlot2(null);
+                    explosionHandler(data.defender_slot)
                 }
                 if(data.defender_slot === 3  && !data.loss){
                     setPlayerUnitSlot3(null);
+                    explosionHandler(data.defender_slot)
                 }
             
         }
@@ -634,6 +651,47 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         setLogToggle((prev) => !prev)
     }
 
+    const explosionHandler = (t) => {
+        switch(t) {
+            case 1:
+                setExplosionEffect1(true)
+                setTimeout(() => {
+                    setExplosionEffect1(false)
+                }, 800)
+                break;
+            case 2:
+                setExplosionEffect2(true)
+                setTimeout(() => {
+                    setExplosionEffect2(false)
+                }, 800)
+                break;
+            case 3:
+                setExplosionEffect3(true)
+                setTimeout(() => {
+                    setExplosionEffect3(false)
+                }, 800)
+                break;
+            case 4:
+                setExplosionEffect4(true)
+                setTimeout(() => {
+                    setExplosionEffect4(false)
+                }, 800)
+                break;
+            case 5:
+                setExplosionEffect5(true)
+                setTimeout(() => {
+                    setExplosionEffect5(false)
+                }, 800)
+                break;
+            case 6:
+                setExplosionEffect6(true)
+                setTimeout(() => {
+                    setExplosionEffect6(false)
+                }, 800)
+                break;
+        }
+    }
+
     // ---------- JSX ---------- \\
 
     return (
@@ -650,12 +708,15 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 <div className={styles.opponentUnitBoard}>
                     <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
                         {opponentUnitSlot1 && <BoardCardDisplay card={opponentUnitSlot1} />}
+                        {explosionEffect4 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
                     <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
                         {opponentUnitSlot2 && <BoardCardDisplay card={opponentUnitSlot2} />}
+                        {explosionEffect5 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
                     <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
                         {opponentUnitSlot3 && <BoardCardDisplay card={opponentUnitSlot3} />}
+                        {explosionEffect6 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
                     <div className={styles.infoWrapper}>
                         <GamePlayerInfoContainer 
@@ -670,12 +731,15 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 <div className={styles.playerUnitBoard}>
                     <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
                         {playerUnitSlot1 && <BoardCardDisplay card={playerUnitSlot1} />}
+                        {explosionEffect1 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
                     <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
                         {playerUnitSlot2 && <BoardCardDisplay card={playerUnitSlot2} />}
+                        {explosionEffect2 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
                     <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
                         {playerUnitSlot3 && <BoardCardDisplay card={playerUnitSlot3} />}
+                        {explosionEffect3 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
 
                     <div className={styles.infoWrapper}>
