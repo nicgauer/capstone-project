@@ -7,113 +7,6 @@ import CardDisplay from '../CardDisplay';
 import BoardCardDisplay from './BoardCardDisplay'
 import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 
-// const testDeck = [
-//     {name: "Unit Card 1",
-//     type:'unit',
-//     attack:100,
-//     defense:300,
-//     id:1},
-//     {name: "Unit Card 2",
-//     type:'unit',
-//     attack:200,
-//     defense:600,
-//     id:2},
-//     {name: "Unit Card 3",
-//     type:'unit',
-//     attack:300,
-//     defense:800,
-//     id:3},
-//     {name: "Unit Card 4",
-//     type:'unit',
-//     attack:400,
-//     defense:400,
-//     id:4},
-//     {name: "Unit Card 5",
-//     type:'unit',
-//     attack:500,
-//     defense:300,
-//     id:5},
-//     {name: "Unit Card 6",
-//     type:'unit',
-//     attack:600,
-//     defense:200,
-//     id:6},
-//     {name: "Unit Card 7",
-//     type:'unit',
-//     attack:700,
-//     defense:500,
-//     id:7},
-//     {name: "Unit Card 8",
-//     type:'unit',
-//     attack:800,
-//     defense:700,
-//     id:8},
-//     {name: "Unit Card 9",
-//     type:'unit',
-//     attack:900,
-//     defense:500,
-//     id:9},
-//     {name: "Unit Card 10",
-//     type:'unit',
-//     attack:1000,
-//     defense:400,
-//     id:10},
-//     {name:"Heal S",
-//     type:'spell',
-//     effect:'heal:200',
-//     id:11},
-//     {name:"Heal M",
-//     type:'spell',
-//     effect:'heal:500',
-//     id:12},
-//     {name:"Heal L",
-//     type:'spell',
-//     effect:'heal:800',
-//     id:13},
-//     {name:"Damage S",
-//     type:'spell',
-//     effect:'damage:200',
-//     id:14},
-//     {name:"Damage M",
-//     type:'spell',
-//     effect:'damage:500',
-//     id:15},
-//     {name:"Damage L",
-//     type:'spell',
-//     effect:'damage:800',
-//     id:16},
-// ]
-
-// const shuffle = (array) => {
-//     //Fisher-Yates (aka Knuth) Shuffle
-//     //from http://sedition.com/perl/javascript-fy.html
-//     var currentIndex = array.length, temporaryValue, randomIndex;
-//     // While there remain elements to shuffle...
-//     while (currentIndex !== 0) {
-//     // Pick a remaining element...
-//     randomIndex = Math.floor(Math.random() * currentIndex);
-//     currentIndex -= 1;
-//     // Swap it with the current element.
-//     temporaryValue = array[currentIndex];
-//     array[currentIndex] = array[randomIndex];
-//     array[randomIndex] = temporaryValue;
-//     }
-//     return array;
-// }
-
-// const drawHand = (deck) => {
-//     let h = []
-//         for(let i = 0; i < 5; i++) {
-//             let card = deck.pop()
-//             h.push(card)
-//         }
-//     return h
-// }
-
-// let shuffledDeck = shuffle(testDeck);
-// let initialHand = drawHand(shuffledDeck)
-
-
 
 const shuffle = (array) => {
     // console.log(array, "SHUFFLE");
@@ -155,24 +48,30 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const [hand, setHand] = useState([])
     const [deck, setDeck] = useState(playerdeck)
 
+    //Health point display and counter
     const [playerHealth, setPlayerHealth] = useState(1000)
     const [opponentHealth, setOpponentHealth] = useState(1000)
 
-
+    //Phase controllers for action unlock
     const [drawPhase, setDrawPhase] = useState(false)
     const [placementPhase, setPlacementPhase] = useState(false)
     const [combatPhase, setCombatPhase] = useState(false)
 
+    //Not actual data stores -- just ints for amount displays
     const [opponentHand, setOpponentHand] = useState(5)
     const [opponentDeck, setOpponentDeck] = useState(5)
 
+    //Selected contains card instance object
     const [selected, setSelected] = useState(null)
+
+    //Unit placed prevents multiple units being placed in a turn
     const [unitPlaced, setUnitPlaced] = useState(false)
     const [trapPlaced, setTrapPlaced] = useState(false)
 
     const [selectedUnit, setSelectedUnit] = useState(null)
     const [ selUnitSlot, setSelUnitSlot ] = useState(null)
 
+    //Has Attacked state contains array of unit slots that have attacked this turn
     const [hasAttacked, setHasAttacked] = useState([])
     const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null)
     const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null)
@@ -182,12 +81,13 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null)
     const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null)
 
+    //Log controls
     const [log, setLog] = useState(["Game Started!"]);
     const [logToggle, setLogToggle] = useState(false);
 
     // ---------- HELPERS ---------- \\
 
-
+    //Handles clicking on cards in hand
     const handSelector = (int) => {
         setSelected(hand[int])
         console.log(hand[int])
@@ -197,25 +97,24 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         }
     }
 
+    //Removes cards from hand by using card instance id
     const removeFromHand = (card) => {
         let h = [...hand]
-        console.log('REMOVE FROM HAND CARD', card)
-        console.log('REMOVE FROM HAND HAND', h)
         h.filter(c => c.id != card.id)
-        console.log('REMOVE FROM HAND POST FILTER HAND', h)
         setHand(h.filter(c => c.id != card.id));
     }
     
     // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
-
+        //Game setup, shuffles deck and draws 5 cards for hand
         let shuffledDeck = shuffle(playerdeck);
         let initialHand = drawHand(shuffledDeck)
         setDeck(shuffledDeck);
         setHand(initialHand);
-        console.log(initialHand)
 
+        //Checks to see if this client is first in turn order
         if(turnOrder[0] === user.id){
+            //Tells back end this client is beginning turn
             socket.emit('start_draw_phase', {
                 user_id:user.id,
                 room_id:room_id,
@@ -225,41 +124,59 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
         // ---------- DRAW PHASE ---------- \\
 
+        //Notifies both clients when one client starts draw phase
         socket.on("draw_phase_start", data => {
+            //Checks to see if it's this client's turn
             if(data.user_id === user.id) {
+                //Deck check sends "game lost" if there are no more cards in deck
                 if(deckCheck()){
                     setDrawPhase(true);
                     setLog((prev) => ['draw phase start!', data.log, ...prev])
                 }
             }
+            //Updates both users' turn count
             setTurnNumber(data.turn_number);
         })
 
+
+        //Updates both clients on user card draw
         socket.on("card_drawn", data => {
+            //If this client drew card
             if(data.user_id === user.id) {
+                //Deactivates draw phase
                 setDrawPhase(false);
+                //Tells backed this client is starting next phase
                 socket.emit("start_placement_phase", {
                     user_id: user.id,
                     room_id: room_id,
                 })
             }else {
+                //If this client did not draw card, the other user did 
+                //updates opponent info
                 setOpponentHand(data.hand_size);
                 setOpponentDeck(data.deck_size);
             }
+            //Updates' both client's logs with the same info
             setLog((prev) => [data.log, ...prev])
         })
 
         // ---------- PLACEMENT PHASE ---------- \\
 
+        //Notifies both clients that someone has started placement phase
         socket.on("placement_phase_start", data => {
+            //If this user is starting placement phase
             if(data.user_id === user.id) {
+                //Activate placement phase
                 setLog((prev) => ['Placement Phase Start!', ...prev])
                 setPlacementPhase(true);
             }
         })
 
+        //Notifies both clients that unit card was placed
         socket.on("unit_placed", data => {
+            //If this user placed card
             if(data.user_id === user.id) {
+                //Checks which slot unit was placed in
                 if(data.unit_slot == 1){
                     setPlayerUnitSlot1(data.card_type)
                 }
@@ -270,6 +187,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     setPlayerUnitSlot3(data.card_type)
                 }
             }else{
+                //If other user placed card
+                //Update appropriate opponent slots
                 if(data.unit_slot == 1){
                     setOpponentUnitSlot1(data.card_type)
                 }
@@ -281,15 +200,21 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 }
                 setOpponentHand(data.hand_size)
             }
+
+            //Updates logs of both clients
             setLog((prev) => [data.log, ...prev])
         })
 
+        //Spell Used updates both clients when a spell is used
         socket.on("spell_used", data => {
+            //if this client used spell
             if(data.user_id === user.id){
-                if(data.opp_health) {
-                    setOpponentHealth(data.opp_health)
-                }
+                //Updates opponent health if changes
+                if(data.opp_health) setOpponentHealth(data.opp_health)
+
+                //updates user health if changes
                 if(data.user_health) {
+                    //ends game of spell kills client
                     if(data.user_health <= 0) {
                         socket.emit('end_game', {
                             loser_id:user.id,
@@ -299,9 +224,18 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     setPlayerHealth(data.user_health)
                 }
             }else {
-                if(data.opp_health) {
-                    setPlayerHealth(data.opp_health)
-                }
+                //If opponent used spell 
+
+                //Updates deck if changes
+                if(data.deck_size) setOpponentDeck(data.deck_size)
+
+                //Updates hand if changes
+                if(data.hand_size) setOpponentHand(data.hand_size)
+
+                //Updates opponent health if changes 
+                if(data.opp_health) setPlayerHealth(data.opp_health)
+
+                //updates user health if changes
                 if(data.user_health) {
                     if(data.user_health <= 0) {
                         socket.emit('end_game', {
@@ -312,22 +246,31 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     setOpponentHealth(data.user_health)
                 }
             }
+
+            //Updates log of both users
             setLog((prev) => [data.log, ...prev])
         })
 
         // ---------- COMBAT PHASE ---------- \\
 
+        //Updates both clients that combat phase has started
         socket.on("combat_phase_start", data => {
+            //If this client combat phase
             if (data.user_id === user.id){
+                //Ends placement phase, begins combat phase
                 setPlacementPhase(false)
                 setCombatPhase(true)
             }
+            //Updates log of both clients
             setLog((prev) => [data.log, ...prev])
         })
 
+        //Updates both clients when unit was placed
         socket.on('unit_attack', data => {
-            console.log(data);
+            //if this client attacked
             if(data.user_id === user.id){
+                
+                //If new health is below 1, end game
                 if(data.target_health < 1){
                     let loserId;
                     if(turnOrder[0] === user.id){
@@ -341,100 +284,64 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     })
                     return;
                 }
+
+                //Updates both clients' health
                 setOpponentHealth(data.target_health);
                 setPlayerHealth(data.user_health);
-                if(data.loss){
+
+                //If combat was a loss, destroy player unit that attacked
+                if(data.loss || data.tie){
                     if(data.attacker_slot === 1) setPlayerUnitSlot1(null)
                     if(data.attacker_slot === 2) setPlayerUnitSlot2(null)
                     if(data.attacker_slot === 3) setPlayerUnitSlot3(null)
                 }
+
+                //If combat was a win or tie, destroys opponent's monster
                 if((data.defender_slot === 1) && !data.loss){
                     setOpponentUnitSlot1(null);
-                    if(data.tie && data.attacker_slot === 1){
-                        setPlayerUnitSlot1(null);
-                    }
-                    if(data.tie && data.attacker_slot === 2){
-                        setPlayerUnitSlot2(null);
-                    }
-                    if(data.tie && data.attacker_slot === 3){
-                        setPlayerUnitSlot3(null);
-                    }
                 }
                 if((data.defender_slot === 2) && !data.loss){
                     setOpponentUnitSlot2(null);
-                    if(data.tie && data.attacker_slot === 1){
-                        setPlayerUnitSlot1(null);
-                    }
-                    if(data.tie && data.attacker_slot === 2){
-                        setPlayerUnitSlot2(null);
-                    }
-                    if(data.tie && data.attacker_slot === 3){
-                        setPlayerUnitSlot3(null);
-                    }
                 }
                 if((data.defender_slot === 3) && !data.loss){
                     setOpponentUnitSlot3(null);
-                    if(data.tie && data.attacker_slot === 1){
-                        setPlayerUnitSlot1(null);
-                    }
-                    if(data.tie && data.attacker_slot === 2){
-                        setPlayerUnitSlot2(null);
-                    }
-                    if(data.tie && data.attacker_slot === 3){
-                        setPlayerUnitSlot3(null);
-                    }
                 }
             }else {
+                //If other user attacked
+                //Update both players' health
                 setPlayerHealth(data.target_health);
                 setOpponentHealth(data.user_health);
-                if(data.loss){
+
+                //Destroy attacking monster if loss or tie
+                if(data.loss || data.tie){
                     if(data.attacker_slot === 1) setOpponentUnitSlot1(null)
                     if(data.attacker_slot === 2) setOpponentUnitSlot2(null)
                     if(data.attacker_slot === 3) setOpponentUnitSlot3(null)
                 }
+
+                //Destroy defending monster if loss or tie
                 if(data.defender_slot === 1  && !data.loss){
                     setPlayerUnitSlot1(null);
-                    if(data.tie && data.attacker_slot === 1){
-                        setOpponentUnitSlot1(null);
-                    }
-                    if(data.tie && data.attacker_slot === 2){
-                        setOpponentUnitSlot2(null);
-                    }
-                    if(data.tie && data.attacker_slot === 3){
-                        setOpponentUnitSlot3(null);
-                    }
                 }
                 if(data.defender_slot === 2  && !data.loss){
                     setPlayerUnitSlot2(null);
-                    if(data.tie && data.attacker_slot === 1){
-                        setOpponentUnitSlot1(null);
-                    }
-                    if(data.tie && data.attacker_slot === 2){
-                        setOpponentUnitSlot2(null);
-                    }
-                    if(data.tie && data.attacker_slot === 3){
-                        setOpponentUnitSlot3(null);
-                    }
                 }
                 if(data.defender_slot === 3  && !data.loss){
                     setPlayerUnitSlot3(null);
-                    if(data.tie && data.attacker_slot === 1){
-                        setOpponentUnitSlot1(null);
-                    }
-                    if(data.tie && data.attacker_slot === 2){
-                        setOpponentUnitSlot2(null);
-                    }
-                    if(data.tie && data.attacker_slot === 3){
-                        setOpponentUnitSlot3(null);
-                    }
                 }
             
         }
+
+        //Updates both clients log
         setLog((prev) => [data.log, ...prev])
     })
 
     // ---------- END TURN ---------- \\
+
+    //Ends turn
         socket.on('turn_ended', data => {
+            //If user who just had turn,
+            //Resets all relevant values
             if (data.user_id === user.id){
                 setCombatPhase(false)
                 setUnitPlaced(false)
@@ -443,18 +350,21 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 setSelUnitSlot(null)
                 setHasAttacked([])
                 setSelected(null)
+                //Sends next user's ID to backend
                 let userId;
                 if(turnOrder[0] === user.id){
                     userId = turnOrder[1]
                 }else{
                     userId = turnOrder[0]
                 }
+                //Tells backend to start next turn
                 socket.emit("start_draw_phase", {
                     room_id:room_id,
                     user_id: userId,
                     turn_number: turnNumber + 1
                 })
             }
+            //Updates both clients
             setLog((prev) => [data.log, ...prev])
         })
 
@@ -462,17 +372,20 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
     // ---------- DRAW PHASE ---------- \\
 
+    //Deck check will end the game if unable to draw card
     const deckCheck = () => {
-        console.log('Deck check!!', deck)
         if(deck.length === 0){
             socket.emit("end_game", {
                 loser_id:user.id,
                 room_id:room_id
             })
+            return false;
         }
         return true;
     }
 
+
+    //Adds card to hand, and emits draw event to both clients
     const drawButtonHandler = () => {
         drawCard()
         socket.emit('draw_card', {
@@ -484,6 +397,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         })
     }
 
+    //Adds card to hand and removes it from deck
     const drawCard = () => {
         let d = [...deck]
         let h = [...hand]
@@ -496,10 +410,16 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     // ---------- PLACEMENT PHASE ---------- \\
 
     const playerUnitSlotHandler = (int) => {
+        //Handles placing unit cards from hand AND selecting unit for combat
+        //Must be placement phase, have a unit card selected, and not placed a card yet this turn
         if(placementPhase && selected && (selected.card_type.type === 'unit') && !unitPlaced){
+
+            //Prevents placing cards on taken slots
             if(int === 1 && playerUnitSlot1) return;
             if(int === 2 && playerUnitSlot2) return;
             if(int === 3 && playerUnitSlot3) return;
+
+            //Sends info to backend
             socket.emit('place_unit', {
                 room_id:room_id,
                 user_id: user.id,
@@ -508,10 +428,16 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 unit_slot: int,
                 log: `${user.username} places ${selected.name}`
             })
+
+            //Resets selected
             setSelected(null);
+            //prevents multiple placements
             setUnitPlaced(true);
+            //Removes card from hand
             removeFromHand(selected)
         }
+
+        //COMBAT PHASE selector
         if(combatPhase){
             if(int === 1 && playerUnitSlot1) {
                 setSelectedUnit(playerUnitSlot1);
@@ -529,11 +455,17 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     }
 
     const spellEffect = (card) => {
+        //Spell Effect parses spell card effect into backend Message
+
+        //Splits str to array and grabs needed info
         const effArr = card.effect.split(':')
         const effType = effArr[0]
         const effAmt = effArr[1]
 
+        //Switch parses effect type and emits use spell to update clients
         switch(effType) {
+
+            //Damage deals direct damage to opponent's health
             case 'damage':
                 const oh = opponentHealth - Number(effAmt);
                 socket.emit('use_spell', {
@@ -545,6 +477,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     log: `${user.username} activates ${card.name}!  ${effAmt} Damage!`
                 })
                 break;
+
+            //Heal heals player's health
             case 'heal':
                 const ph = playerHealth + Number(effAmt)
                 socket.emit('use_spell', {
@@ -555,11 +489,27 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     log: `${user.username} activates ${card.name}!  ${effAmt} Healed!`
                 })
                 break;
+
+            //Draw amt of cards from deck
+            case 'draw':
+                for(let i = 0; i < effAmt; i++){
+                    drawCard()
+                }
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    hand_size: hand.length, 
+                    deck_size: deck.length,
+                    log: `${user.username} activates ${card.name}! ${effAmt} cards drawn!`
+                })
+                break;
         }
     }
 
     // ---------- COMBAT PHASE ---------- \\
     const beginCombatPhase = () => {
+        //Combat phase emitter
+        //Rules prohibit combat on turn 1.  Ends turn if pressed on turn 1.
         if(turnNumber === 1){
             setPlacementPhase(false)
             socket.emit('end_turn', {
@@ -569,6 +519,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 log: `${user.username} ends their turn.`
             })
         }else {
+            //Progresses both clients to combat phase
             socket.emit('start_combat_phase', {
                 room_id:room_id,
                 user_id: user.id,
@@ -578,15 +529,23 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     }
 
     const opponentUnitSlotHandler = (int) => {
+        //Handles opponent unit slot targeting for combat.
+
         if(opponentUnitSlot1 || opponentUnitSlot2 || opponentUnitSlot3){
+
+            //If opponent has a unit on the field, you cannot target an empty slot to attack them directly.
             if(int === 1 && !opponentUnitSlot1) return;
             if(int === 2 && !opponentUnitSlot2) return;
             if(int === 3 && !opponentUnitSlot3) return;
 
+            //Checks that selected unit can attack
             if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
-                hasAttacked.push(int)
+                //pushes unit onto limiter array to prevent second attack
+                setHasAttacked((prev) => prev.push(int))
                 let results;
                 let targetName;
+
+                //Does math
                 if(int === 1){
                     results = selectedUnit.attack - opponentUnitSlot1.defense
                     targetName = opponentUnitSlot1.name
@@ -599,6 +558,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     results = selectedUnit.attack - opponentUnitSlot3.defense
                     targetName = opponentUnitSlot3.name
                 }
+
+                //Calculates health points and losses
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
                 let loss = false;
@@ -613,7 +574,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if (results === 0){
                     tie = true;
                 }
-    
+
+                //Sends results to both clients
                 socket.emit('attack', {
                     room_id:room_id,
                     user_id:user.id,
@@ -628,13 +590,20 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 })
             }
         }else{
+            //Handles attacking an undefended opponent
+            //Must have unit selected and be able to attack
             if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
-                hasAttacked.push(int)
+
+                //pushes unit onto limiter array to prevent second attack
+                setHasAttacked((prev) => prev.push(int))
+
+                //Calculates damage
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
 
                 targetHealth -= selectedUnit.attack
 
+                //Does the same thing all the other emits do
                 socket.emit('attack', {
                     room_id:room_id,
                     user_id:user.id,
@@ -649,7 +618,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         }        
     }
 
-
+    //Sends the end turn thing on the button
     const endTurnHandler = () => {
         socket.emit('end_turn', {
             room_id: room_id,
@@ -659,8 +628,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         })
     }
 
-    let logStyle = styles.logWrapperSmall
-    let lsToggle = false;
+    //Toggles expanded log size
     const expandLogHandler = () => {
         setLogToggle((prev) => !prev)
     }

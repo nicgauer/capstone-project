@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
+import {addWin, addLoss} from '../../services/postgame'
 
 const endPoint = "http://localhost:5000"
 // const endPoint = "https://super-battle-cards.herokuapp.com"
@@ -47,8 +48,10 @@ const MatchmakingLobby = () => {
 
     socket.on("game_ended", data => {
         if(data.loser_id === user.id){
+            addWin(user.id)
             setGameLost(true);
         }else{
+            addLoss(user.id)
             setGameWon(true);
         }
     })
