@@ -138,10 +138,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             //Checks to see if it's this client's turn
             if(data.user_id === user.id) {
                 //Deck check sends "game lost" if there are no more cards in deck
-                if(deckCheck()){
-                    setDrawPhase(true);
-                    setLog((prev) => ['draw phase start!', data.log, ...prev])
-                }
+                setDrawPhase(true);
+                setLog((prev) => ['draw phase start!', data.log, ...prev])
             }
             //Updates both users' turn count
             setTurnNumber(data.turn_number);
@@ -224,7 +222,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 //updates user health if changes
                 if(data.user_health) {
                     //ends game of spell kills client
-                    if(data.user_health <= 0) {
+                    if(data.user_health < 0) {
                         socket.emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
@@ -242,18 +240,18 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if(data.hand_size) setOpponentHand(data.hand_size)
 
                 //Updates opponent health if changes 
-                if(data.opp_health) setPlayerHealth(data.opp_health)
-
-                //updates user health if changes
-                if(data.user_health) {
-                    if(data.user_health <= 0) {
+                if(data.opp_health) {
+                    if(data.opp_health <= 0) {
                         socket.emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
                         })
                     }
-                    setOpponentHealth(data.user_health)
+                    setPlayerHealth(data.opp_health)
                 }
+
+                //updates user health if changes
+                if(data.user_health) setOpponentHealth(data.user_health)
             }
 
             //Updates log of both users
@@ -390,29 +388,28 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
     // ---------- DRAW PHASE ---------- \\
 
-    //Deck check will end the game if unable to draw card
-    const deckCheck = () => {
-        if(deck.length === 0){
-            socket.emit("end_game", {
-                loser_id:user.id,
-                room_id:room_id
-            })
-            return false;
-        }
-        return true;
-    }
-
-
     //Adds card to hand, and emits draw event to both clients
     const drawButtonHandler = () => {
-        drawCard()
-        socket.emit('draw_card', {
-            room_id:room_id,
-            user_id: user.id,
-            hand_size: (hand.length + 1),
-            deck_size: (deck.length - 1),
-            log: `${user.username} draws card!`
-        })
+        //Checks deck length to make sure there are cards left
+        if(deck.length > 0){
+            //Draws card and modifies both hand and deck
+            drawCard()
+            //Updates both users about it
+            socket.emit('draw_card', {
+                room_id:room_id,
+                user_id: user.id,
+                hand_size: (hand.length + 1),
+                deck_size: (deck.length - 1),
+                log: `${user.username} draws card!`
+            })
+        }else{
+            //Emits end game if player cannot draw
+            socket.emit('end_game', {
+                loser_id:user.id,
+                room_id:room_id,
+            })
+
+        }
     }
 
     //Adds card to hand and removes it from deck
@@ -444,7 +441,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 hand_size: (hand.length - 1),
                 card_type: selected.card_type,
                 unit_slot: int,
-                log: `${user.username} places ${selected.name}`
+                log: `${user.username} places ${selected.card_type.name}`
             })
 
             //Resets selected
@@ -557,9 +554,9 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             if(int === 3 && !opponentUnitSlot3) return;
 
             //Checks that selected unit can attack
-            if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+            if(combatPhase && selectedUnit && !hasAttacked.includes(selUnitSlot)){
                 //pushes unit onto limiter array to prevent second attack
-                setHasAttacked((prev) => prev.push(int))
+                setHasAttacked([...hasAttacked, selUnitSlot])
                 let results;
                 let targetName;
 
@@ -610,10 +607,10 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         }else{
             //Handles attacking an undefended opponent
             //Must have unit selected and be able to attack
-            if(combatPhase && selectedUnit && !hasAttacked.includes(int)){
+            if(combatPhase && selectedUnit && !hasAttacked.includes(selUnitSlot)){
 
                 //pushes unit onto limiter array to prevent second attack
-                setHasAttacked((prev) => prev.push(int))
+                setHasAttacked([...hasAttacked, selUnitSlot])
 
                 //Calculates damage
                 let userHealth = playerHealth

@@ -17,6 +17,7 @@ const CardCollection = () => {
             }
             const allCards = await getUserCards(user.id);
             organizedCards.allCards = allCards.cards;
+            organizedCards.decks = allCards.decks;
             allCards.cards.forEach(card => {
                 if(card.deck_id){
                     if(organizedCards[card.deck_id]) {

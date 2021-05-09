@@ -4,10 +4,10 @@ import styles from './CollectionDisplay.module.css';
 import { addCardToDeck } from '../../services/deck';
 
 const CollectionDisplay = ({cards}) => {
-    const decks = Object.keys(cards).filter(key => (key !== 'allCards') && (key !== 'box'))
+    const decks = [...cards.decks]
     const [displaying, setDisplaying] = useState(cards.allCards);
     const [dropdown, setDropdown] = useState('allCards')
-    const [selectedDropdown, setSelectedDropdown] = useState(decks[0])
+    const [selectedDropdown, setSelectedDropdown] = useState(decks[0].id)
     const [selected, setSelected] = useState(null);
 
     const displaySelectHandler = (e) => {
@@ -26,6 +26,7 @@ const CollectionDisplay = ({cards}) => {
         let b = [...cards.box]
         b.splice(b.findIndex(c => c.id == selected.id), 1);
         cards.box = b;
+        console.log(selectedDropdown)
         cards[selectedDropdown].push(selected);
         setSelected(null);
         setDisplaying(cards.box);
@@ -37,7 +38,9 @@ const CollectionDisplay = ({cards}) => {
                 <select
                     value={dropdown}
                     onChange={displaySelectHandler}>
-                    {Object.keys(cards).map(key => <option key={key} value={key}>{key}</option>)}
+                    {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
+                    <option value={"allCards"}>All Cards</option>
+                    <option value={"box"}>Unassigned Cards</option>
                 </select>
                 {selected && (<div>
                         <h1>Selected Card</h1>
@@ -48,7 +51,7 @@ const CollectionDisplay = ({cards}) => {
                                 value={selectedDropdown}
                                 onChange={(e) => setSelectedDropdown(e.target.value)}
                                 >
-                                {decks.map(key => <option key={key} value={key}>{key}</option>)}
+                                {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
                             </select>
                             <button onClick={addToDeck}>Add to deck</button>
                         </div>}

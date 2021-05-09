@@ -29,6 +29,35 @@ export const authenticate = () => async (dispatch) => {
     
 }
 
+export const addWin = (id) => async (dispatch) => {
+    const response = await fetch(`/api/users/w/${id}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    const data = await response.json();
+    console.log(data, "add win")
+    if (data.errors) {
+        return;
+    }
+    dispatch(setUser(data))
+}
+
+export const addLoss = (id) => async (dispatch) => {
+    const response = await fetch(`/api/users/l/${id}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    const data = await response.json();
+    if (data.errors) {
+        return;
+    }
+    dispatch(setUser(data))
+}
+
+
+
 export const login = (email, password) => async (dispatch) => {
     const response = await fetch('/api/auth/login', {
         method: 'POST',

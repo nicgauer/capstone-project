@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import { NavLink } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
-import {addWin, addLoss} from '../../services/postgame'
+import {addWin, addLoss} from '../../store/session'
 
 const endPoint = "http://localhost:5000"
 // const endPoint = "https://super-battle-cards.herokuapp.com"
@@ -12,6 +12,7 @@ const socket = io(endPoint);
 
 const MatchmakingLobby = () => {
     const user = useSelector(state => state.session.user);
+    const dispatch = useDispatch();
     const [decks, setDecks] = useState(null);
     const [selectedDeck, setSelectedDeck] = useState(null);
     const [gameFound, setGameFound] = useState(false);
@@ -47,13 +48,13 @@ const MatchmakingLobby = () => {
         setGameFound(true)
     })
 
-    socket.on("game_ended", data => {
+    socket.on("game_ended", async data => {
         if(data.loser_id === user.id){
-            addWin(user.id)
             setGameLost(true);
+            await dispatch(addLoss(user.id))
         }else{
-            addLoss(user.id)
             setGameWon(true);
+            await dispatch(addWin(user.id))
         }
     })
     }, [])
