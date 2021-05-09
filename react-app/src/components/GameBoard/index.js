@@ -101,15 +101,21 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         setSelected(hand[int])
         console.log(hand[int])
         if(placementPhase && hand[int].card_type.type === 'spell'){
-            spellEffect(hand[int].card_type)
-            removeFromHand(hand[int])
+            if(hand[int].card_type.effect.split(':')[0] === 'draw'){
+                console.log('hit if statement!!!')
+                spellEffect(hand[int].card_type)
+                drawCardSpell(hand[int].card_type.effect.split(':')[1], hand[int].id)
+            }else {
+                spellEffect(hand[int].card_type)
+                removeFromHand(hand[int])
+            }
+            
         }
     }
 
     //Removes cards from hand by using card instance id
     const removeFromHand = (card) => {
         let h = [...hand]
-        h.filter(c => c.id != card.id)
         setHand(h.filter(c => c.id != card.id));
     }
     
@@ -216,6 +222,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         socket.on("spell_used", data => {
             //if this client used spell
             if(data.user_id === user.id){
+
                 //Updates opponent health if changes
                 if(data.opp_health) setOpponentHealth(data.opp_health)
 
@@ -230,6 +237,30 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     }
                     setPlayerHealth(data.user_health)
                 }
+
+                //Handles destruction effects
+                if(data.destroy) {
+                    if(data.destroy.includes(1)) {
+                        setOpponentUnitSlot1(null);
+                        explosionHandler(4)
+                    }
+                    if(data.destroy.includes(2)) {
+                        setOpponentUnitSlot2(null);
+                        explosionHandler(5)
+                    }
+                    if(data.destroy.includes(3)) {
+                        setOpponentUnitSlot3(null);
+                        explosionHandler(6)
+                    }
+                }
+
+                //Handle stat changes
+                if(data.pu1) setPlayerUnitSlot1(data.pu1)
+                if(data.pu2) setPlayerUnitSlot2(data.pu2)
+                if(data.pu3) setPlayerUnitSlot3(data.pu3)
+                if(data.ou1) setOpponentUnitSlot1(data.ou1)
+                if(data.ou2) setOpponentUnitSlot2(data.ou2)
+                if(data.ou3) setOpponentUnitSlot3(data.ou3)
             }else {
                 //If opponent used spell 
 
@@ -252,6 +283,30 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
                 //updates user health if changes
                 if(data.user_health) setOpponentHealth(data.user_health)
+
+                //Handles destruction effects
+                if(data.destroy) {
+                    if(data.destroy.includes(1)) {
+                        setPlayerUnitSlot1(null);
+                        explosionHandler(1)
+                    }
+                    if(data.destroy.includes(2)) {
+                        setPlayerUnitSlot2(null);
+                        explosionHandler(2)
+                    }
+                    if(data.destroy.includes(3)) {
+                        setPlayerUnitSlot3(null);
+                        explosionHandler(3)
+                    }
+                }
+
+                //Handle stat changes
+                if(data.pu1) setOpponentUnitSlot1(data.pu1)
+                if(data.pu2) setOpponentUnitSlot2(data.pu2)
+                if(data.pu3) setOpponentUnitSlot3(data.pu3)
+                if(data.ou1) setPlayerUnitSlot1(data.ou1)
+                if(data.ou2) setPlayerUnitSlot2(data.ou2)
+                if(data.ou3) setPlayerUnitSlot3(data.ou3)
             }
 
             //Updates log of both users
@@ -393,7 +448,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         //Checks deck length to make sure there are cards left
         if(deck.length > 0){
             //Draws card and modifies both hand and deck
-            drawCard()
+            drawCard(1)
             //Updates both users about it
             socket.emit('draw_card', {
                 room_id:room_id,
@@ -422,6 +477,19 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         setDeck(d)
     }
 
+    const drawCardSpell = (amt, card_id) => {
+        let d = [...deck]
+        let th = [...hand]
+        let h = th.filter(c => c.id != card_id);
+        for(let i = 0; i < amt; i++){
+            console.log('Draw Card Spell Loop', h)
+            let card = d.pop()
+            h.push(card)
+        }
+        setDeck(d)
+        setHand(h)
+    }
+
     // ---------- PLACEMENT PHASE ---------- \\
 
     const playerUnitSlotHandler = (int) => {
@@ -429,11 +497,25 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         //Must be placement phase, have a unit card selected, and not placed a card yet this turn
         if(placementPhase && selected && (selected.card_type.type === 'unit') && !unitPlaced){
 
-            //Prevents placing cards on taken slots
-            if(int === 1 && playerUnitSlot1) return;
-            if(int === 2 && playerUnitSlot2) return;
-            if(int === 3 && playerUnitSlot3) return;
+            //If has evolution,
+            //Evolution mechanic restraints
+            if(selected.card_type.evolution_name) {
+                if(int === 1 && !playerUnitSlot1) return;
+                if(int === 2 && !playerUnitSlot2) return;
+                if(int === 3 && !playerUnitSlot3) return;
+                
+                if(int === 1 && playerUnitSlot1.name != selected.card_type.evolution_name) return;
+                if(int === 2 && playerUnitSlot2.name != selected.card_type.evolution_name) return;
+                if(int === 3 && playerUnitSlot3.name != selected.card_type.evolution_name) return;
+            }else {
+                //If no evolution
+                //Prevents placing cards on taken slots
+                if(int === 1 && playerUnitSlot1) return;
+                if(int === 2 && playerUnitSlot2) return;
+                if(int === 3 && playerUnitSlot3) return;
+            }
 
+            
             //Sends info to backend
             socket.emit('place_unit', {
                 room_id:room_id,
@@ -476,10 +558,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         const effArr = card.effect.split(':')
         const effType = effArr[0]
         const effAmt = effArr[1]
+        let targets = [];
+        let payload = {}
 
         //Switch parses effect type and emits use spell to update clients
         switch(effType) {
-
             //Damage deals direct damage to opponent's health
             case 'damage':
                 const oh = opponentHealth - Number(effAmt);
@@ -507,17 +590,205 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
             //Draw amt of cards from deck
             case 'draw':
-                for(let i = 0; i < effAmt; i++){
-                    drawCard()
+                if(deck.length - effAmt <= 0){
+                    socket.emit('end_game', {
+                        loser_id:user.id,
+                        room_id:room_id
+                    })
+                }else{
+                    socket.emit('use_spell', {
+                        room_id: room_id,
+                        user_id: user.id,
+                        hand_size: hand.length - effAmt, 
+                        deck_size: deck.length - effAmt,
+                        log: `${user.username} activates ${card.name}! ${effAmt} cards drawn!`
+                    })
                 }
+                break;
+
+            //Destroys opposing units with defense below a certain amount
+            case 'destroyOpponentUnitsBelowDef':
+                if(opponentUnitSlot1 && opponentUnitSlot1.defense < effAmt) targets.push(1)
+                if(opponentUnitSlot2 && opponentUnitSlot2.defense < effAmt) targets.push(2)
+                if(opponentUnitSlot3 && opponentUnitSlot3.defense < effAmt) targets.push(3)
+                
                 socket.emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
-                    hand_size: hand.length, 
-                    deck_size: deck.length,
-                    log: `${user.username} activates ${card.name}! ${effAmt} cards drawn!`
+                    destroy: targets,
+                    log: `${user.username} activates ${card.name}!  ${targets.length} units destroyed!`
                 })
-                break;
+            break;
+            
+            case 'destroyOpponentUnitsAboveDef':
+                if(opponentUnitSlot1 && opponentUnitSlot1.defense > effAmt) targets.push(1)
+                if(opponentUnitSlot2 && opponentUnitSlot2.defense > effAmt) targets.push(2)
+                if(opponentUnitSlot3 && opponentUnitSlot3.defense > effAmt) targets.push(3)
+                
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    destroy: targets,
+                    log: `${user.username} activates ${card.name}!  ${targets.length} units destroyed!`
+                })
+            break;
+
+            case 'destroyOpponentUnitsBelowAtt':
+                if(opponentUnitSlot1 && opponentUnitSlot1.attack < effAmt) targets.push(1)
+                if(opponentUnitSlot2 && opponentUnitSlot2.attack < effAmt) targets.push(2)
+                if(opponentUnitSlot3 && opponentUnitSlot3.attack < effAmt) targets.push(3)
+                
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    destroy: targets,
+                    log: `${user.username} activates ${card.name}!  ${targets.length} units destroyed!`
+                })
+            break;
+
+            case 'destroyOpponentUnitsAboveAtt':
+                if(opponentUnitSlot1 && opponentUnitSlot1.attack > effAmt) targets.push(1)
+                if(opponentUnitSlot2 && opponentUnitSlot2.attack > effAmt) targets.push(2)
+                if(opponentUnitSlot3 && opponentUnitSlot3.attack > effAmt) targets.push(3)
+                
+                socket.emit('use_spell', {
+                    room_id: room_id,
+                    user_id: user.id,
+                    destroy: targets,
+                    log: `${user.username} activates ${card.name}!  ${targets.length} units destroyed!`
+                })
+            break;
+
+            case 'increaseAllAttack':
+                payload.room_id = room_id
+                payload.user_id = user.id
+
+                //Clone each card object and modify necessary values
+                if(playerUnitSlot1) {
+                    let t = {...playerUnitSlot1}
+                    console.log(t)
+                    t.attack = Number(t.attack) + Number(effAmt);
+                    payload.pu1 = t;
+                }
+
+                if(playerUnitSlot2) {
+                    let t = {...playerUnitSlot2}
+                    console.log(t)
+                    t.attack = Number(t.attack) + Number(effAmt);
+                    payload.pu2 = t;
+                }
+
+                if(playerUnitSlot3) {
+                    let t = {...playerUnitSlot3}
+                    console.log(t)
+                    t.attack = Number(t.attack) + Number(effAmt);
+                    payload.pu3 = t;
+                }
+
+                //Adds to log
+                payload.log = `${user.username} plays ${card.name}!  Powers up all units' attack by ${effAmt}`
+
+                //Payload is a variable used that contains all necessary info
+                socket.emit('use_spell', payload);
+            break;
+
+            case 'increaseAllDefense':
+                payload.room_id = room_id
+                payload.user_id = user.id
+
+                //Clone each card object and modify necessary values
+                if(playerUnitSlot1) {
+                    let t = {...playerUnitSlot1}
+                    t.defense += Number(effAmt);
+                    payload.pu1 = t;
+                }
+
+                if(playerUnitSlot2) {
+                    let t = {...playerUnitSlot2}
+                    t.defense += Number(effAmt);
+                    payload.pu2 = t;
+                }
+
+                if(playerUnitSlot3) {
+                    let t = {...playerUnitSlot3}
+                    t.defense += Number(effAmt);
+                    payload.pu3 = t;
+                }
+
+                //Adds to log
+                payload.log = `${user.username} plays ${card.name}!  Powers up all units' defense by ${effAmt}`
+
+                //Payload is a variable used that contains all necessary info
+                socket.emit('use_spell', payload);
+            break;
+
+            case 'decreaseAllAttack':
+                payload.room_id = room_id
+                payload.user_id = user.id
+
+                //Clone each card object and modify necessary values
+                if(opponentUnitSlot1) {
+                    let t = {...opponentUnitSlot1}
+                    t.attack -= Number(effAmt);
+                    if(t.attack < 0) t.attack = 0
+                    payload.ou1 = t;
+                }
+
+                if(opponentUnitSlot2) {
+                    let t = {...opponentUnitSlot2}
+                    t.attack -= Number(effAmt);
+                    if(t.attack < 0) t.attack = 0
+                    payload.ou2 = t;
+                }
+
+                if(opponentUnitSlot3) {
+                    let t = {...opponentUnitSlot3}
+                    t.attack -= Number(effAmt);
+                    if(t.attack < 0) t.attack = 0
+                    payload.ou3 = t;
+                }
+
+                //Adds to log
+                payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' attack by ${effAmt}`
+
+                //Payload is a variable used that contains all necessary info
+                socket.emit('use_spell', payload);
+            break;
+
+            
+            case 'decreaseAllDefense':
+                payload.room_id = room_id
+                payload.user_id = user.id
+
+                //Clone each card object and modify necessary values
+                if(opponentUnitSlot1) {
+                    let t = {...opponentUnitSlot1}
+                    t.defense -= Number(effAmt);
+                    if(t.defense < 0) t.defense = 0
+                    payload.ou1 = t;
+                }
+
+                if(opponentUnitSlot2) {
+                    let t = {...opponentUnitSlot2}
+                    t.defense -= Number(effAmt);
+                    if(t.defense < 0) t.defense = 0
+                    payload.ou2 = t;
+                }
+
+                if(opponentUnitSlot3) {
+                    let t = {...opponentUnitSlot3}
+                    t.defense -= Number(effAmt);
+                    if(t.defense < 0) t.defense = 0
+                    payload.ou3 = t;
+                }
+
+                //Adds to log
+                payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' attack by ${effAmt}`
+
+                //Payload is a variable used that contains all necessary info
+                socket.emit('use_spell', payload);
+            break;
+
         }
     }
 

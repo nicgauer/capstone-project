@@ -11,7 +11,7 @@ const BoardCardDisplay = ({card}) => {
             </div>
             <div className={styles.statWrapper}>
                 {card.effect && (<h5>{card.effect}</h5>)}
-                {card.attack && card.defense && (
+                {card.type === 'unit' && (
                     <div>
                         <h5>Att-{card.attack} Def-{card.defense}</h5>
                     </div>
