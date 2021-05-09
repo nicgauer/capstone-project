@@ -1023,7 +1023,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
             <div className={styles.handWrapper}>
             {hand && hand.map((card, i) => (
-                <div onClick={() => handSelector(i)}>
+                <div onClick={() => handSelector(i)} style={selected.id === card.id ? styles.selectedHandCard : null}>
                     <CardDisplay card={card.card_type} />
                 </div>
                 )) }

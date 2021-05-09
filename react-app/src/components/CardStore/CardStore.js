@@ -49,7 +49,6 @@ const CardStore = ({cards}) => {
             }
             await boosterPack(ids)
             setNewPack(pack)
-            console.log
         }
     }
 
