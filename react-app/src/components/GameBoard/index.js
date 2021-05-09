@@ -657,37 +657,37 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 setExplosionEffect1(true)
                 setTimeout(() => {
                     setExplosionEffect1(false)
-                }, 800)
+                }, 650)
                 break;
             case 2:
                 setExplosionEffect2(true)
                 setTimeout(() => {
                     setExplosionEffect2(false)
-                }, 800)
+                }, 650)
                 break;
             case 3:
                 setExplosionEffect3(true)
                 setTimeout(() => {
                     setExplosionEffect3(false)
-                }, 800)
+                }, 650)
                 break;
             case 4:
                 setExplosionEffect4(true)
                 setTimeout(() => {
                     setExplosionEffect4(false)
-                }, 800)
+                }, 650)
                 break;
             case 5:
                 setExplosionEffect5(true)
                 setTimeout(() => {
                     setExplosionEffect5(false)
-                }, 800)
+                }, 650)
                 break;
             case 6:
                 setExplosionEffect6(true)
                 setTimeout(() => {
                     setExplosionEffect6(false)
-                }, 800)
+                }, 650)
                 break;
         }
     }
