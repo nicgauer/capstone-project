@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
@@ -71,14 +72,20 @@ const MatchmakingLobby = () => {
                 <div>
                     <h1>GAME OVER</h1>
                     <h3>YOU LOST</h3>
+                    <p>$50 gained!</p>
                     <button onClick={findGame}>Try Again...</button>
+                    <NavLink to='/store'>Store</NavLink>
+                    <NavLink to='/collection'>Card Collection</NavLink>
                 </div>
             )}
             {gameWon && (
                 <div>
                     <h1>CONGRATULATIONS</h1>
                     <h3>YOU WON!!!!</h3>
-                    <button onClick={findGame}>Play Again...</button>
+                    <p>$100 gained!</p>
+                    <button onClick={findGame}>Play Again!!</button>
+                    <NavLink to='/store'>Store</NavLink>
+                    <NavLink to='/collection'>Card Collection</NavLink>
                 </div>
             )}
             {!gameLost && !gameWon && gameFound && gameData && (
@@ -94,6 +101,8 @@ const MatchmakingLobby = () => {
                             {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.id}</option>)}
                     </select>
                     <button onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
+                    <NavLink to='/store'>Store</NavLink>
+                    <NavLink to='/collection'>Card Collection</NavLink>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>

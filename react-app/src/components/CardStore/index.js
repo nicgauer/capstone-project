@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux';
 import { getCards } from '../../services/card_store'
 import CardStore from './CardStore'
@@ -30,6 +31,8 @@ const CardStoreWrapper = () => {
 
     return (
         <div>
+            <NavLink to='/store'>Store</NavLink>
+            <NavLink to='/collection'>Card Collection</NavLink>
             <h1>Welcome, {user.username}</h1>
             {loading && !organized && (
                 <h1>loading card store...</h1>

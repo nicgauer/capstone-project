@@ -112,3 +112,8 @@ def activate_trap(data):
 def end_game(data):
     # data includes- loser_id, room_id
     emit('game_ended', data, room=data['room_id'], broadcast=True)
+
+
+@socketio.on("message_chat")
+def message_chat(data):
+    emit("chat_message", data, room=data['room_id'], broadcast=True)

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getUserCards } from '../../services/card_collection'
 import CollectionDisplay from './CollectionDisplay';
@@ -34,6 +35,8 @@ const CardCollection = () => {
 
     return (
         <div>
+            <NavLink to='/store'>Store</NavLink>
+            <NavLink to='/collection'>Card Collection</NavLink>
             <h1>{user.username}'s Cards</h1>
             {loading && (<h3>loading...</h3>)}
             {!loading && cards && (
