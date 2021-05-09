@@ -22,28 +22,34 @@ const CardStore = ({cards}) => {
             for(let i = 0; i < 5; i++){
                 const roll = rng(100)
                 if(roll <= 40){
-                    pack.push(cards.r0[rng(cards.r0.length)])
-                    ids.push(cards.r0[rng(cards.r0.length)].id)
+                    let result = cards.r0[rng(cards.r0.length)]
+                    pack.push(result)
+                    ids.push(result.id)
                 }
                 if(roll > 40 && roll <= 65){
-                    pack.push(cards.r1[rng(cards.r1.length)])
-                    ids.push(cards.r1[rng(cards.r1.length)].id)
+                    let result = cards.r1[rng(cards.r1.length)]
+                    pack.push(result)
+                    ids.push(result.id)
                 }
                 if(roll > 65 && roll <= 80){
-                    pack.push(cards.r2[rng(cards.r2.length)])
-                    ids.push(cards.r2[rng(cards.r2.length)].id)
+                    let result = cards.r2[rng(cards.r2.length)]
+                    pack.push(result)
+                    ids.push(result.id)
                 }
                 if(roll > 80 && roll <= 95){
-                    pack.push(cards.r3[rng(cards.r3.length)])
-                    ids.push(cards.r3[rng(cards.r3.length)].id)
+                    let result = cards.r3[rng(cards.r3.length)]
+                    pack.push(result)
+                    ids.push(result.id)
                 }
                 if(roll > 95){
-                    pack.push(cards.r4[rng(cards.r4.length)])
-                    ids.push(cards.r4[rng(cards.r4.length)].id)
+                    let result = cards.r4[rng(cards.r4.length)]
+                    pack.push(result)
+                    ids.push(result.id)
                 }
             }
             await boosterPack(ids)
             setNewPack(pack)
+            console.log
         }
     }
 
