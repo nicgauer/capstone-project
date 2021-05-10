@@ -98,18 +98,17 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
     //Handles clicking on cards in hand
     const handSelector = (int) => {
-        setSelected(hand[int])
-        console.log(hand[int])
+        //Checks to see if card selected is a spell card and is playable, if so plays it
         if(placementPhase && hand[int].card_type.type === 'spell'){
             if(hand[int].card_type.effect.split(':')[0] === 'draw'){
-                console.log('hit if statement!!!')
                 spellEffect(hand[int].card_type)
                 drawCardSpell(hand[int].card_type.effect.split(':')[1], hand[int].id)
             }else {
                 spellEffect(hand[int].card_type)
                 removeFromHand(hand[int])
             }
-            
+        }else{
+            setSelected(hand[int])
         }
     }
 
@@ -536,15 +535,15 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
         //COMBAT PHASE selector
         if(combatPhase){
-            if(int === 1 && playerUnitSlot1) {
+            if(int === 1 && playerUnitSlot1 && !hasAttacked.includes(1)) {
                 setSelectedUnit(playerUnitSlot1);
                 setSelUnitSlot(int)
             }
-            if(int === 2 && playerUnitSlot2) {
+            if(int === 2 && playerUnitSlot2 && !hasAttacked.includes(2)) {
                 setSelectedUnit(playerUnitSlot2);
                 setSelUnitSlot(int)
             }
-            if(int === 3 && playerUnitSlot3) {
+            if(int === 3 && playerUnitSlot3 && !hasAttacked.includes(3)) {
                 setSelectedUnit(playerUnitSlot3);
                 setSelUnitSlot(int)
             }
@@ -874,6 +873,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     loss:loss,
                     log: `${user.username} attacks ${targetName} with ${selectedUnit.name}!`
                 })
+                setSelectedUnit(null);
+                setSelUnitSlot(null);
             }
         }else{
             //Handles attacking an undefended opponent
@@ -900,12 +901,16 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     target_health:targetHealth,
                     log: `${user.username} attacks ${gameData.opponent_name} directly with ${selectedUnit.name}!!!`
                 })
+                setSelectedUnit(null);
+                setSelUnitSlot(null);
             }
-        }        
+        }  
+              
     }
 
     //Sends the end turn thing on the button
     const endTurnHandler = () => {
+        setPlacementPhase(false);
         socket.emit('end_turn', {
             room_id: room_id,
             user_id: user.id,
@@ -969,20 +974,20 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             </div>
 
 
-            {selected && <p> Selected Hand = {selected.card_type.name} </p>}
-            {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>}
+            {/* {selected && <p> Selected Hand = {selected.card_type.name} </p>}
+            {selectedUnit && <p> Selected Unit = {selectedUnit.name} </p>} */}
 
             <div className={styles.boardContainer}>
                 <div className={styles.opponentUnitBoard}>
-                    <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
+                    <div className={selectedUnit ? styles.opponentUnitCombatPhase: styles.opponentUnit} onClick={() => opponentUnitSlotHandler(1)}>
                         {opponentUnitSlot1 && <BoardCardDisplay card={opponentUnitSlot1} />}
                         {explosionEffect4 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
-                    <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
+                    <div className={selectedUnit ? styles.opponentUnitCombatPhase: styles.opponentUnit} onClick={() => opponentUnitSlotHandler(2)}>
                         {opponentUnitSlot2 && <BoardCardDisplay card={opponentUnitSlot2} />}
                         {explosionEffect5 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
-                    <div className={styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
+                    <div className={selectedUnit ? styles.opponentUnitCombatPhase: styles.opponentUnit} onClick={() => opponentUnitSlotHandler(3)}>
                         {opponentUnitSlot3 && <BoardCardDisplay card={opponentUnitSlot3} />}
                         {explosionEffect6 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
@@ -997,15 +1002,15 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
 
                 <div className={styles.playerUnitBoard}>
-                    <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
+                    <div className={selUnitSlot === 1 ? styles.playerUnitSelected : combatPhase && !selectedUnit && !hasAttacked.includes(1) && playerUnitSlot1 ? styles.playerUnitCombatPhase : placementPhase && selected ? styles.playerUnitCombatPhase : styles.playerUnit} onClick={() => playerUnitSlotHandler(1)}>
                         {playerUnitSlot1 && <BoardCardDisplay card={playerUnitSlot1} />}
                         {explosionEffect1 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
-                    <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
+                    <div className={selUnitSlot === 2 ? styles.playerUnitSelected : combatPhase && !selectedUnit && !hasAttacked.includes(2) && playerUnitSlot2 ? styles.playerUnitCombatPhase : placementPhase && selected ? styles.playerUnitCombatPhase : styles.playerUnit} onClick={() => playerUnitSlotHandler(2)}>
                         {playerUnitSlot2 && <BoardCardDisplay card={playerUnitSlot2} />}
                         {explosionEffect2 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
-                    <div className={styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
+                    <div className={selUnitSlot === 3 ? styles.playerUnitSelected : combatPhase && !selectedUnit && !hasAttacked.includes(3) && playerUnitSlot3 ? styles.playerUnitCombatPhase : placementPhase && selected ? styles.playerUnitCombatPhase : styles.playerUnit} onClick={() => playerUnitSlotHandler(3)}>
                         {playerUnitSlot3 && <BoardCardDisplay card={playerUnitSlot3} />}
                         {explosionEffect3 && <img src={explosion} className={styles.explosionEffect} />}
                     </div>
@@ -1023,7 +1028,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
             <div className={styles.handWrapper}>
             {hand && hand.map((card, i) => (
-                <div onClick={() => handSelector(i)} style={selected.id === card.id ? styles.selectedHandCard : null}>
+                <div onClick={() => handSelector(i)} className={(selected && selected.id === card.id) ? styles.selectedHandCard : placementPhase && card.card_type.type === 'spell' ? styles.placeableSpellCard : placementPhase ? styles.placeableHandCard : styles.handCard}>
                     <CardDisplay card={card.card_type} />
                 </div>
                 )) }
@@ -1033,10 +1038,15 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 <button className={styles.actionButton} onClick={drawButtonHandler}>Draw Card!!</button>
             )}
 
-            {placementPhase && (
+            {placementPhase && turnNumber > 1 && (
                 <button className={styles.actionButton} onClick={beginCombatPhase}>Start Combat Phase!</button>
             )}
+
             {combatPhase && (
+                <button className={styles.actionButton} onClick={endTurnHandler}>End Turn</button>
+            )}
+
+            {placementPhase && turnNumber === 1 && (
                 <button className={styles.actionButton} onClick={endTurnHandler}>End Turn</button>
             )}
 
