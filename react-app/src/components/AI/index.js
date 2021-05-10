@@ -110,6 +110,92 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         })
 
+        //Spell Used updates both clients when a spell is used
+        socket.on("spell_used", data => {
+            //if this client used spell
+            if(data.user_id === user.id){
+
+                //Updates opponent health if changes
+                if(data.opp_health) opponentHealth = data.opp_health;
+
+                //updates user health if changes
+                if(data.user_health) {
+                    //ends game of spell kills client
+                    if(data.user_health < 0) {
+                        socket.emit('end_game', {
+                            loser_id:user.id,
+                            room_id:room_id,
+                        })
+                    }
+                    playerHealth = data.user_health;
+                }
+
+                //Handles destruction effects
+                if(data.destroy) {
+                    if(data.destroy.includes(1)) {
+                        opponentUnitSlot1 = null;
+                    }
+                    if(data.destroy.includes(2)) {
+                        opponentUnitSlot2 = null;
+                    }
+                    if(data.destroy.includes(3)) {
+                        opponentUnitSlot3 = null;
+                    }
+                }
+
+                //Handle stat changes
+                if(data.pu1) playerUnitSlot1 = data.pu1;
+                if(data.pu2) playerUnitSlot2 = data.pu2;
+                if(data.pu3) playerUnitSlot3 = data.pu3;
+                if(data.ou1) opponentUnitSlot1 = data.ou1;
+                if(data.ou2) opponentUnitSlot2 = data.ou2;
+                if(data.ou3) opponentUnitSlot3 = data.ou3;
+            }else {
+                //If opponent used spell 
+
+                //Updates deck if changes
+                if(data.deck_size) setOpponentDeck(data.deck_size)
+
+                //Updates hand if changes
+                if(data.hand_size) setOpponentHand(data.hand_size)
+
+                //Updates opponent health if changes 
+                if(data.opp_health) {
+                    if(data.opp_health <= 0) {
+                        socket.emit('end_game', {
+                            loser_id:user.id,
+                            room_id:room_id,
+                        })
+                    }
+                    playerHealth = data.opp_health;
+                }
+
+                //updates user health if changes
+                if(data.user_health) setOpponentHealth(data.user_health)
+
+                //Handles destruction effects
+                if(data.destroy) {
+                    if(data.destroy.includes(1)) {
+                        playerUnitSlot1 = null
+                    }
+                    if(data.destroy.includes(2)) {
+                        playerUnitSlot2 = null
+                    }
+                    if(data.destroy.includes(3)) {
+                        playerUnitSlot3 = null
+                    }
+                }
+
+                //Handle stat changes
+                if(data.pu1) opponentUnitSlot1 = data.pu1
+                if(data.pu2) opponentUnitSlot2 = data.pu2
+                if(data.pu3) opponentUnitSlot3 = data.pu3
+                if(data.ou1) playerUnitSlot1 = data.ou1
+                if(data.ou2) playerUnitSlot2 = data.ou2
+                if(data.ou3) playerUnitSlot3 = data.ou3
+            }
+        })
+
         // ---------- PLACEMENT PHASE ---------- \\
 
         socket.on("placement_phase_start", data => {
@@ -200,6 +286,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         })
 
+        //If hand contains a draw type card, plays one
         if(draw.length > 0){
             let played_spell = draw.pop();
             removeFromHand(played_spell);
@@ -207,7 +294,106 @@ const AI = ({socket, gameData, AIdeck}) => {
             playSpell(played_spell.card_type);
         }
 
+        //If hand contains a healing or damage spell, plays one 
+        if(health.length > 0){
+            let played_spell = health.pop();
+            removeFromHand(played_spell);
+            playSpell(played_spell.card_type);
+        }
 
+        //If hand contains a monster destruction spell, plays one only if opponent has a unit that would be affected
+        if(destroy.length > 0){
+
+            //Checks to see if opponent has a unit
+            if(opponentUnitSlot1 || opponentUnitSlot2 || opponentUnitSlot3){
+                let played_spell = null
+
+                //Iterates through destroy cards in hand
+                destroy.forEach(card => {
+                    let c = card.card_type;
+                    let eff = c.effect.split(':');
+
+                    //Checks each unit slot to see if there is a match
+                    //Ordered by priority, destroy stronger attack monsters with magic first
+                    if(eff[0] === 'destroyOpponentUnitsBelowDef'){
+                        if(opponentUnitSlot1 && opponentUnitSlot1.defense < eff[1] ||
+                            opponentUnitSlot2 && opponentUnitSlot2.defense < eff[2] ||
+                            opponentUnitSlot3 && opponentUnitSlot3.defense < eff[3]){
+                                played_spell = c;
+                        }
+                    }
+                    if(eff[0] === 'destroyOpponentUnitsBelowAtt'){
+                        if(opponentUnitSlot1 && opponentUnitSlot1.attack < eff[1] ||
+                            opponentUnitSlot2 && opponentUnitSlot2.attack < eff[2] ||
+                            opponentUnitSlot3 && opponentUnitSlot3.attack < eff[3]){
+                                played_spell = c;
+                        }
+                    }
+                    if(eff[0] === 'destroyOpponentUnitsAboveDef'){
+                        if(opponentUnitSlot1 && opponentUnitSlot1.defense > eff[1] ||
+                            opponentUnitSlot2 && opponentUnitSlot2.defense > eff[2] ||
+                            opponentUnitSlot3 && opponentUnitSlot3.defense > eff[3]){
+                                played_spell = c;
+                        }
+                    }
+                    if(eff[0] === 'destroyOpponentUnitsAboveDef'){
+                        if(opponentUnitSlot1 && opponentUnitSlot1.defense > eff[1] ||
+                            opponentUnitSlot2 && opponentUnitSlot2.defense > eff[2] ||
+                            opponentUnitSlot3 && opponentUnitSlot3.defense > eff[3]){
+                                played_spell = c;
+                        }
+                    }
+                    if(eff[0] === 'destroyOpponentUnitsAboveAtt'){
+                        if(opponentUnitSlot1 && opponentUnitSlot1.attack > eff[1] ||
+                            opponentUnitSlot2 && opponentUnitSlot2.attack > eff[2] ||
+                            opponentUnitSlot3 && opponentUnitSlot3.attack > eff[3]){
+                                played_spell = c;
+                        }
+                    }
+                })
+
+                //Sets spell played if found one
+                if(played_spell) playSpell(played_spell)
+            }
+        }
+
+        let unitPlaced = false;
+        //Checks evolved units first
+        if(evolvedUnits.length > 0) {
+            let played_unit = null;
+            //iterates through all evolutions in hand
+            evolvedUnits.forEach(card => {
+                let c = card.card_type;
+
+                //Checks to see if each player unit slot has the prevolution needed to play this card.
+                //Then compares against previously found possibilities to play the stronger card.
+                if(playerUnitSlot1 && playerUnitSlot1.name === c.evolution_name){
+                    if((played_unit && played_unit.attack < c.attack) || (played_unit && played_unit.defense < c.defense)){
+                        played_unit = c;
+                    }
+                }else if(playerUnitSlot2 && playerUnitSlot2.name === c.evolution_name){
+                    if((played_unit && played_unit.attack < c.attack) || (played_unit && played_unit.defense < c.defense)){
+                        played_unit = c;
+                    }
+                }else if(playerUnitSlot3 && playerUnitSlot3.name === c.evolution_name){
+                    if((played_unit && played_unit.attack < c.attack) || (played_unit && played_unit.defense < c.defense)){
+                        played_unit = c;
+                    }
+                }
+            })
+
+            //Places unit
+            unitPlaced = true;
+        }
+
+    }
+
+
+    const placementLogicDrawSpell = (draw) => {
+        let played_spell = draw.pop();
+            removeFromHand(played_spell);
+            drawCardHandler(Number(played_spell.card_type.effect.split(':')[1]))
+            playSpell(played_spell.card_type);
     }
 
     const playSpell = (card) => {
