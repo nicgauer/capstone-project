@@ -31,8 +31,15 @@ const CardStoreWrapper = () => {
 
     return (
         <div>
-            <NavLink to='/store'>Store</NavLink>
-            <NavLink to='/collection'>Card Collection</NavLink>
+            <div>
+                <NavLink to='/store'>Store</NavLink>
+            </div>
+            <div>
+                <NavLink to='/collection'>Card Collection</NavLink>
+            </div>
+            <div>
+                <NavLink to='/'>Play Game</NavLink>
+            </div>
             <h1>Welcome, {user.username}</h1>
             {loading && !organized && (
                 <h1>loading card store...</h1>

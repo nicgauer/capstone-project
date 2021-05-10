@@ -7,8 +7,8 @@ import {getUserDecks} from '../../services/deck';
 import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 
-const endPoint = "http://localhost:5000"
-// const endPoint = "https://super-battle-cards.herokuapp.com"
+// const endPoint = "http://localhost:5000"
+const endPoint = "https://super-battle-cards.herokuapp.com"
 const socket = io(endPoint);
 
 const MatchmakingLobby = () => {

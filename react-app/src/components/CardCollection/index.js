@@ -36,8 +36,15 @@ const CardCollection = () => {
 
     return (
         <div>
-            <NavLink to='/store'>Store</NavLink>
-            <NavLink to='/collection'>Card Collection</NavLink>
+            <div>
+                <NavLink to='/store'>Store</NavLink>
+            </div>
+            <div>
+                <NavLink to='/collection'>Card Collection</NavLink>
+            </div>
+            <div>
+                <NavLink to='/'>Play Game</NavLink>
+            </div>
             <h1>{user.username}'s Cards</h1>
             {loading && (<h3>loading...</h3>)}
             {!loading && cards && (
