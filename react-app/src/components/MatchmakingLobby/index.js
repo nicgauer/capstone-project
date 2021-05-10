@@ -7,8 +7,8 @@ import {getUserDecks} from '../../services/deck';
 import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 
-// const endPoint = "http://localhost:5000"
-const endPoint = "https://super-battle-cards.herokuapp.com"
+const endPoint = "http://localhost:5000"
+// const endPoint = "https://super-battle-cards.herokuapp.com"
 const socket = io(endPoint);
 
 const MatchmakingLobby = () => {
@@ -50,6 +50,10 @@ const MatchmakingLobby = () => {
     })
 
     socket.on("game_ended", async data => {
+        socket.emit("room_leave", {
+            user_id: user.id,
+            room_id: data.room_id
+        })
         if(data.loser_id === user.id){
             setGameLost(true);
             await dispatch(addLoss(user.id))
@@ -75,9 +79,16 @@ const MatchmakingLobby = () => {
                     <h1>GAME OVER</h1>
                     <h3>YOU LOST</h3>
                     <p>$50 gained!</p>
-                    <button onClick={findGame}>Try Again...</button>
-                    <NavLink to='/store'>Store</NavLink>
-                    <NavLink to='/collection'>Card Collection</NavLink>
+
+                    <div>
+                        <NavLink to='/'>Play Again</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/store'>Store</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
                 </div>
             )}
             {gameWon && (
@@ -85,9 +96,16 @@ const MatchmakingLobby = () => {
                     <h1>CONGRATULATIONS</h1>
                     <h3>YOU WON!!!!</h3>
                     <p>$100 gained!</p>
-                    <button onClick={findGame}>Play Again!!</button>
-                    <NavLink to='/store'>Store</NavLink>
-                    <NavLink to='/collection'>Card Collection</NavLink>
+                    
+                    <div>
+                        <NavLink to='/'>Play Again</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/store'>Store</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
                 </div>
             )}
             {!gameLost && !gameWon && gameFound && gameData && (
@@ -100,12 +118,19 @@ const MatchmakingLobby = () => {
                         value={selectedDeck}
                         onChange={(e) => setSelectedDeck(decks[e.target.value])}
                         >
-                            {/* {console.log(selectedDeck)} */}
-                            {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.id}</option>)}
+                            {console.log(decks)}
+                            {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.name}</option>)}
                     </select>
                     <button onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
-                    <NavLink to='/store'>Store</NavLink>
-                    <NavLink to='/collection'>Card Collection</NavLink>
+                    <div>
+                        <NavLink to='/'>Play Again</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/store'>Store</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>
