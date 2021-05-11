@@ -1040,32 +1040,53 @@ const AI = ({socket, gameData, AIdeck}) => {
             let result = null;
             let targetName = null;
             if(opponentUnitSlot1){
-                let res = opponentUnitSlot1.defense < playerUnitSlot1.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 1;
-                    targetName = opponentUnitSlot1.name;
+                let res = playerUnitSlot1.attack - opponentUnitSlot1.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 1;
+                        targetName = opponentUnitSlot1.name;
+                    }
                 }
             }
             if(opponentUnitSlot2){
-                let res = opponentUnitSlot2.defense < playerUnitSlot1.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 2;
-                    targetName = opponentUnitSlot2.name;
+                let res = playerUnitSlot1.attack - opponentUnitSlot2.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 2;
+                        targetName = opponentUnitSlot2.name;
+                    }
                 }
             }
             if(opponentUnitSlot3){
-                let res = opponentUnitSlot3.defense < playerUnitSlot1.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 3;
-                    targetName = opponentUnitSlot3.name;
+                let res = playerUnitSlot1.attack - opponentUnitSlot3.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 3;
+                        targetName = opponentUnitSlot3.name;
+                    }
                 }
             }
+
+            if(!opponentUnitSlot1 && !opponentUnitSlot2 && !opponentUnitSlot3){
+                target = 2;
+                targetName = 'directly'
+            }
+
             console.log("Slot1 check",target)
             if(target){
-                
+                if(target === 1 && targetName !== 'directly'){
+                    opponentUnitSlot1 = null;
+                }
+                if(target === 2 && targetName !== 'directly'){
+                    opponentUnitSlot2 = null;
+                }
+                if(target === 3 && targetName !== 'directly'){
+                    opponentUnitSlot3 = null;
+                }
+
                 //Calculates health points and losses
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
@@ -1103,32 +1124,53 @@ const AI = ({socket, gameData, AIdeck}) => {
             let result = null;
             let targetName = null;
             if(opponentUnitSlot1){
-                let res = opponentUnitSlot1.defense < playerUnitSlot2.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 1;
-                    targetName = opponentUnitSlot1.name;
+                let res = playerUnitSlot2.attack - opponentUnitSlot1.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 1;
+                        targetName = opponentUnitSlot1.name;
+                    }
                 }
             }
             if(opponentUnitSlot2){
-                let res = opponentUnitSlot2.defense < playerUnitSlot2.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 2;
-                    targetName = opponentUnitSlot2.name;
+                let res = playerUnitSlot2.attack - opponentUnitSlot2.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 2;
+                        targetName = opponentUnitSlot2.name;
+                    }
                 }
             }
             if(opponentUnitSlot3){
-                let res = opponentUnitSlot3.defense < playerUnitSlot2.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 3;
-                    targetName = opponentUnitSlot3.name;
+                let res = playerUnitSlot2.attack - opponentUnitSlot3.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 3;
+                        targetName = opponentUnitSlot3.name;
+                    }
                 }
+            }
+
+            if(!opponentUnitSlot1 && !opponentUnitSlot2 && !opponentUnitSlot3){
+                target = 2;
+                targetName = 'directly'
             }
 
             console.log("Slot2 check",target)
             if(target){
+                if(target === 1 && targetName !== 'directly'){
+                    opponentUnitSlot1 = null;
+                }
+                if(target === 2 && targetName !== 'directly'){
+                    opponentUnitSlot2 = null;
+                }
+                if(target === 3 && targetName !== 'directly'){
+                    opponentUnitSlot3 = null;
+                }
+
                 //Calculates health points and losses
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
@@ -1167,32 +1209,53 @@ const AI = ({socket, gameData, AIdeck}) => {
             let result = null;
             let targetName = null;
             if(opponentUnitSlot1){
-                let res = opponentUnitSlot1.defense < playerUnitSlot3.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 1;
-                    targetName = opponentUnitSlot1.name;
+                let res = playerUnitSlot3.attack - opponentUnitSlot1.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 1;
+                        targetName = opponentUnitSlot1.name;
+                    }
                 }
             }
             if(opponentUnitSlot2){
-                let res = opponentUnitSlot2.defense < playerUnitSlot3.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 2;
-                    targetName = opponentUnitSlot2.name;
+                let res = playerUnitSlot3.attack - opponentUnitSlot2.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 2;
+                        targetName = opponentUnitSlot2.name;
+                    }
                 }
             }
             if(opponentUnitSlot3){
-                let res = opponentUnitSlot3.defense < playerUnitSlot3.attack;
-                if(!result || res > result){
-                    result = res;
-                    target = 3;
-                    targetName = opponentUnitSlot3.name;
+                let res = playerUnitSlot3.attack - opponentUnitSlot3.defense;
+                if(res > 0){
+                    if(!result || res > result){
+                        result = res;
+                        target = 3;
+                        targetName = opponentUnitSlot3.name;
+                    }
                 }
+            }
+
+            if(!opponentUnitSlot1 && !opponentUnitSlot2 && !opponentUnitSlot3){
+                target = 2;
+                targetName = 'directly'
             }
 
             console.log("Slot3 check",target)
             if(target){
+                if(target === 1 && targetName !== 'directly'){
+                    opponentUnitSlot1 = null;
+                }
+                if(target === 2 && targetName !== 'directly'){
+                    opponentUnitSlot2 = null;
+                }
+                if(target === 3 && targetName !== 'directly'){
+                    opponentUnitSlot3 = null;
+                }
+
                 //Calculates health points and losses
                 let userHealth = playerHealth
                 let targetHealth = opponentHealth
