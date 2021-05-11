@@ -524,18 +524,12 @@ const AI = ({socket, gameData, AIdeck}) => {
             let played_spell = health.pop();
             removeFromHand(played_spell);
             playSpell(played_spell.card_type);
-
-            //Activate next placement phase step after waiting                   
-            let waitAmt = 500 * rng(5)
-                // setTimeout(() => {
-                    placementStepThree(orgHand);
-                // }, waitAmt)
-        }else{
-            placementStepThree(orgHand);
         }
+        placementStepThree(orgHand);
     }
 
     const placementStepThree = (orgHand) => {
+        console.log('Thinking about placing a damage spell')
         let destroy = orgHand.destroy;
         if(orgHand.destroy.length > 0){
             //Checks to see if opponent has a unit
@@ -588,16 +582,9 @@ const AI = ({socket, gameData, AIdeck}) => {
     
                 //Sets spell played if found one
                 if(played_spell) playSpell(played_spell)
-
-                //Activate next placement phase step after waiting                   
-                let waitAmt = 500 * rng(5)
-                // setTimeout(() => {
-                    placementStepFour(orgHand);
-                // }, waitAmt)
             }
-        }else{
-            placementStepFour(orgHand)
         }
+            placementStepFour(orgHand)
     }
 
     const placementStepFour = (orgHand) => {
@@ -721,15 +708,8 @@ const AI = ({socket, gameData, AIdeck}) => {
                     unit_slot: slot,
                     log: `${user.username} places ${played_unit.card_type.name}`
                 })
-                
-                //Activate next placement phase step after waiting                   
-                let waitAmt = 500 * rng(5)
-                // setTimeout(() => {
-                    placementStepSix(orgHand);
-                // }, waitAmt)
-            }else{
-                placementStepSix(orgHand);
             }
+            placementStepSix(orgHand);
         }else {
             placementStepSix(orgHand);
         }
@@ -751,7 +731,8 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
             })
             if(used_spell){
-                playSpell(used_spell);
+                console.log("Attempting to use ", used_spell)
+                playSpell(used_spell.card_type);
 
                 //Activate next placement phase step after waiting                   
                 let waitAmt = 500 * rng(5)
@@ -782,7 +763,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
             })
             if(used_spell){
-                playSpell(used_spell);
+                playSpell(used_spell.card_type);
             }
         }
 
