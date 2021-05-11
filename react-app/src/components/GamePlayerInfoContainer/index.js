@@ -10,6 +10,7 @@ const GamePlayerInfoContainer = ({
         const [disHealth, setDisHealth] = useState();
         const [red, setRed] = useState(false);
         const [green, setGreen] = useState(false);
+        const [myTimeout, setMyTimeout] = useState(null);
         
         useEffect(() => {
             setDisHealth(health);
@@ -17,9 +18,18 @@ const GamePlayerInfoContainer = ({
 
         useEffect(() => {
             countdownEffect(disHealth)
+            return () => {
+                if(myTimeout) clearTimeout(myTimeout)
+            }
         }, [health])
 
         const countdownEffect = (current) => {
+            console.log('CountDown!', current)
+            console.log('Health!', health)
+            if(myTimeout){
+                clearTimeout(myTimeout)
+            }
+
             if(health === current) {
                 setGreen(false);
                 setRed(false);
@@ -28,13 +38,20 @@ const GamePlayerInfoContainer = ({
                 if(!green) setGreen(true);
                 current += 10
                 setDisHealth(current);
-                setTimeout(() => countdownEffect(current), 50);
-            }
-            if(health < current){
+                let t = setTimeout(countdownEffect, 50, current);
+                setMyTimeout(t);
+            }else if(health < current){
                 if(!red) setRed(true);
                 current -= 10;
                 setDisHealth(current);
-                setTimeout(() => countdownEffect(current), 50);
+                let t = setTimeout(countdownEffect, 50, current);
+                setMyTimeout(t);
+            }else{
+                setGreen(false);
+                setRed(false);
+                if(myTimeout){
+                    clearTimeout(myTimeout)
+                }
             }
         }
 

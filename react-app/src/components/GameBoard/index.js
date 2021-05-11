@@ -235,6 +235,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                         })
                     }
                     setPlayerHealth(data.user_health)
+                    console.log('Setting Player Health To ' + data.user_health)
                 }
 
                 //Handles destruction effects
@@ -278,6 +279,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                         })
                     }
                     setPlayerHealth(data.opp_health)
+                    console.log('Setting Player Health To ' + data.opp_health)
                 }
 
                 //updates user health if changes
@@ -349,6 +351,9 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 //Updates both clients' health
                 setOpponentHealth(data.target_health);
                 setPlayerHealth(data.user_health);
+                console.log('Setting Opponent Health To ' + data.target_health)
+                console.log('Setting Player Health To ' + data.user_health)
+                
 
                 //If combat was a loss, destroy player unit that attacked
                 if(data.loss || data.tie){
@@ -376,6 +381,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 //Update both players' health
                 setPlayerHealth(data.target_health);
                 setOpponentHealth(data.user_health);
+                console.log('Setting Opponent Health To ' + data.user_health)
+                console.log('Setting Player Health To ' + data.target_health)
 
                 //Destroy attacking monster if loss or tie
                 if(data.loss || data.tie){

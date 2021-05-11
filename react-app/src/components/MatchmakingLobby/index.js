@@ -6,9 +6,10 @@ import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
 import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
+import AI from '../AI';
 
-// const endPoint = "http://localhost:5000"
-const endPoint = "https://super-battle-cards.herokuapp.com"
+const endPoint = "http://localhost:5000"
+// const endPoint = "https://super-battle-cards.herokuapp.com"
 const socket = io(endPoint);
 
 const MatchmakingLobby = () => {
@@ -21,6 +22,7 @@ const MatchmakingLobby = () => {
     const [gameData, setGameData] = useState(null);
     const [gameLost, setGameLost] = useState(false);
     const [gameWon, setGameWon] = useState(false);
+    const [AIgame, setAIgame] = useState(false);
 
     useEffect(() => {    
     (async () => {
@@ -33,7 +35,7 @@ const MatchmakingLobby = () => {
     socket.on("waiting_for_game", data => {
         // console.log('waiting for game fired')
         setWaiting(true)
-    }, [])
+    })
     
     socket.on("setup_game", data => {
         const gd = {
@@ -50,6 +52,10 @@ const MatchmakingLobby = () => {
     })
 
     socket.on("game_ended", async data => {
+        socket.emit("room_leave", {
+            user_id: user.id,
+            room_id: data.room_id
+        })
         if(data.loser_id === user.id){
             setGameLost(true);
             await dispatch(addLoss(user.id))
@@ -62,10 +68,32 @@ const MatchmakingLobby = () => {
 
     const findGame = () => {
         socket.emit('find_game', {
-        user_id: user.id,
-        username: user.username,
-    })
-}
+            user_id: user.id,
+            username: user.username,
+        })
+    }
+
+    const playAIgame = () => {
+        socket.emit("ai_game", {
+            user_id: user.id,
+        })
+        let turnOrder = [0, user.id]
+        const roll = rng(10)
+        if(roll % 2 === 0){
+            turnOrder = [user.id, 0]
+        }
+        const gd = {
+            room_id:user.id,
+            turn_order:turnOrder,
+            opponent_name: 'Duel Bot'
+        }
+        setGameData(gd)
+        setAIgame(true);
+    }
+
+    const rng = (max) => {
+        return Math.floor(Math.random() * max);
+    }
 
 
     return (
@@ -75,9 +103,16 @@ const MatchmakingLobby = () => {
                     <h1>GAME OVER</h1>
                     <h3>YOU LOST</h3>
                     <p>$50 gained!</p>
-                    <button onClick={findGame}>Try Again...</button>
-                    <NavLink to='/store'>Store</NavLink>
-                    <NavLink to='/collection'>Card Collection</NavLink>
+
+                    <div>
+                        <NavLink to='/'>Play Again</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/store'>Store</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
                 </div>
             )}
             {gameWon && (
@@ -85,27 +120,53 @@ const MatchmakingLobby = () => {
                     <h1>CONGRATULATIONS</h1>
                     <h3>YOU WON!!!!</h3>
                     <p>$100 gained!</p>
-                    <button onClick={findGame}>Play Again!!</button>
-                    <NavLink to='/store'>Store</NavLink>
-                    <NavLink to='/collection'>Card Collection</NavLink>
+                    
+                    <div>
+                        <NavLink to='/'>Play Again</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/store'>Store</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
                 </div>
             )}
-            {!gameLost && !gameWon && gameFound && gameData && (
+
+            {AIgame && !gameLost && !gameWon && gameData && (
+                <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />
+                )}
+
+            {AIgame && !gameLost && !gameWon && gameData && (
+                <AI socket={socket} gameData={gameData} AIdeck={selectedDeck.cards} />
+                )}
+
+            {!AIgame && !gameLost && !gameWon && gameFound && gameData && (
                 <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />
             )}
-            {!gameLost && !gameWon && !gameFound && !waiting && decks &&
+            {!AIgame && !gameLost && !gameWon && !gameFound && !waiting && decks &&
                 (<div>
                     <RulesPage />
                     <select
                         value={selectedDeck}
                         onChange={(e) => setSelectedDeck(decks[e.target.value])}
                         >
-                            {/* {console.log(selectedDeck)} */}
-                            {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.id}</option>)}
+                            {console.log(decks)}
+                            {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.name}</option>)}
                     </select>
+
                     <button onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
-                    <NavLink to='/store'>Store</NavLink>
-                    <NavLink to='/collection'>Card Collection</NavLink>
+
+                    <button onClick={playAIgame} disabled={!selectedDeck}>Play AI game</button>
+                    <div>
+                        <NavLink to='/'>Play Again</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/store'>Store</NavLink>
+                    </div>
+                    <div>
+                        <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>

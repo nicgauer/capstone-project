@@ -14,6 +14,7 @@ class Deck(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
+            "name": self.name,
             "cards": list(map(lambda card: card.to_dict(), self.cards))
         }
 

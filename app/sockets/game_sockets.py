@@ -13,21 +13,29 @@ def handle_connect():
 @socketio.on("find_game")
 def host_room(data):
     # data includes - user_id(of user making action)
+    leave_room(data["user_id"])
     if len(open_games) > 0:
         host = open_games.pop(0)
-        room_id = host['user_id']
-        join_room(room_id)
-        data["room_id"] = room_id
-        data["host_username"] = host['username']
-        data["turn_order"] = [room_id, data["user_id"]]
-        data['guest_username'] = data["username"]
-        emit('setup_game', data, room=room_id, broadcast=True)
+        if host['user_id'] is not data["user_id"]:
+            room_id = host['user_id']
+            join_room(room_id)
+            data["room_id"] = room_id
+            data["host_username"] = host['username']
+            data["turn_order"] = [room_id, data["user_id"]]
+            data['guest_username'] = data["username"]
+            emit('setup_game', data, room=room_id, broadcast=True)
+        else:
+            join_room(data['user_id'])
     else:
         open_games.append({'user_id': data["user_id"], 'username': data["username"] })
         data['room_id'] = data["user_id"]
         join_room(data['user_id'])
         emit('waiting_for_game', data, room=data['room_id'], broadcast=True)
 
+
+@socketio.on("ai_game")
+def ai_game(data):
+    join_room(data['user_id'])
 
 @socketio.on("start_draw_phase")
 def start_draw_phase(data):
@@ -117,3 +125,8 @@ def end_game(data):
 @socketio.on("message_chat")
 def message_chat(data):
     emit("chat_message", data, room=data['room_id'], broadcast=True)
+
+
+@socketio.on("room_leave")
+def room_leave(data):
+    leave_room(data['room_id'])

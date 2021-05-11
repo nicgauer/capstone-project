@@ -82,14 +82,18 @@ body {
 
 .placeableHandCard {
     cursor: pointer;
+    background:rgba(108, 223, 133, 0.233);
+    box-shadow: -3px -3px 8px rgba(240, 240, 240, 0.3);
 }
 
 .placeableSpellCard {
     cursor: pointer;
+    background:rgba(108, 223, 133, 0.233);
+    box-shadow: -3px -3px 8px rgba(240, 240, 240, 0.3);
 }
 
 .placeableSpellCard:hover {
-    box-shadow: 0px 0px 8px rgba(240, 240, 240, 0.5);
+    box-shadow: 0px 0px 8px rgba(240, 240, 240, 0.3);
     border: 1px solid white;
     background:rgba(23, 212, 64, 0.411);
 }
