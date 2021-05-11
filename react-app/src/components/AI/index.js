@@ -45,11 +45,11 @@ const AI = ({socket, gameData, AIdeck}) => {
     // let drawPhase = false;
     // let placementPhase = false;
     // let combatPhase = false;
-    let d = shuffle([...AIdeck]);
-    let h = drawHand(d);
+    // let d = shuffle([...AIdeck]);
+    // let h = drawHand(d);
 
-    const [hand, setHand] = useState(h);
-    const [deck, setDeck] = useState(d);
+    const [hand, setHand] = useState([]);
+    const [deck, setDeck] = useState(AIdeck);
 
     const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null);
     const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null);
@@ -69,17 +69,15 @@ const AI = ({socket, gameData, AIdeck}) => {
     const removeFromHand = (card) => {
         let h = [...hand]
         setHand(h.filter(c => c.id != card.id));
+        console.log('remove from hand hand', hand);
     }
 
 
     useEffect(() => {
-        let d = shuffle([...deck]);
-        let h = drawHand(d);
-
-        console.log("Use Effect deck", d)
-        console.log("Use Effect Hand", h)
-        setDeck(d);
-        setHand(h);
+        let shuffledDeck = shuffle(AIdeck);
+        let initialHand = drawHand(shuffledDeck)
+        setDeck(shuffledDeck);
+        setHand(initialHand);
 
         //Checks to see if this client is first in turn order
         if(turnOrder[0] === user.id){
@@ -96,8 +94,6 @@ const AI = ({socket, gameData, AIdeck}) => {
         //Notifies both clients when one client starts draw phase
         socket.on("draw_phase_start", data => {
             //Checks to see if it's this client's turn
-            console.log("deck dps", deck)
-            console.log("hand dps", hand)
             if(data.user_id === user.id) {
                 console.log('AI starting draw!')
                 //if AI's turn, activate draw phase flag
@@ -128,8 +124,11 @@ const AI = ({socket, gameData, AIdeck}) => {
             //If this user is starting placement phase
             if(data.user_id === user.id) {
                 console.log('AI is starting placement phase!')
-                //Activate placement phase
-                placementPhase()
+                let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    //Activate placement phase
+                    placementPhase()                    
+                }, waitAmt)
             }
         })
 
@@ -247,6 +246,114 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         })
 
+        // ---------- COMBAT PHASE ---------- \\
+
+        //Updates both clients that combat phase has started
+        socket.on("combat_phase_start", data => {
+            //If this client combat phase
+            if (data.user_id === user.id){
+                console.log("combat phase start")
+                //Ends placement phase, begins combat phase
+                let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    //Activate placement phase
+                    combatPhase()                    
+                }, waitAmt)
+            }
+        })
+
+        //Updates both clients when unit was placed
+        socket.on('unit_attack', data => {
+            //if this client attacked
+            if(data.user_id === user.id){
+                console.log('unit attcked')
+
+                //If new health is below 1, end game
+                if(data.target_health < 1){
+                    let loserId;
+                    if(turnOrder[0] === user.id){
+                        loserId = turnOrder[1]
+                    }else{
+                        loserId = turnOrder[0]
+                    }
+                    socket.emit('end_game', {
+                        loser_id:loserId,
+                        room_id:room_id
+                    })
+                    return;
+                }
+        
+                    //Updates both clients' health
+                    setOpponentHealth(data.target_health);
+                    setPlayerHealth(data.user_health);
+    
+                    //If combat was a loss, destroy player unit that attacked
+                    if(data.loss || data.tie){
+                        if(data.attacker_slot === 1) setPlayerUnitSlot1(null)
+                        if(data.attacker_slot === 2) setPlayerUnitSlot2(null)
+                        if(data.attacker_slot === 3) setPlayerUnitSlot3(null)
+                    }
+    
+                    //If combat was a win or tie, destroys opponent's monster
+                    if((data.defender_slot === 1) && !data.loss){
+                        setOpponentUnitSlot1(null);
+                    }
+                    if((data.defender_slot === 2) && !data.loss){
+                        setOpponentUnitSlot2(null);
+                    }
+                    if((data.defender_slot === 3) && !data.loss){
+                        setOpponentUnitSlot3(null);
+                    }
+                }else {
+                    //If other user attacked
+                    //Update both players' health
+                    setPlayerHealth(data.target_health);
+                    setOpponentHealth(data.user_health);
+    
+                    //Destroy attacking monster if loss or tie
+                    if(data.loss || data.tie){
+                        if(data.attacker_slot === 1) setOpponentUnitSlot1(null)
+                        if(data.attacker_slot === 2) setOpponentUnitSlot2(null)
+                        if(data.attacker_slot === 3) setOpponentUnitSlot3(null)
+                    }
+    
+                    //Destroy defending monster if loss or tie
+                    if(data.defender_slot === 1  && !data.loss){
+                        setPlayerUnitSlot1(null);
+                        
+                    }
+                    if(data.defender_slot === 2  && !data.loss){
+                        setPlayerUnitSlot2(null);
+                    }
+                    if(data.defender_slot === 3  && !data.loss){
+                        setPlayerUnitSlot3(null);
+                    }
+                }
+            })
+
+            // ---------- END TURN ---------- \\
+
+    //Ends turn
+        socket.on('turn_ended', data => {
+            //If user who just had turn,
+            //Resets all relevant values
+            if (data.user_id === user.id){
+                //Sends next user's ID to backend
+                let userId;
+                if(turnOrder[0] === user.id){
+                    userId = turnOrder[1]
+                }else{
+                    userId = turnOrder[0]
+                }
+                //Tells backend to start next turn
+                socket.emit("start_draw_phase", {
+                    room_id:room_id,
+                    user_id: userId,
+                    turn_number: turnNumber + 1
+                })
+            }
+        })
+
 
     }, [])
 
@@ -277,6 +384,7 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     //Adds card to hand and removes it from deck
     const drawCard = () => {
+        console.log("pre draw card deck", deck);
         let d = [...deck]
         let h = [...hand]
         let card = d.pop()
@@ -304,83 +412,102 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     const placementPhase = () => {
         //spells
-        let draw = [];
-        let health = [];
-        let destroy = [];
-        let powerUp = [];
-        let powerDown = [];
+        let orgHand = {}
+        orgHand.draw = [];
+        orgHand.health = [];
+        orgHand.destroy = [];
+        orgHand.powerUp = [];
+        orgHand.powerDown = [];
         
         //units
-        let basicUnits = [];
-        let evolvedUnits = [];
+        orgHand.basicUnits = [];
+        orgHand.evolvedUnits = [];
         
         //Hand sorting
         console.log(hand)
         hand.forEach(card => {
             if(card.card_type.type === 'unit'){
                 if(card.card_type.evolution_name){
-                    evolvedUnits.push(card);
+                    orgHand.evolvedUnits.push(card);
                 }else {
-                    basicUnits.push(card);
+                    orgHand.basicUnits.push(card);
                 }
             }else{
                 let eff = card.card_type.effect.split(':')[0]
                 if(eff === 'heal'){
-                    health.push(card);
+                    orgHand.health.push(card);
                 }
                 if(eff === 'damage'){
-                    health.push(card);
+                    orgHand.health.push(card);
                 }
                 if(eff === 'draw'){
-                    draw.push(card);
+                    orgHand.draw.push(card);
                 }
                 if(eff === 'destroyOpponentUnitsBelowDef' || eff === 'destroyOpponentUnitsBelowAtt' || eff === 'destroyOpponentUnitsAboveDef' || eff === 'destroyOpponentUnitsAboveAtt'){
-                    destroy.push(card);
+                    orgHand.destroy.push(card);
                 }
                 if(eff === 'increaseAllAttack' || eff === 'increaseAllDefense'){
-                    powerUp.push(card);
+                    orgHand.powerUp.push(card);
                 }
                 if(eff === 'decreaseAllAttack' || eff === 'decreaseAllDefense') {
-                    powerDown.push(card);
+                    orgHand.powerDown.push(card);
                 }
             }
         })
 
-        console.log('draw', draw)
-        console.log('health', health)
-        console.log('destroy', destroy)
-        console.log('powerUp', powerUp)
-        console.log('powerDown', powerDown)
-        console.log('basicUnits', basicUnits)
-        console.log('evolvedUnits', evolvedUnits)
+        console.log('Org Hand!!!', orgHand)
 
-        //If hand contains a draw type card, plays one
-        if(draw.length > 0){
+        placementStepOne(orgHand);
+    }
+
+    const placementStepOne = (orgHand) => {
+        console.log('Placement Phase, Draw Card Phase')
+        let draw = orgHand.draw
+        if(orgHand.draw.length > 0){
             let played_spell = draw.pop();
             removeFromHand(played_spell);
             drawCardSpell(played_spell.card_type.effect.split(':')[1], played_spell.id)
             playSpell(played_spell.card_type);
-        }
 
-        //If hand contains a healing or damage spell, plays one 
-        if(health.length > 0){
+            //Activate next placement phase step after waiting                   
+            let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    placementStepTwo(orgHand);
+                }, waitAmt)
+            }else{
+            placementStepTwo(orgHand);
+        }
+    }
+
+    const placementStepTwo = (orgHand) => {
+        if(orgHand.health.length > 0){
+            let health = orgHand.health
             let played_spell = health.pop();
             removeFromHand(played_spell);
             playSpell(played_spell.card_type);
+
+            //Activate next placement phase step after waiting                   
+            let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    placementStepThree(orgHand);
+                }, waitAmt)
+        }else{
+            placementStepThree(orgHand);
         }
+    }
 
-        //If hand contains a monster destruction spell, plays one only if opponent has a unit that would be affected
-        if(destroy.length > 0){
-
+    const placementStepThree = (orgHand) => {
+        let destroy = orgHand.destroy;
+        if(orgHand.destroy.length > 0){
             //Checks to see if opponent has a unit
             if(opponentUnitSlot1 || opponentUnitSlot2 || opponentUnitSlot3){
                 let played_spell = null
-
+    
                 //Iterates through destroy cards in hand
                 destroy.forEach(card => {
                     let c = card.card_type;
                     let eff = c.effect.split(':');
-
+    
                     //Checks each unit slot to see if there is a match
                     //Ordered by priority, destroy stronger attack monsters with magic first
                     if(eff[0] === 'destroyOpponentUnitsBelowDef'){
@@ -419,22 +546,30 @@ const AI = ({socket, gameData, AIdeck}) => {
                         }
                     }
                 })
-
+    
                 //Sets spell played if found one
                 if(played_spell) playSpell(played_spell)
-            }
-        }
 
-        let unitPlaced = false;
-        //Checks evolved units first
-        if(evolvedUnits.length > 0) {
-            console.log('Thinking about Placing evolved unit')
+                //Activate next placement phase step after waiting                   
+                let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    placementStepFour(orgHand);
+                }, waitAmt)
+            }
+        }else{
+            placementStepFour(orgHand)
+        }
+    }
+
+    const placementStepFour = (orgHand) => {
+        let evolvedUnits = orgHand.evolvedUnits
+        if(evolvedUnits.length > 0){
             let played_unit = null;
             let slot = null;
             //iterates through all evolutions in hand
             evolvedUnits.forEach(card => {
                 let c = card.card_type;
-
+    
                 //Checks to see if each player unit slot has the prevolution needed to play this card.
                 //Then compares against previously found possibilities to play the stronger card.
                 if(playerUnitSlot1 && playerUnitSlot1.name === c.evolution_name){
@@ -466,10 +601,9 @@ const AI = ({socket, gameData, AIdeck}) => {
                     }
                 }
             })
-
+    
             //Places unit
             if(played_unit){
-                unitPlaced = true;
                 removeFromHand(played_unit);
                 //Sends info to backend
                 socket.emit('place_unit', {
@@ -480,11 +614,23 @@ const AI = ({socket, gameData, AIdeck}) => {
                     unit_slot: slot,
                     log: `${user.username} places ${played_unit.name}`
                 })
+                //Activate next placement phase step after waiting                   
+                let waitAmt = 500 * rng(5)
+                    setTimeout(() => {
+                        placementStepSix(orgHand);
+                    }, waitAmt)
+            }else{
+                placementStepFive(orgHand)
             }
+        }else {
+            placementStepFive(orgHand)
         }
+    }
 
-        if(!unitPlaced && basicUnits.length > 0) {
-            console.log('Thinking about placing basic unit')
+    const placementStepFive = (orgHand) => {
+        let basicUnits = orgHand.basicUnits
+        console.log('Thinking about placing basic unit')
+        if(basicUnits.length > 0){
             let played_unit = null;
             let slot = null;
             basicUnits.forEach(card => {
@@ -533,9 +679,22 @@ const AI = ({socket, gameData, AIdeck}) => {
                     unit_slot: slot,
                     log: `${user.username} places ${played_unit.card_type.name}`
                 })
+                
+                //Activate next placement phase step after waiting                   
+                let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    placementStepSix(orgHand);
+                }, waitAmt)
+            }else{
+                placementStepSix(orgHand);
             }
+        }else {
+            placementStepSix(orgHand);
         }
+    }
 
+    const placementStepSix = (orgHand) => {
+        let powerUp = orgHand.powerUp
         if(powerUp.length > 0) {
             let used_spell = null;
             powerUp.forEach(card => {
@@ -551,9 +710,22 @@ const AI = ({socket, gameData, AIdeck}) => {
             })
             if(used_spell){
                 playSpell(used_spell);
-            }
-        }
 
+                //Activate next placement phase step after waiting                   
+                let waitAmt = 500 * rng(5)
+                setTimeout(() => {
+                    placementStepSeven(orgHand);
+                }, waitAmt)
+            }else{
+                placementStepSeven(orgHand);
+            }
+        }else {
+            placementStepSeven(orgHand);
+        }
+    }
+
+    const placementStepSeven = (orgHand) => {
+        let powerDown = orgHand.powerDown
         if(powerDown.length > 0){
             let used_spell = null;
             powerDown.forEach(card => {
@@ -572,6 +744,23 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         }
 
+        //Combat phase emitter
+        //Rules prohibit combat on turn 1.  Ends turn if pressed on turn 1.
+        if(turnNumber === 1){
+            socket.emit('end_turn', {
+                room_id: room_id,
+                user_id: user.id,
+                turn_number: turnNumber,
+                log: `${user.username} ends their turn.`
+            })
+        }else {
+            //Progresses both clients to combat phase
+            socket.emit('start_combat_phase', {
+                room_id:room_id,
+                user_id: user.id,
+                log: `${user.username} begins their combat phase!`
+            })
+        }
     }
 
 
@@ -817,8 +1006,207 @@ const AI = ({socket, gameData, AIdeck}) => {
                 //Payload is a variable used that contains all necessary info
                 socket.emit('use_spell', payload);
             break;
-
         }
+    }
+
+    const combatPhase = () => {
+
+        //Unit Slot 1 attack handler
+        if(playerUnitSlot1){
+            let target = null;
+            let result = null;
+            let targetName = null;
+            if(opponentUnitSlot1){
+                let res = opponentUnitSlot1.defense < playerUnitSlot1.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 1;
+                    targetName = opponentUnitSlot1.name;
+                }
+            }
+            if(opponentUnitSlot2){
+                let res = opponentUnitSlot2.defense < playerUnitSlot1.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 2;
+                    targetName = opponentUnitSlot2.name;
+                }
+            }
+            if(opponentUnitSlot3){
+                let res = opponentUnitSlot3.defense < playerUnitSlot1.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 3;
+                    targetName = opponentUnitSlot3.name;
+                }
+            }
+            console.log("Slot1 check",target)
+            if(target){
+                
+                //Calculates health points and losses
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+                let loss = false;
+                if(result > 0){
+                    targetHealth -= result;
+                }else{
+                loss = true;
+                userHealth += result;
+            }
+
+            let tie = false;
+            if (result === 0){
+                tie = true;
+            }
+
+            socket.emit("attack", {
+                    room_id:room_id,
+                    user_id:user.id,
+                    attacker_slot:1,
+                    defender_slot:target,
+                    results:result,
+                    user_health:userHealth,
+                    target_health:targetHealth,
+                    tie:tie,
+                    loss:loss,
+                    log: `${user.username} attacks ${targetName} with ${playerUnitSlot1.name}!`
+                })
+            }
+        }
+
+        //Unit Slot 2 attack handler
+        if(playerUnitSlot2){
+            let target = null;
+            let result = null;
+            let targetName = null;
+            if(opponentUnitSlot1){
+                let res = opponentUnitSlot1.defense < playerUnitSlot2.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 1;
+                    targetName = opponentUnitSlot1.name;
+                }
+            }
+            if(opponentUnitSlot2){
+                let res = opponentUnitSlot2.defense < playerUnitSlot2.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 2;
+                    targetName = opponentUnitSlot2.name;
+                }
+            }
+            if(opponentUnitSlot3){
+                let res = opponentUnitSlot3.defense < playerUnitSlot2.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 3;
+                    targetName = opponentUnitSlot3.name;
+                }
+            }
+
+            console.log("Slot2 check",target)
+            if(target){
+                //Calculates health points and losses
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+                let loss = false;
+                if(result > 0){
+                    targetHealth -= result;
+                }else{
+                    loss = true;
+                    userHealth += result;
+                }
+    
+                let tie = false;
+                if (result === 0){
+                    tie = true;
+                }
+    
+                socket.emit("attack", {
+                        room_id:room_id,
+                        user_id:user.id,
+                        attacker_slot:2,
+                        defender_slot:target,
+                        results:result,
+                        user_health:userHealth,
+                        target_health:targetHealth,
+                        tie:tie,
+                        loss:loss,
+                        log: `${user.username} attacks ${targetName} with ${playerUnitSlot2.name}!`
+                })
+            }
+        }
+
+
+        //Unit Slot 3 attack handler
+        if(playerUnitSlot3){
+            let target = null;
+            let result = null;
+            let targetName = null;
+            if(opponentUnitSlot1){
+                let res = opponentUnitSlot1.defense < playerUnitSlot3.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 1;
+                    targetName = opponentUnitSlot1.name;
+                }
+            }
+            if(opponentUnitSlot2){
+                let res = opponentUnitSlot2.defense < playerUnitSlot3.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 2;
+                    targetName = opponentUnitSlot2.name;
+                }
+            }
+            if(opponentUnitSlot3){
+                let res = opponentUnitSlot3.defense < playerUnitSlot3.attack;
+                if(!result || res > result){
+                    result = res;
+                    target = 3;
+                    targetName = opponentUnitSlot3.name;
+                }
+            }
+
+            console.log("Slot3 check",target)
+            if(target){
+                //Calculates health points and losses
+                let userHealth = playerHealth
+                let targetHealth = opponentHealth
+                let loss = false;
+                if(result > 0){
+                    targetHealth -= result;
+                }else{
+                    loss = true;
+                    userHealth += result;
+                }
+    
+                let tie = false;
+                if (result === 0){
+                    tie = true;
+                }
+    
+                socket.emit("attack", {
+                        room_id:room_id,
+                        user_id:user.id,
+                        attacker_slot:3,
+                        defender_slot:target,
+                        results:result,
+                        user_health:userHealth,
+                        target_health:targetHealth,
+                        tie:tie,
+                        loss:loss,
+                        log: `${user.username} attacks ${targetName} with ${playerUnitSlot3.name}!`
+                })
+            }
+        }
+
+        socket.emit('end_turn', {
+            room_id: room_id,
+            user_id: user.id,
+            turn_number: turnNumber,
+            log: `${user.username} ends their turn.`
+        })
     }
     
     
