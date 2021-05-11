@@ -1,8 +1,9 @@
 import React from 'react';
+import styles from './RulePage.module.css';
 
 const RulesPage = () => {
     return (
-        <div>
+        <div className={styles.rulesWrapper}>
             <h1>Super Battle Cards Official Rules</h1>
             <p>
                 Each player begins with the same amount of health points.  The goal of Super Battle Cards is to lower their opponent's health to zero.

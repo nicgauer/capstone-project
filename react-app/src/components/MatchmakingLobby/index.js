@@ -8,6 +8,8 @@ import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 import AI from '../AI';
 
+import styles from './MatchmakingLobby.module.css';
+
 const endPoint = "http://localhost:5000"
 // const endPoint = "https://super-battle-cards.herokuapp.com"
 const socket = io(endPoint);
@@ -145,19 +147,7 @@ const MatchmakingLobby = () => {
                 <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />
             )}
             {!AIgame && !gameLost && !gameWon && !gameFound && !waiting && decks &&
-                (<div>
-                    <RulesPage />
-                    <select
-                        value={selectedDeck}
-                        onChange={(e) => setSelectedDeck(decks[e.target.value])}
-                        >
-                            {console.log(decks)}
-                            {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.name}</option>)}
-                    </select>
-
-                    <button onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
-
-                    <button onClick={playAIgame} disabled={!selectedDeck}>Play AI game</button>
+                (<div className={styles.mainWrapper}>
                     <div>
                         <NavLink to='/'>Play Again</NavLink>
                     </div>
@@ -166,6 +156,25 @@ const MatchmakingLobby = () => {
                     </div>
                     <div>
                         <NavLink to='/collection'>Card Collection</NavLink>
+                    </div>
+                    
+                    <RulesPage />
+
+                    <div className={styles.deckSelectorContainer}>
+                        <h1>CHOOSE YOUR DECK</h1>
+                        <select
+                            value={selectedDeck}
+                            onChange={(e) => setSelectedDeck(decks[e.target.value])}
+                            >
+                                {console.log(decks)}
+                                {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className={styles.mainButtonContainer}>
+                        <button className={styles.mmButton} onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
+
+                        <button className={styles.mmButton} onClick={playAIgame} disabled={!selectedDeck}>Play AI game</button>
                     </div>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
