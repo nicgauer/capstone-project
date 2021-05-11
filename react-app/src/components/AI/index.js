@@ -38,9 +38,13 @@ const AI = ({socket, gameData, AIdeck}) => {
         username:'Duel Bot',
         id:0
     }
-    const [turnNumber, setTurnNumber] = useState(1);
-    const [playerHealth, setPlayerHealth] = useState(1000);
-    const [opponentHealth, setOpponentHealth] = useState(1000);
+    // const [turnNumber, setTurnNumber] = useState(1);
+    // const [playerHealth, setPlayerHealth] = useState(1000);
+    // const [opponentHealth, setOpponentHealth] = useState(1000);
+
+    let turnNumber = 1;
+    let playerHealth = 1000;
+    let opponentHealth = 1000;
 
     // let drawPhase = false;
     // let placementPhase = false;
@@ -48,16 +52,27 @@ const AI = ({socket, gameData, AIdeck}) => {
     // let d = shuffle([...AIdeck]);
     // let h = drawHand(d);
 
-    const [hand, setHand] = useState([]);
-    const [deck, setDeck] = useState(AIdeck);
+    // const [hand, setHand] = useState([]);
+    // const [deck, setDeck] = useState(AIdeck);
 
-    const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null);
-    const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null);
-    const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null);
+    let deck = shuffle(AIdeck);
+    let hand = drawHand(deck);
 
-    const [opponentUnitSlot1, setOpponentUnitSlot1] = useState(null);
-    const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null);
-    const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null);
+    let playerUnitSlot1 = null;
+    let playerUnitSlot2 = null;
+    let playerUnitSlot3 = null;
+
+    let opponentUnitSlot1 = null;
+    let opponentUnitSlot2 = null;
+    let opponentUnitSlot3 = null;
+
+    // const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null);
+    // const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null);
+    // const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null);
+
+    // const [opponentUnitSlot1, setOpponentUnitSlot1] = useState(null);
+    // const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null);
+    // const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null);
 
     // ----- HELPERS ----- \\
 
@@ -68,20 +83,22 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     const removeFromHand = (card) => {
         let h = [...hand]
-        setHand(h.filter(c => c.id != card.id));
+        // setHand(h.filter(c => c.id != card.id));
+        hand = h.filter(c => c.id != card.id)
         console.log('remove from hand hand', hand);
     }
 
 
     useEffect(() => {
-        let shuffledDeck = shuffle(AIdeck);
-        let initialHand = drawHand(shuffledDeck)
-        setDeck(shuffledDeck);
-        setHand(initialHand);
+        // let shuffledDeck = shuffle(AIdeck);
+        // let initialHand = drawHand(shuffledDeck)
+        // setDeck(shuffledDeck);
+        // setHand(initialHand);
 
         //Checks to see if this client is first in turn order
         if(turnOrder[0] === user.id){
             //Tells back end this client is beginning turn
+            console.log('AI starting first turn')
             socket.emit('start_draw_phase', {
                 user_id:user.id,
                 room_id:room_id,
@@ -100,21 +117,27 @@ const AI = ({socket, gameData, AIdeck}) => {
                 drawPhase()
             }
             //Updates both users' turn count
-            setTurnNumber(data.turn_number);
+            // setTurnNumber(data.turn_number);
+            turnNumber = data.turn_number;
         })
 
         socket.on("card_drawn", data => {
             //If AI drew card
             if(data.user_id === user.id) {
                 console.log('AI drew card!')
-                let waitAmt = 500 * rng(5)
-                setTimeout(() => {
-                    //Tells backed this client is starting next phase
+                // let waitAmt = 500 * rng(5)
+                // setTimeout(() => {
+                //     //Tells backed this client is starting next phase
+                    // socket.emit("start_placement_phase", {
+                    //     user_id: user.id,
+                    //     room_id: room_id,
+                    // })
+
                     socket.emit("start_placement_phase", {
                         user_id: user.id,
                         room_id: room_id,
                     })
-                }, waitAmt)
+                // }, waitAmt)
             }
         })
         
@@ -124,11 +147,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             //If this user is starting placement phase
             if(data.user_id === user.id) {
                 console.log('AI is starting placement phase!')
-                let waitAmt = 500 * rng(5)
-                setTimeout(() => {
-                    //Activate placement phase
-                    placementPhase()                    
-                }, waitAmt)
+                placementPhase();
             }
         })
 
@@ -138,7 +157,8 @@ const AI = ({socket, gameData, AIdeck}) => {
             if(data.user_id === user.id){
 
                 //Updates opponent health if changes
-                if(data.opp_health) setOpponentHealth(data.opp_health);
+                // if(data.opp_health) setOpponentHealth(data.opp_health);
+                if(data.opp_health) opponentHealth = data.opp_health
 
                 //updates user health if changes
                 if(data.user_health) {
@@ -149,29 +169,30 @@ const AI = ({socket, gameData, AIdeck}) => {
                             room_id:room_id,
                         })
                     }
-                    setPlayerHealth(data.user_health);
+                    // setPlayerHealth(data.user_health);
+                    playerHealth = data.user_health;
                 }
 
                 //Handles destruction effects
                 if(data.destroy) {
                     if(data.destroy.includes(1)) {
-                        setOpponentUnitSlot1(null);
+                        opponentUnitSlot1 = null;
                     }
                     if(data.destroy.includes(2)) {
-                        setOpponentUnitSlot2(null);
+                        opponentUnitSlot2 = null;
                     }
                     if(data.destroy.includes(3)) {
-                        setOpponentUnitSlot3(null);
+                        opponentUnitSlot3 = null;
                     }
                 }
 
                 //Handle stat changes
-                if(data.pu1) setPlayerUnitSlot1(data.pu1);
-                if(data.pu2) setPlayerUnitSlot2(data.pu2);
-                if(data.pu3) setPlayerUnitSlot3(data.pu3);
-                if(data.ou1) setOpponentUnitSlot1(data.ou1);
-                if(data.ou2) setOpponentUnitSlot2(data.ou2);
-                if(data.ou3) setOpponentUnitSlot3(data.ou3);
+                if(data.pu1) playerUnitSlot1 = data.pu1;
+                if(data.pu2) playerUnitSlot2 = data.pu2;
+                if(data.pu3) playerUnitSlot3 = data.pu3;
+                if(data.ou1) opponentUnitSlot1 = data.ou1;
+                if(data.ou2) opponentUnitSlot2 = data.ou2;
+                if(data.ou3) opponentUnitSlot3 = data.ou3;
             }else {
                 //If opponent used spell 
 
@@ -189,32 +210,37 @@ const AI = ({socket, gameData, AIdeck}) => {
                             room_id:room_id,
                         })
                     }
-                    setPlayerHealth(data.opp_health);
+                    // setPlayerHealth(data.opp_health);
+                    playerHealth = data.opp_health;
                 }
 
                 //updates user health if changes
-                if(data.user_health) setOpponentHealth(data.user_health)
+                // if(data.user_health) setOpponentHealth(data.user_health)
+                if(data.user_health) opponentHealth = data.user_health;
 
                 //Handles destruction effects
                 if(data.destroy) {
                     if(data.destroy.includes(1)) {
-                        setPlayerUnitSlot1(null);
+                        // setPlayerUnitSlot1(null);
+                        playerUnitSlot1 = null;
                     }
                     if(data.destroy.includes(2)) {
-                        setPlayerUnitSlot2(null);
+                        // setPlayerUnitSlot2(null);
+                        playerUnitSlot2 = null;
                     }
                     if(data.destroy.includes(3)) {
-                        setPlayerUnitSlot3(null);
+                        // setPlayerUnitSlot3(null);
+                        playerUnitSlot3 = null;
                     }
                 }
 
                 //Handle stat changes
-                if(data.pu1) setOpponentUnitSlot1(data.pu1);
-                if(data.pu2) setOpponentUnitSlot2(data.pu2);
-                if(data.pu3) setOpponentUnitSlot3(data.pu3);
-                if(data.ou1) setPlayerUnitSlot1(data.ou1);
-                if(data.ou2) setPlayerUnitSlot2(data.ou2);
-                if(data.ou3) setPlayerUnitSlot3(data.ou3);
+                if(data.pu1) opponentUnitSlot1 = data.pu1;
+                if(data.pu2) opponentUnitSlot2 = data.pu2;
+                if(data.pu3) opponentUnitSlot3 = data.pu3;
+                if(data.ou1) playerUnitSlot1 = data.ou1;
+                if(data.ou2) playerUnitSlot2 = data.ou2;
+                if(data.ou3) playerUnitSlot3 = data.ou3;
             }
         })
 
@@ -223,25 +249,25 @@ const AI = ({socket, gameData, AIdeck}) => {
             if(data.user_id === user.id) {
                 //Checks which slot unit was placed in
                 if(data.unit_slot == 1){
-                    setPlayerUnitSlot1(data.card_type);
+                    playerUnitSlot1 = data.card_type;
                 }
                 if(data.unit_slot == 2){
-                    setPlayerUnitSlot2(data.card_type);
+                    playerUnitSlot2 = data.card_type;
                 }
                 if(data.unit_slot == 3){
-                    setPlayerUnitSlot3(data.card_type);
+                    playerUnitSlot3 = data.card_type;
                 }
             }else{
                 //If other user placed card
                 //Update appropriate opponent slots
                 if(data.unit_slot == 1){
-                    setOpponentUnitSlot1(data.card_type);
+                    opponentUnitSlot1 = data.card_type;
                 }
                 if(data.unit_slot == 2){
-                    setOpponentUnitSlot2(data.card_type);
+                    opponentUnitSlot2 = data.card_type;
                 }
                 if(data.unit_slot == 3){
-                    setOpponentUnitSlot3(data.card_type);
+                    opponentUnitSlot3 = data.card_type;
                 }
             }
         })
@@ -254,11 +280,11 @@ const AI = ({socket, gameData, AIdeck}) => {
             if (data.user_id === user.id){
                 console.log("combat phase start")
                 //Ends placement phase, begins combat phase
-                let waitAmt = 500 * rng(5)
-                setTimeout(() => {
+                // let waitAmt = 500 * rng(5)
+                // setTimeout(() => {
                     //Activate placement phase
                     combatPhase()                    
-                }, waitAmt)
+                // }, waitAmt)
             }
         })
 
@@ -284,49 +310,56 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
         
                     //Updates both clients' health
-                    setOpponentHealth(data.target_health);
-                    setPlayerHealth(data.user_health);
+                    // setOpponentHealth(data.target_health);
+                    // setPlayerHealth(data.user_health);
+                    opponentHealth = data.target_health
+                    playerHealth = data.user_health
     
                     //If combat was a loss, destroy player unit that attacked
                     if(data.loss || data.tie){
-                        if(data.attacker_slot === 1) setPlayerUnitSlot1(null)
-                        if(data.attacker_slot === 2) setPlayerUnitSlot2(null)
-                        if(data.attacker_slot === 3) setPlayerUnitSlot3(null)
+                        // if(data.attacker_slot === 1) setPlayerUnitSlot1(null)
+                        // if(data.attacker_slot === 2) setPlayerUnitSlot2(null)
+                        // if(data.attacker_slot === 3) setPlayerUnitSlot3(null)
+                        if(data.attacker_slot === 1) playerUnitSlot1 = null
+                        if(data.attacker_slot === 2) playerUnitSlot2 = null
+                        if(data.attacker_slot === 3) playerUnitSlot3 = null
                     }
     
                     //If combat was a win or tie, destroys opponent's monster
                     if((data.defender_slot === 1) && !data.loss){
-                        setOpponentUnitSlot1(null);
+                        opponentUnitSlot1 = null;
                     }
                     if((data.defender_slot === 2) && !data.loss){
-                        setOpponentUnitSlot2(null);
+                        opponentUnitSlot2 = null;
                     }
                     if((data.defender_slot === 3) && !data.loss){
-                        setOpponentUnitSlot3(null);
+                        opponentUnitSlot3 = null;
                     }
                 }else {
                     //If other user attacked
                     //Update both players' health
-                    setPlayerHealth(data.target_health);
-                    setOpponentHealth(data.user_health);
+                    // setPlayerHealth(data.target_health);
+                    // setOpponentHealth(data.user_health);
+                    playerHealth = data.target_health;
+                    opponentHealth = data.user_health;
     
                     //Destroy attacking monster if loss or tie
                     if(data.loss || data.tie){
-                        if(data.attacker_slot === 1) setOpponentUnitSlot1(null)
-                        if(data.attacker_slot === 2) setOpponentUnitSlot2(null)
-                        if(data.attacker_slot === 3) setOpponentUnitSlot3(null)
+                        if(data.attacker_slot === 1) opponentUnitSlot1 = null;
+                        if(data.attacker_slot === 2) opponentUnitSlot2 = null;
+                        if(data.attacker_slot === 3) opponentUnitSlot3 = null;
                     }
     
                     //Destroy defending monster if loss or tie
                     if(data.defender_slot === 1  && !data.loss){
-                        setPlayerUnitSlot1(null);
+                        playerUnitSlot1 = null;
                         
                     }
                     if(data.defender_slot === 2  && !data.loss){
-                        setPlayerUnitSlot2(null);
+                        playerUnitSlot2 = null;
                     }
                     if(data.defender_slot === 3  && !data.loss){
-                        setPlayerUnitSlot3(null);
+                        playerUnitSlot3 = null;
                     }
                 }
             })
@@ -391,8 +424,10 @@ const AI = ({socket, gameData, AIdeck}) => {
         h.push(card)
         console.log("draw card deck", d)
         console.log("draw card hand", h)
-        setHand(h)
-        setDeck(d)
+        // setHand(h)
+        // setDeck(d)
+        hand = h;
+        deck = d;
     }
 
     const drawCardSpell = (amt, card_id) => {
@@ -404,8 +439,10 @@ const AI = ({socket, gameData, AIdeck}) => {
             let card = d.pop()
             h.push(card)
         }
-        setDeck(d)
-        setHand(h)
+        // setDeck(d)
+        // setHand(h)
+        hand = h;
+        deck = d;
     }
 
     // ---------- PLACEMENT PHASE ---------- \\
@@ -424,7 +461,6 @@ const AI = ({socket, gameData, AIdeck}) => {
         orgHand.evolvedUnits = [];
         
         //Hand sorting
-        console.log(hand)
         hand.forEach(card => {
             if(card.card_type.type === 'unit'){
                 if(card.card_type.evolution_name){
@@ -454,7 +490,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
             }
         })
-
+        console.log('hand after org', hand)
         console.log('Org Hand!!!', orgHand)
 
         placementStepOne(orgHand);
@@ -462,6 +498,8 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     const placementStepOne = (orgHand) => {
         console.log('Placement Phase, Draw Card Phase')
+        console.log("hand", hand)
+        console.log("deck", deck)
         let draw = orgHand.draw
         if(orgHand.draw.length > 0){
             let played_spell = draw.pop();
@@ -471,15 +509,16 @@ const AI = ({socket, gameData, AIdeck}) => {
 
             //Activate next placement phase step after waiting                   
             let waitAmt = 500 * rng(5)
-                setTimeout(() => {
+                // setTimeout(() => {
                     placementStepTwo(orgHand);
-                }, waitAmt)
+                // }, waitAmt)
             }else{
             placementStepTwo(orgHand);
         }
     }
 
     const placementStepTwo = (orgHand) => {
+        console.log('Thinking about playing health spell')
         if(orgHand.health.length > 0){
             let health = orgHand.health
             let played_spell = health.pop();
@@ -488,9 +527,9 @@ const AI = ({socket, gameData, AIdeck}) => {
 
             //Activate next placement phase step after waiting                   
             let waitAmt = 500 * rng(5)
-                setTimeout(() => {
+                // setTimeout(() => {
                     placementStepThree(orgHand);
-                }, waitAmt)
+                // }, waitAmt)
         }else{
             placementStepThree(orgHand);
         }
@@ -552,9 +591,9 @@ const AI = ({socket, gameData, AIdeck}) => {
 
                 //Activate next placement phase step after waiting                   
                 let waitAmt = 500 * rng(5)
-                setTimeout(() => {
+                // setTimeout(() => {
                     placementStepFour(orgHand);
-                }, waitAmt)
+                // }, waitAmt)
             }
         }else{
             placementStepFour(orgHand)
@@ -616,9 +655,9 @@ const AI = ({socket, gameData, AIdeck}) => {
                 })
                 //Activate next placement phase step after waiting                   
                 let waitAmt = 500 * rng(5)
-                    setTimeout(() => {
+                    // setTimeout(() => {
                         placementStepSix(orgHand);
-                    }, waitAmt)
+                    // }, waitAmt)
             }else{
                 placementStepFive(orgHand)
             }
@@ -643,6 +682,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                             }
                         }else {
                             played_unit = card;
+                            slot = 2;
                         }
                     }
                     if(!playerUnitSlot1){
@@ -653,6 +693,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                             }
                         }else {
                             played_unit = card;
+                            slot = 1;
                         }
                     }
                     if(!playerUnitSlot3){
@@ -663,6 +704,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                             }
                         }else {
                             played_unit = card;
+                            slot = 3;
                         }
                     }
                 }
@@ -682,9 +724,9 @@ const AI = ({socket, gameData, AIdeck}) => {
                 
                 //Activate next placement phase step after waiting                   
                 let waitAmt = 500 * rng(5)
-                setTimeout(() => {
+                // setTimeout(() => {
                     placementStepSix(orgHand);
-                }, waitAmt)
+                // }, waitAmt)
             }else{
                 placementStepSix(orgHand);
             }
@@ -713,9 +755,9 @@ const AI = ({socket, gameData, AIdeck}) => {
 
                 //Activate next placement phase step after waiting                   
                 let waitAmt = 500 * rng(5)
-                setTimeout(() => {
+                // setTimeout(() => {
                     placementStepSeven(orgHand);
-                }, waitAmt)
+                // }, waitAmt)
             }else{
                 placementStepSeven(orgHand);
             }
