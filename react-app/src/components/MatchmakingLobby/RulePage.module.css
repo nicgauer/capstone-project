@@ -2,3 +2,15 @@
     width: 75%;
     text-align: center;
 }
+
+.rulesContainerHidden {
+    display:none;
+}
+
+.rulesHeader {
+    /* cursor: pointer; */
+}
+
+.rulesContainer {
+
+}

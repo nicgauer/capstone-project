@@ -42,7 +42,7 @@ const CollectionDisplay = ({cards}) => {
                     <option value={"allCards"}>All Cards</option>
                     <option value={"box"}>Unassigned Cards</option>
                 </select>
-                {selected && (<div>
+                {selected && (<div className={styles.cardContainer}>
                         <h1>Selected Card</h1>
                         <CardDisplay card={selected.card_type} />
                         {((dropdown === 'allCards') || (dropdown === 'box')) && 

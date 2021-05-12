@@ -1,3 +1,40 @@
+
 .newPackDisplay {
     display:flex;
+    justify-content: center;
 }
+
+.storeWrapper {
+    text-align: center;
+}
+
+.boosterButton {
+    cursor: pointer;
+    background-color:rgba(0, 158, 53, 0.795);
+    color:white;
+    font-size: 14px;
+    font-weight:700;
+    border-radius:5px;
+    padding:15px;
+    transition-property: all;
+    transition-duration: .3s;
+    transition-delay: .1s;
+}
+
+.boosterButton:hover {
+    box-shadow: 0px 0px 14px rgba(0, 0, 0, 0.404);
+    background-color:rgba(11, 143, 55, 0.877);
+    font-weight:700;
+    transform-origin:center;
+    transform: scale(1.05, 1.05);
+    }
+
+    .boosterButtonDisabled {
+        /* cursor: pointer; */
+        background-color:rgba(0, 158, 53, 0.247);
+        color:white;
+        font-size: 14px;
+        font-weight:700;
+        border-radius:5px;
+        padding:15px;
+    }

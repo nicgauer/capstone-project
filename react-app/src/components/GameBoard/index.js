@@ -503,6 +503,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         //Must be placement phase, have a unit card selected, and not placed a card yet this turn
         if(placementPhase && selected && (selected.card_type.type === 'unit') && !unitPlaced){
 
+            let attack_power_up = null;
+            let defense_power_up = null;
             //If has evolution,
             //Evolution mechanic restraints
             if(selected.card_type.evolution_name) {
@@ -513,6 +515,14 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if(int === 1 && playerUnitSlot1.name != selected.card_type.evolution_name) return;
                 if(int === 2 && playerUnitSlot2.name != selected.card_type.evolution_name) return;
                 if(int === 3 && playerUnitSlot3.name != selected.card_type.evolution_name) return;
+
+                if(int === 1 && playerUnitSlot1.attack_power_up) attack_power_up = playerUnitSlot1.attack_power_up
+                if(int === 2 && playerUnitSlot2.attack_power_up) attack_power_up = playerUnitSlot2.attack_power_up
+                if(int === 3 && playerUnitSlot3.attack_power_up) attack_power_up = playerUnitSlot3.attack_power_up
+
+                if(int === 1 && playerUnitSlot1.defense_power_up) defense_power_up = playerUnitSlot1.defense_power_up
+                if(int === 2 && playerUnitSlot2.defense_power_up) defense_power_up = playerUnitSlot2.defense_power_up
+                if(int === 3 && playerUnitSlot3.defense_power_up) defense_power_up = playerUnitSlot3.defense_power_up
             }else {
                 //If no evolution
                 //Prevents placing cards on taken slots
@@ -521,13 +531,17 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if(int === 3 && playerUnitSlot3) return;
             }
 
+            let t = {...selected.card_type}
+            if(attack_power_up) t.attack += attack_power_up
+            if(defense_power_up) t.defense += defense_power_up
             
+
             //Sends info to backend
             socket.emit('place_unit', {
                 room_id:room_id,
                 user_id: user.id,
                 hand_size: (hand.length - 1),
-                card_type: selected.card_type,
+                card_type: t,
                 unit_slot: int,
                 log: `${user.username} places ${selected.card_type.name}`
             })
@@ -674,6 +688,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     let t = {...playerUnitSlot1}
                     console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
+                    if(t.attack_power_up) {
+                        t.attack_power_up += Number(effAmt);
+                    }else{
+                        t.attack_power_up = Number(effAmt);
+                    }
                     payload.pu1 = t;
                 }
 
@@ -681,6 +700,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     let t = {...playerUnitSlot2}
                     console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
+                    if(t.attack_power_up) {
+                        t.attack_power_up += Number(effAmt);
+                    }else{
+                        t.attack_power_up = Number(effAmt);
+                    }
                     payload.pu2 = t;
                 }
 
@@ -688,6 +712,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                     let t = {...playerUnitSlot3}
                     console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
+                    if(t.attack_power_up) {
+                        t.attack_power_up += Number(effAmt);
+                    }else{
+                        t.attack_power_up = Number(effAmt);
+                    }
                     payload.pu3 = t;
                 }
 
@@ -706,18 +735,33 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if(playerUnitSlot1) {
                     let t = {...playerUnitSlot1}
                     t.defense += Number(effAmt);
+                    if(t.defense_power_up) {
+                        t.defense_power_up += Number(effAmt);
+                    }else{
+                        t.defense_power_up = Number(effAmt);
+                    }
                     payload.pu1 = t;
                 }
 
                 if(playerUnitSlot2) {
                     let t = {...playerUnitSlot2}
                     t.defense += Number(effAmt);
+                    if(t.defense_power_up) {
+                        t.defense_power_up += Number(effAmt);
+                    }else{
+                        t.defense_power_up = Number(effAmt);
+                    }
                     payload.pu2 = t;
                 }
 
                 if(playerUnitSlot3) {
                     let t = {...playerUnitSlot3}
                     t.defense += Number(effAmt);
+                    if(t.defense_power_up) {
+                        t.defense_power_up += Number(effAmt);
+                    }else{
+                        t.defense_power_up = Number(effAmt);
+                    }
                     payload.pu3 = t;
                 }
 

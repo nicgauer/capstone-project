@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getUserCards } from '../../services/card_collection'
 import CollectionDisplay from './CollectionDisplay';
+import Navigation from '../Navigation';
 
 
 const CardCollection = () => {
@@ -36,16 +37,8 @@ const CardCollection = () => {
 
     return (
         <div>
-            <div>
-                <NavLink to='/store'>Store</NavLink>
-            </div>
-            <div>
-                <NavLink to='/collection'>Card Collection</NavLink>
-            </div>
-            <div>
-                <NavLink to='/'>Play Game</NavLink>
-            </div>
-            <h1>{user.username}'s Cards</h1>
+            <Navigation />
+            <h1 style={{'text-align':'center'}}>{user.username}'s Cards</h1>
             {loading && (<h3>loading...</h3>)}
             {!loading && cards && (
                 <CollectionDisplay cards={cards} />
