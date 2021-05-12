@@ -7,6 +7,7 @@ import {getUserDecks} from '../../services/deck';
 import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 import AI from '../AI';
+import Navigation from '../Navigation';
 
 import styles from './MatchmakingLobby.module.css';
 
@@ -97,40 +98,57 @@ const MatchmakingLobby = () => {
         return Math.floor(Math.random() * max);
     }
 
+    const reloadHandler = () => {
+        window.location.reload();
+    }
+
 
     return (
         <div>
+            {!(AIgame && !gameLost && !gameWon && gameData) && !(!AIgame && !gameLost && !gameWon && gameFound && gameData) && <Navigation />}
             {gameLost && (
-                <div>
+                <div className={styles.defeatDisplayWrapper}>
                     <h1>GAME OVER</h1>
                     <h3>YOU LOST</h3>
                     <p>$50 gained!</p>
 
-                    <div>
-                        <NavLink to='/'>Play Again</NavLink>
-                    </div>
-                    <div>
-                        <NavLink to='/store'>Store</NavLink>
-                    </div>
-                    <div>
-                        <NavLink to='/collection'>Card Collection</NavLink>
+                    <div className={styles.mainButtonContainer}>
+                        <button onClick={reloadHandler} className={styles.mmButton}>
+                            Play Again
+                        </button>
+                        <NavLink to='/store'>
+                            <button className={styles.mmButton}>
+                                Card Store
+                            </button>
+                        </NavLink>
+                        <NavLink to='/collection'>
+                            <button className={styles.mmButton}>
+                                Card Collection
+                            </button>
+                        </NavLink>
                     </div>
                 </div>
             )}
             {gameWon && (
-                <div>
+                <div className={styles.victoryDisplayWrapper}>
                     <h1>CONGRATULATIONS</h1>
                     <h3>YOU WON!!!!</h3>
                     <p>$100 gained!</p>
                     
-                    <div>
-                        <NavLink to='/'>Play Again</NavLink>
-                    </div>
-                    <div>
-                        <NavLink to='/store'>Store</NavLink>
-                    </div>
-                    <div>
-                        <NavLink to='/collection'>Card Collection</NavLink>
+                    <div className={styles.mainButtonContainer}>
+                        <button onClick={reloadHandler} className={styles.mmButton}>
+                            Play Again
+                        </button>
+                        <NavLink to='/store'>
+                            <button className={styles.mmButton}>
+                                Card Store
+                            </button>
+                        </NavLink>
+                        <NavLink to='/collection'>
+                            <button className={styles.mmButton}>
+                                Card Collection
+                            </button>
+                        </NavLink>
                     </div>
                 </div>
             )}
@@ -148,15 +166,6 @@ const MatchmakingLobby = () => {
             )}
             {!AIgame && !gameLost && !gameWon && !gameFound && !waiting && decks &&
                 (<div className={styles.mainWrapper}>
-                    <div>
-                        <NavLink to='/'>Play Again</NavLink>
-                    </div>
-                    <div>
-                        <NavLink to='/store'>Store</NavLink>
-                    </div>
-                    <div>
-                        <NavLink to='/collection'>Card Collection</NavLink>
-                    </div>
                     
                     <RulesPage />
 
@@ -172,9 +181,9 @@ const MatchmakingLobby = () => {
                     </div>
 
                     <div className={styles.mainButtonContainer}>
-                        <button className={styles.mmButton} onClick={findGame} disabled={!selectedDeck}>Find Game...</button>
+                        <button className={styles.mmButton} onClick={findGame} disabled={!selectedDeck}>Multiplayer</button>
 
-                        <button className={styles.mmButton} onClick={playAIgame} disabled={!selectedDeck}>Play AI game</button>
+                        <button className={styles.mmButton} onClick={playAIgame} disabled={!selectedDeck}>Single Player</button>
                     </div>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 

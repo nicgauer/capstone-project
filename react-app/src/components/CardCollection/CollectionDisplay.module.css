@@ -1,4 +1,15 @@
+.container {
+    text-align: center;
+}
+
 .collectionWrapper {
     display:flex;
     flex-wrap:wrap;
+}
+
+.cardContainer {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

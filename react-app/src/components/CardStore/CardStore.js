@@ -53,12 +53,12 @@ const CardStore = ({cards}) => {
     }
 
     return (
-        <div>
+        <div className={styles.storeWrapper}>
             <h2>Card Store</h2>
             <h4>${freeCurrency}</h4>
             <div>
                 <h3>Purchase Booster Pack for $500</h3>
-                <button onClick={fcPullBooster} disabled={freeCurrency < 500}>Buy Booster</button>
+                <button className={freeCurrency < 500 ? styles.boosterButtonDisabled : styles.boosterButton} onClick={fcPullBooster} disabled={freeCurrency < 500}>{freeCurrency < 500 ? `Need ${500 - freeCurrency} more $!` : "Buy Booster"}</button>
                 <div className={styles.newPackDisplay}>
                     {newPack && newPack.map(card => 
                         (

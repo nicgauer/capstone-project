@@ -1,0 +1,9 @@
+.navbar {
+    display:flex;
+    justify-content:space-around;
+}
+
+.navlink {
+    margin-left: 2.5vw;
+    margin-right: 2.5vw;
+}

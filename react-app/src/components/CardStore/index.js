@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux';
-import { getCards } from '../../services/card_store'
-import CardStore from './CardStore'
+import { getCards } from '../../services/card_store';
+import CardStore from './CardStore';
+import Navigation from '../Navigation';
 
 
 const CardStoreWrapper = () => {
@@ -31,16 +32,8 @@ const CardStoreWrapper = () => {
 
     return (
         <div>
-            <div>
-                <NavLink to='/store'>Store</NavLink>
-            </div>
-            <div>
-                <NavLink to='/collection'>Card Collection</NavLink>
-            </div>
-            <div>
-                <NavLink to='/'>Play Game</NavLink>
-            </div>
-            <h1>Welcome, {user.username}</h1>
+            <Navigation />
+            <h1 style={{'text-align':'center'}}>Welcome, {user.username}</h1>
             {loading && !organized && (
                 <h1>loading card store...</h1>
             )}

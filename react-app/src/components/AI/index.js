@@ -1073,6 +1073,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             if(!opponentUnitSlot1 && !opponentUnitSlot2 && !opponentUnitSlot3){
                 target = 2;
                 targetName = 'directly'
+                result = playerUnitSlot1.attack
             }
 
             console.log("Slot1 check",target)
@@ -1157,6 +1158,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             if(!opponentUnitSlot1 && !opponentUnitSlot2 && !opponentUnitSlot3){
                 target = 2;
                 targetName = 'directly'
+                result = playerUnitSlot2.attack
             }
 
             console.log("Slot2 check",target)
@@ -1242,6 +1244,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             if(!opponentUnitSlot1 && !opponentUnitSlot2 && !opponentUnitSlot3){
                 target = 2;
                 targetName = 'directly'
+                result = playerUnitSlot3.attack
             }
 
             console.log("Slot3 check",target)
