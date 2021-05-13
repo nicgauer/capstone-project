@@ -3,10 +3,13 @@ import CardDisplay from '../CardDisplay';
 import styles from './CollectionDisplay.module.css';
 import { addCardToDeck } from '../../services/deck';
 import { Modal } from '../../context/Modal';
+import Navigation from '../Navigation';
+import { useSelector } from 'react-redux';
 
 
 const CollectionDisplay = ({cards}) => {
     const decks = [...cards.decks]
+    const user = useSelector(state => state.session.user);
     const [displaying, setDisplaying] = useState(cards.allCards);
     const [dropdown, setDropdown] = useState('allCards')
     const [selectedDropdown, setSelectedDropdown] = useState(decks[0].id)
@@ -38,7 +41,9 @@ const CollectionDisplay = ({cards}) => {
 
     return (
         <div className={styles.container}>
-            <div>
+            <div className={styles.collectionHeader}>
+                <Navigation />
+                <h1>{user.username}'s Cards</h1>
                 <select
                     value={dropdown}
                     onChange={displaySelectHandler}>
@@ -46,6 +51,7 @@ const CollectionDisplay = ({cards}) => {
                     <option value={"allCards"}>All Cards</option>
                     <option value={"box"}>Unassigned Cards</option>
                 </select>
+            </div>
                 {selected && showModal && (
                     <Modal onClose={() => setShowModal(false)}>
                         <div className={styles.cardContainer}>
@@ -64,7 +70,6 @@ const CollectionDisplay = ({cards}) => {
                             </div>
                     </Modal>
                     )}
-            </div>
             <div className={styles.collectionWrapper}>
                 {displaying.map(card => 
                     <div onClick={() => selectHandler(card)}>

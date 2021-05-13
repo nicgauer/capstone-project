@@ -5,8 +5,8 @@ def seed_card_types():
     tiger_man = CardType(
         name='Tiger Man',
         type='unit',
-        attack=900,
-        defense=500,
+        attack=600,
+        defense=200,
         description="After being bit by a radioactive tiger, Tony was transported to a different dimension.  Now, he battles endlessly in search of his favorite comfort food, frosted flakes.",
         rarity=0,
         picture_url='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2GKjvCuMeGNRTkm_GmThmck38dLnUGAS77A&usqp=CAU'
@@ -16,8 +16,8 @@ def seed_card_types():
     line_cook = CardType(
         name='Line Cook',
         type='unit',
-        attack=300,
-        defense=350,
+        attack=350,
+        defense=300,
         description='Not good at his job, but not great either.',
         rarity=0,
         picture_url='https://media.gettyimages.com/photos/line-cook-preparing-cilantro-in-restaurant-kitchen-picture-id546304027'
@@ -65,8 +65,8 @@ def seed_card_types():
     an_employee = CardType(
         name='median salary employee',
         type='unit',
-        attack=500,
-        defense=600,
+        attack=800,
+        defense=700,
         description="'Workin hard, or hardly workin?' - Laura from accounting",
         rarity=0,
         picture_url='https://i.imgur.com/mkaZLqq.jpg',
@@ -92,7 +92,7 @@ def seed_card_types():
         name='doge',
         type='unit',
         attack=200,
-        defense=200,
+        defense=300,
         description="wow, such memes",
         rarity=0,
         picture_url='https://blogs.unimelb.edu.au/sciencecommunication/files/2016/10/shibe-vqscp3-300x225.png'
@@ -103,7 +103,7 @@ def seed_card_types():
     muscle_doge = CardType(
         name='buff doge',
         type='unit',
-        attack=900,
+        attack=1000,
         defense=500,
         description="Mom said it's my turn to use the xbox",
         rarity=0,
@@ -156,7 +156,7 @@ def seed_card_types():
         type='unit',
         attack=600,
         defense=100,
-        description="moooooooooooooooooooooo",
+        description="moooooooooooooooo",
         rarity=2,
         picture_url='https://i.imgur.com/nrPDz5l.jpg',
     )
@@ -166,8 +166,8 @@ def seed_card_types():
     a_duck = CardType(
         name='A Duck',
         type='unit',
-        attack=450,
-        defense=600,
+        attack=400,
+        defense=550,
         description="quack quack quack",
         rarity=0,
         picture_url='https://i.imgur.com/z5yrNHw.jpg',
@@ -215,8 +215,8 @@ def seed_card_types():
     big_lizard = CardType(
         name='a Big Lizard',
         type='unit',
-        attack=700,
-        defense=650,
+        attack=900,
+        defense=750,
         description='A bigger lizard!!',
         rarity=1,
         picture_url='https://i.imgur.com/QfL328L.jpg?fb',
@@ -242,7 +242,7 @@ def seed_card_types():
         name='Tom Betthauser',
         type='unit',
         attack=400,
-        defense=1000,
+        defense=800,
         description='Instructional Assisstant for AA and all around good guy',
         rarity=4,
         picture_url='https://ca.slack-edge.com/T03GU501J-ULWR1NB0B-9fe136407b1a-512'
@@ -344,7 +344,8 @@ def seed_card_types():
         attack=650,
         defense=650,
         rarity=1,
-        description="He's got a hood on too, looks like"
+        description="He's got a hood on too, looks like",
+        picture_url='https://wallpaper.dog/large/10829005.jpg',
     )
 
     db.session.add(generic_archer)
@@ -418,7 +419,7 @@ def seed_card_types():
     eat_a_sandwich = CardType(
         name='Eat A Sandwich',
         type='spell',
-        description='A small but relatively healthy meal.',
+        description='Restores 200 points of health',
         effect='heal:200',
         rarity=0,
         picture_url='https://i.imgur.com/G3axAyg.jpg'
@@ -429,7 +430,7 @@ def seed_card_types():
     monster_energy = CardType(
         name='Monster Energy Drink',
         type='spell',
-        description='Monster Energy does not sponsor this post',
+        description='Restores 400 points of health',
         effect='heal:400',
         rarity=1,
         picture_url='https://i.imgur.com/8ycOsaN.jpg',
@@ -440,7 +441,7 @@ def seed_card_types():
     liquid_courage = CardType(
         name='Liquid Courage',
         type='spell',
-        description="Ask them out -- they'll definitely say yes",
+        description="Restores 600 points of health",
         effect='heal:600',
         rarity=2,
         picture_url='https://i.pinimg.com/736x/13/75/19/13751947a266a2f4d7e19093e2ca0d8e.jpg'
@@ -451,7 +452,7 @@ def seed_card_types():
     throw_rocks = CardType(
         name='Throw Rocks',
         type='spell',
-        description='Throw some rocks at \'em!!',
+        description='Deals 200 damage to your opponent',
         effect='damage:200',
         rarity=0,
         picture_url='https://i.imgur.com/poBikWY.jpg'
@@ -462,7 +463,7 @@ def seed_card_types():
     fire = CardType(
         name='Fire',
         type='spell',
-        description='Light them on fire!',
+        description='Deals 400 points of damage to your opponent',
         effect='damage:400',
         rarity=1,
         picture_url='https://i.imgur.com/2DQdxoE.jpg'
@@ -473,7 +474,7 @@ def seed_card_types():
     meteor = CardType(
         name='Meteor',
         type='spell',
-        description='Yeah pretty much gonna destroy everything man',
+        description='Deals 600 points of damage to your opponent',
         effect='damage:600',
         rarity=2,
         picture_url='https://i.imgur.com/0SmIl8Q.jpg'
@@ -484,7 +485,7 @@ def seed_card_types():
     helping_hand = CardType(
         name='Helping Hand',
         type='spell',
-        description='Yeah!!  Alright!',
+        description='Draw one card from your deck',
         effect='draw:1',
         rarity=2,
         picture_url='https://d36m266ykvepgv.cloudfront.net/uploads/media/0TBjuAAFTv/s-775-515/high-five.jpg'

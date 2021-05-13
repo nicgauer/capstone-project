@@ -12,7 +12,7 @@ const CardDisplay = ({card}) => {
                 {card.evolution_name && <h4>Evolves from {card.evolution_name}</h4>}
             </div>
             <div className={styles.statWrapper}>
-                {card.effect && (<h5>{card.effect}</h5>)}
+                {/* {card.effect && (<h5>{card.effect}</h5>)} */}
                 {card.type === 'unit' && (
                     <div>
                         <h5>Att-{card.attack} Def-{card.defense}</h5>
