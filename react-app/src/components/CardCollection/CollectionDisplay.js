@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import CardDisplay from '../CardDisplay';
 import styles from './CollectionDisplay.module.css';
 import { addCardToDeck } from '../../services/deck';
+import { Modal } from '../../context/Modal';
+
 
 const CollectionDisplay = ({cards}) => {
     const decks = [...cards.decks]
@@ -9,6 +11,7 @@ const CollectionDisplay = ({cards}) => {
     const [dropdown, setDropdown] = useState('allCards')
     const [selectedDropdown, setSelectedDropdown] = useState(decks[0].id)
     const [selected, setSelected] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     const displaySelectHandler = (e) => {
         setDropdown(e.target.value);
@@ -18,6 +21,7 @@ const CollectionDisplay = ({cards}) => {
 
     const selectHandler = (card) => {
         setSelected(card)
+        setShowModal(true)
     }
 
     const addToDeck = () => {
@@ -42,20 +46,24 @@ const CollectionDisplay = ({cards}) => {
                     <option value={"allCards"}>All Cards</option>
                     <option value={"box"}>Unassigned Cards</option>
                 </select>
-                {selected && (<div className={styles.cardContainer}>
-                        <h1>Selected Card</h1>
-                        <CardDisplay card={selected.card_type} />
-                        {((dropdown === 'allCards') || (dropdown === 'box')) && 
-                        <div>
-                            <select 
-                                value={selectedDropdown}
-                                onChange={(e) => setSelectedDropdown(e.target.value)}
-                                >
-                                {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
-                            </select>
-                            <button onClick={addToDeck}>Add to deck</button>
-                        </div>}
-                    </div>)}
+                {selected && showModal && (
+                    <Modal onClose={() => setShowModal(false)}>
+                        <div className={styles.cardContainer}>
+                                <h1>Selected Card</h1>
+                                <CardDisplay card={selected.card_type} />
+                                {((dropdown === 'allCards') || (dropdown === 'box')) && 
+                                <div>
+                                    <select 
+                                        value={selectedDropdown}
+                                        onChange={(e) => setSelectedDropdown(e.target.value)}
+                                        >
+                                        {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
+                                    </select>
+                                    <button onClick={addToDeck}>Add to deck</button>
+                                </div>}
+                            </div>
+                    </Modal>
+                    )}
             </div>
             <div className={styles.collectionWrapper}>
                 {displaying.map(card => 
