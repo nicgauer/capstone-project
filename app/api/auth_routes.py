@@ -74,6 +74,7 @@ def sign_up():
         
         new_deck = Deck(
             user_id=user.to_dict()['id'],
+            name=f"{user.to_dict()['username']}'s deck"
         )
         db.session.add(new_deck)
         db.session.commit()

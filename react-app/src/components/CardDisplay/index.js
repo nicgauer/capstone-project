@@ -6,20 +6,21 @@ const CardDisplay = ({card}) => {
     return (
         <div className={styles.cardWrapper}>
             <div className={styles.infoWrapper}>
-                <h3>{card.name}</h3>
+                <div className={styles.infoContainer}>
+                    <h3 className={styles.cardName}>{card.name}</h3>
+                    <h3 className={styles.cardType}>{card.type}</h3>
+                </div>
                 <img src={card.picture_url} className={styles.cardImage} />
-                <h4>{card.type}</h4>
                 {card.evolution_name && <h4>Evolves from {card.evolution_name}</h4>}
             </div>
-            <div className={styles.statWrapper}>
-                {/* {card.effect && (<h5>{card.effect}</h5>)} */}
+            <p>{card.description}</p>
                 {card.type === 'unit' && (
-                    <div>
-                        <h5>Att-{card.attack} Def-{card.defense}</h5>
+                    <div className={styles.statWrapper}>
+                        <h5>Att-{card.attack} </h5>
+                        <h5>Def-{card.defense}</h5>
                     </div>
                 )}
-                <p>{card.description}</p>
-            </div>
+            
         </div>
     )
 }

@@ -9,6 +9,7 @@ import RulesPage from './rules';
 import AI from '../AI';
 import Navigation from '../Navigation';
 import VictoryDisplay from './VictoryDisplay'
+import DefeatDisplay from './DefeatDisplay'
 
 import styles from './MatchmakingLobby.module.css';
 
@@ -105,29 +106,9 @@ const MatchmakingLobby = () => {
 
     return (
         <div>
-            {!(AIgame && !gameLost && !gameWon && gameData) && !(!AIgame && !gameLost && !gameWon && gameFound && gameData) && <Navigation />}
+            {!(AIgame && !gameLost && !gameWon && gameData) && !(!AIgame && !gameLost && !gameWon && gameFound && gameData) && <Navigation currentLocation={'home'} />}
             {gameLost && (
-                <div className={styles.defeatDisplayWrapper}>
-                    <h1>GAME OVER</h1>
-                    <h3>YOU LOST</h3>
-                    <p>$50 gained!</p>
-
-                    <div className={styles.mainButtonContainer}>
-                        <button onClick={reloadHandler} className={styles.mmButton}>
-                            Play Again
-                        </button>
-                        <NavLink to='/store'>
-                            <button className={styles.mmButton}>
-                                Card Store
-                            </button>
-                        </NavLink>
-                        <NavLink to='/collection'>
-                            <button className={styles.mmButton}>
-                                Card Collection
-                            </button>
-                        </NavLink>
-                    </div>
-                </div>
+                <DefeatDisplay />
             )}
             {gameWon && (<VictoryDisplay /> )}
 

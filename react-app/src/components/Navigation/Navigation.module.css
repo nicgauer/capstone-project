@@ -1,9 +1,31 @@
 .navbar {
     display:flex;
     justify-content:space-around;
+    padding-top: 15px;
+    padding-bottom:5px;
+    background-color:rgba(15, 23, 129, 0.897);
 }
 
 .navlink {
     margin-left: 2.5vw;
     margin-right: 2.5vw;
+}
+
+.link {
+    color:white;
+    font-size: 15px;
+    text-decoration:none;
+    cursor: pointer;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+.current {
+    color:white;
+    font-size: 15px;
+    font-weight:700;
+    text-decoration:underline;
+    cursor: pointer;
 }

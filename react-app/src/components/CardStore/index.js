@@ -32,7 +32,7 @@ const CardStoreWrapper = () => {
 
     return (
         <div>
-            <Navigation />
+            <Navigation currentLocation={'store'} />
             <h1 style={{'text-align':'center'}}>Welcome, {user.username}</h1>
             {loading && !organized && (
                 <h1>loading card store...</h1>

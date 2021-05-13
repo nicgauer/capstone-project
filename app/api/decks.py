@@ -12,21 +12,17 @@ def get_user_decks(id):
     return {"decks": [deck.to_dict() for deck in decks]}
 
 
-@deck_routes.route('/new/<int:id>')
+@deck_routes.route('/new/<int:id>', methods=['POST'])
 @login_required
 def new_deck(id):
+    req = request.json
     new_deck = Deck(
         user_id=id,
+        name=req
     )
     db.session.add(new_deck)
-    new_card = Card(
-        user_id=id,
-        deck_id=new_deck.to_dict().id,
-        card_type=4
-    )
-    db.session.add(new_card)
     db.session.commit()
-    return new_deck.to_dict()
+    return new_deck.to_dict_lite()
 
 
 @deck_routes.route('/<int:card_id>/<int:deck_id>')

@@ -7,11 +7,13 @@ export const getUserDecks = async (userId) => {
     return await response.json();
 }
 
-export const newDeck = async (userId) => {
+export const newDeck = async (userId, deckName) => {
     const response = await fetch(`/api/decks/new/${userId}`, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify(deckName)
     })
     return await response.json();
 }

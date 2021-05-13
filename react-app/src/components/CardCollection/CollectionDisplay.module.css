@@ -8,17 +8,37 @@ body {
     background-position: top;
     background-repeat: no-repeat;
     background-size: cover;
+    height: 100vh;
+    overflow:scroll;
 }
 
 .collectionHeader {
     position:sticky;
     top:0;
-    background-color:rgba(70, 80, 223, 0.747);
+    background-color:rgba(15, 23, 129, 0.897);
     padding-bottom:10px;
+    border-bottom-left-radius:35px;
+    border-bottom-right-radius:35px;
+}
+
+.headerInnerContainer{
+    display:flex;
+    justify-content: space-between;
+    margin-top:10px;
+}
+
+.leftSpacer {
+    display:flex;
+    margin-left:5vw;
+}
+
+.rightSpacer {
+    margin-right:5vw;
 }
 
 .collectionWrapper {
     display:flex;
+    justify-content:center;
     flex-wrap:wrap;
 }
 
@@ -30,5 +50,38 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color:rgba(247, 247, 247, 0.616);
+}
+
+.newDeckContainer {
+    padding:25px;
+    border:1px solid black;
+    border-radius: 8px;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     background-color:rgba(58, 68, 204, 0.89);
+}
+
+.newDeckButton {
+    padding:5px;
+    cursor:pointer;
+    border-radius:6px;
+    color:white;
+    font-weight:700;
+    background:rgba(40, 184, 11, 0.671);
+    margin:5px;
+}
+
+.displaySelect {
+    padding:5px;
+    border-radius:6px;
+    font-size:15px;
+    margin:5px;
+    height:
+}
+
+.selectedRemoveContainer {
+    text-align: center;
 }
