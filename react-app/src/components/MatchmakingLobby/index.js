@@ -8,6 +8,7 @@ import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 import AI from '../AI';
 import Navigation from '../Navigation';
+import VictoryDisplay from './VictoryDisplay'
 
 import styles from './MatchmakingLobby.module.css';
 
@@ -55,17 +56,16 @@ const MatchmakingLobby = () => {
     })
 
     socket.on("game_ended", async data => {
+        setAIgame(false);
         socket.emit("room_leave", {
             user_id: user.id,
             room_id: data.room_id
         })
-        if(data.loser_id === user.id){
-            setGameLost(true);
-            await dispatch(addLoss(user.id))
-        }else{
-            setGameWon(true);
-            await dispatch(addWin(user.id))
-        }
+            if(data.loser_id === user.id){
+                setGameLost(true);
+            }else{
+                setGameWon(true);
+            }
     })
     }, [])
 
@@ -129,29 +129,7 @@ const MatchmakingLobby = () => {
                     </div>
                 </div>
             )}
-            {gameWon && (
-                <div className={styles.victoryDisplayWrapper}>
-                    <h1>CONGRATULATIONS</h1>
-                    <h3>YOU WON!!!!</h3>
-                    <p>$100 gained!</p>
-                    
-                    <div className={styles.mainButtonContainer}>
-                        <button onClick={reloadHandler} className={styles.mmButton}>
-                            Play Again
-                        </button>
-                        <NavLink to='/store'>
-                            <button className={styles.mmButton}>
-                                Card Store
-                            </button>
-                        </NavLink>
-                        <NavLink to='/collection'>
-                            <button className={styles.mmButton}>
-                                Card Collection
-                            </button>
-                        </NavLink>
-                    </div>
-                </div>
-            )}
+            {gameWon && (<VictoryDisplay /> )}
 
             {AIgame && !gameLost && !gameWon && gameData && (
                 <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />

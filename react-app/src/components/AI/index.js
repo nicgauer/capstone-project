@@ -66,6 +66,8 @@ const AI = ({socket, gameData, AIdeck}) => {
     let opponentUnitSlot2 = null;
     let opponentUnitSlot3 = null;
 
+    let gameEnded = false;
+
     // const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null);
     // const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null);
     // const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null);
@@ -163,7 +165,8 @@ const AI = ({socket, gameData, AIdeck}) => {
                 //updates user health if changes
                 if(data.user_health) {
                     //ends game of spell kills client
-                    if(data.user_health < 0) {
+                    if(data.user_health < 0 && !gameEnded) {
+                        gameEnded = true;
                         socket.emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
@@ -204,7 +207,8 @@ const AI = ({socket, gameData, AIdeck}) => {
 
                 //Updates opponent health if changes 
                 if(data.opp_health) {
-                    if(data.opp_health <= 0) {
+                    if(data.opp_health <= 0 && !gameEnded) {
+                        gameEnded = true;
                         socket.emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
@@ -295,7 +299,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 console.log('unit attcked')
 
                 //If new health is below 1, end game
-                if(data.target_health < 1){
+                if(data.target_health < 1 && !gameEnded){
                     let loserId;
                     if(turnOrder[0] === user.id){
                         loserId = turnOrder[1]
@@ -408,10 +412,13 @@ const AI = ({socket, gameData, AIdeck}) => {
             })
         }else {
             //Emits end game if AI cannot draw
-            socket.emit('end_game', {
-                loser_id:user.id,
-                room_id:room_id,
-            })
+            if(!gameEnded){
+                gameEnded = true;
+                socket.emit('end_game', {
+                    loser_id:user.id,
+                    room_id:room_id,
+                })
+            }
         }
     }
 
@@ -831,7 +838,8 @@ const AI = ({socket, gameData, AIdeck}) => {
 
             //Draw amt of cards from deck
             case 'draw':
-                if(deck.length - effAmt <= 0){
+                if(deck.length - effAmt <= 0 && !gameEnded){
+                    gameEnded = true;
                     socket.emit('end_game', {
                         loser_id:user.id,
                         room_id:room_id
