@@ -1,5 +1,5 @@
 .unitcardWrapper {
-    border:4px solid black;
+    border:5px solid black;
     box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.295);
     background-color:rgb(168, 121, 66);
     width: 215px;
@@ -14,7 +14,7 @@
 }
 
 .spellcardWrapper {
-    border:4px solid black;
+    border:5px solid black;
     box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.301);
     background-color:rgb(76, 148, 62);
     width: 215px;
@@ -29,20 +29,21 @@
 }
 
 .cardName {
-    font-size:17px;
-    font-weight:800;
+    font-size:19px;
+    font-weight:900;
 }
 
 .infoContainer {
-    border:1px solid rgba(0, 0, 0, 0.45);
+    border:1px solid rgba(0, 0, 0, 0.13);
     box-sizing: border-box;
-    background-color:rgba(250, 250, 250, 0.199);
+    background-color:rgba(250, 250, 250, 0.082);
     width: 85%;
 }
 
 .cardType {
-    font-size:14px;
-    
+    font-size:13px;
+    font-style:italic;
+    text-decoration:underline;
 }
 
 .infoWrapper {
@@ -50,7 +51,8 @@
     flex-direction:column;
     align-items:center;
     box-sizing:border-box;
-    border:1px solid black;
+    border:1px solid rgba(0, 0, 0, 0.568);
+    padding:5px;
 }
 
 .cardImage {
@@ -63,6 +65,6 @@
     display:flex;
     justify-content:space-around;
     box-sizing: border-box;
-    border:1px solid black;
+    border:1px solid rgba(0, 0, 0, 0.411);
     
 }
