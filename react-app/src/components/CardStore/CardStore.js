@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { useSelector } from 'react-redux';
 import { boosterPack, buyBoosterFC } from '../../services/card_store'
 import CardDisplay from '../CardDisplay';
+import { Modal } from '../../context/Modal';
 import styles from './CardStore.module.css'
 
 const rng = (max) => {
@@ -12,6 +13,7 @@ const CardStore = ({cards}) => {
     const user = useSelector(state => state.session.user);
     const [freeCurrency, setFreeCurrency] = useState(user.free_currency);
     const [newPack, setNewPack] = useState(null)
+    const [showModal, setShowModal] = useState(false);
 
     const fcPullBooster = async () => {
         if(freeCurrency >= 500){
@@ -49,6 +51,7 @@ const CardStore = ({cards}) => {
             }
             await boosterPack(ids)
             setNewPack(pack)
+            setShowModal(true);
         }
     }
 
@@ -59,12 +62,16 @@ const CardStore = ({cards}) => {
             <div>
                 <h3>Purchase Booster Pack for $500</h3>
                 <button className={freeCurrency < 500 ? styles.boosterButtonDisabled : styles.boosterButton} onClick={fcPullBooster} disabled={freeCurrency < 500}>{freeCurrency < 500 ? `Need ${500 - freeCurrency} more $!` : "Buy Booster"}</button>
-                <div className={styles.newPackDisplay}>
-                    {newPack && newPack.map(card => 
-                        (
-                            <CardDisplay card={card} />
-                        ))}
-                </div>
+                {newPack && showModal && (
+                    <Modal onClose={() => setShowModal(false)}>
+                    <div className={styles.newPackDisplay}>
+                        {newPack.map(card => 
+                            (
+                                <CardDisplay card={card} />
+                                ))}
+                    </div>
+                </Modal>
+                )}
             </div>
         </div>
     )

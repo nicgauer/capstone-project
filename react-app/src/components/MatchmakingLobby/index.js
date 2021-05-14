@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
-import {addWin, addLoss} from '../../store/session'
+// import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 import AI from '../AI';
 import Navigation from '../Navigation';
@@ -22,6 +22,7 @@ const MatchmakingLobby = () => {
     const dispatch = useDispatch();
     const [decks, setDecks] = useState(null);
     const [selectedDeck, setSelectedDeck] = useState(null);
+    const [selectedDeckDisplay, setSelectedDeckDisplay] = useState(null);
     const [gameFound, setGameFound] = useState(false);
     const [waiting, setWaiting] = useState(false);
     const [gameData, setGameData] = useState(null);
@@ -36,6 +37,7 @@ const MatchmakingLobby = () => {
         // console.log(d.decks[0])
         setDecks(d.decks)
         setSelectedDeck(d.decks[0])
+        setSelectedDeckDisplay(d.decks[0].name)
     })()
     socket.on("waiting_for_game", data => {
         // console.log('waiting for game fired')
@@ -103,6 +105,15 @@ const MatchmakingLobby = () => {
         window.location.reload();
     }
 
+    const selectedDeckHandler = (e) => {
+        console.log(e)
+        // console.log(decks)
+        let d = decks.find(deck => deck.id === Number(e))
+        setSelectedDeckDisplay(d.name)
+        console.log(d.name)
+        setSelectedDeck(d)
+    }
+
 
     return (
         <div>
@@ -130,12 +141,22 @@ const MatchmakingLobby = () => {
 
                     <div className={styles.deckSelectorContainer}>
                         <h1>CHOOSE YOUR DECK</h1>
+                        {selectedDeckDisplay && (
+                            <div>
+                                <h3>Current Deck -- {selectedDeckDisplay}</h3>
+                                <h4>Deck Size -- {selectedDeck.cards.length}</h4>
+                                <NavLink to="/collection">
+                                    Edit Deck
+                                </NavLink>
+                            </div>
+                            
+                            )}
                         <select
-                            value={selectedDeck}
-                            onChange={(e) => setSelectedDeck(decks[e.target.value])}
+                            value={selectedDeckDisplay}
+                            onChange={(e) => selectedDeckHandler(e.target.value)}
                             >
-                                {console.log(decks)}
-                                {decks.map((deck, i) => <option key={deck.id} value={i}>{deck.name}</option>)}
+                                {/* {console.log(decks)} */}
+                                {decks.map((deck, i) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
                         </select>
                     </div>
 

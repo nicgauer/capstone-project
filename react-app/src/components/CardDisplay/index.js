@@ -4,7 +4,7 @@ import styles from './CardDisplay.module.css';
 
 const CardDisplay = ({card}) => {
     return (
-        <div className={styles.cardWrapper}>
+        <div className={card.type === 'unit' ? styles.unitcardWrapper : styles.spellcardWrapper}>
             <div className={styles.infoWrapper}>
                 <div className={styles.infoContainer}>
                     <h3 className={styles.cardName}>{card.name}</h3>
