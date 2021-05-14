@@ -6,11 +6,16 @@
 
 .storeWrapper {
     text-align: center;
+    background-image:url('../../assets/abstract_blue_background_vector_set.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height:100vh;
 }
 
 .boosterButton {
     cursor: pointer;
-    background-color:rgba(0, 158, 53, 0.795);
+    background-color:rgba(0, 158, 53, 0.938);
     color:white;
     font-size: 14px;
     font-weight:700;
@@ -23,7 +28,7 @@
 
 .boosterButton:hover {
     box-shadow: 0px 0px 14px rgba(0, 0, 0, 0.404);
-    background-color:rgba(11, 143, 55, 0.877);
+    background-color:rgb(11, 143, 55);
     font-weight:700;
     transform-origin:center;
     transform: scale(1.05, 1.05);
@@ -31,7 +36,7 @@
 
     .boosterButtonDisabled {
         /* cursor: pointer; */
-        background-color:rgba(0, 158, 53, 0.247);
+        background-color:rgba(0, 112, 37, 0.411);
         color:white;
         font-size: 14px;
         font-weight:700;

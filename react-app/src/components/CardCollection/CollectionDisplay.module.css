@@ -15,7 +15,7 @@ body {
 .collectionHeader {
     position:sticky;
     top:0;
-    background-color:rgb(15, 23, 129);
+    background-color:rgba(20, 29, 155, 0.767);
     border-bottom-left-radius:60px;
     border-bottom-right-radius:60px;
 }
@@ -24,7 +24,6 @@ body {
     display:flex;
     justify-content: space-between;
     align-items:center;
-    margin-top:10px;
 }
 
 .leftSpacer {

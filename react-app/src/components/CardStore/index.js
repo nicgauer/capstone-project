@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { getCards } from '../../services/card_store';
 import CardStore from './CardStore';
 import Navigation from '../Navigation';
+import styles from './CardStore.module.css';
 
 
 const CardStoreWrapper = () => {
@@ -31,9 +32,9 @@ const CardStoreWrapper = () => {
     }, [])
 
     return (
-        <div>
+        <div className={styles.storeWrapper}>
             <Navigation currentLocation={'store'} />
-            <h1 style={{'text-align':'center'}}>Welcome, {user.username}</h1>
+            <h1>Welcome, {user.username}</h1>
             {loading && !organized && (
                 <h1>loading card store...</h1>
             )}

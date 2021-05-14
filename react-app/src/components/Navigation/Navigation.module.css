@@ -7,8 +7,8 @@
 }
 
 .navlink {
-    margin-left: 2.5vw;
-    margin-right: 2.5vw;
+    text-align: center;
+    width:25vw;
 }
 
 .link {
@@ -25,7 +25,7 @@
 
 .current {
     color:white;
-    font-size: 15px;
+    font-size: 18px;
     font-weight:700;
     text-decoration:underline;
     cursor: pointer;

@@ -20,7 +20,11 @@ const RulesPage = () => {
                 <p>
                     The combat phase begins when the player ends their placement phase.
                     On turn 1, the combat phase is automatically skipped.
-                    unit combat is calculated by comparing the attacking unit's attack against the defending unit's defense.  Whichever is bigger wins, and the loser loses the difference in health points.
+                </p>
+                <p>
+                    Combat is calculated by comparing the attacking unit's attack against the defending unit's defense.  Whichever is bigger wins, and the loser loses the difference in health points.
+                </p>
+                <p>
                     In result of a tie, both units are lost but no damage is taken by either player.
                 </p>
                 <p>

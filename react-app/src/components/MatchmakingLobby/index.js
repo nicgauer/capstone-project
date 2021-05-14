@@ -143,9 +143,11 @@ const MatchmakingLobby = () => {
                             <div>
                                 <h3>Current Deck -- {selectedDeck.name}</h3>
                                 <h4>Deck Size -- {selectedDeck.cards.length}</h4>
-                                <NavLink to="/collection">
-                                    Edit Deck
-                                </NavLink>
+                                <div className={styles.linkContainer}>
+                                    <NavLink to="/collection">
+                                        Edit Deck
+                                    </NavLink>
+                                </div>
                             </div>
                             
                             )}

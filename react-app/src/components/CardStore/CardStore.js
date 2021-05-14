@@ -56,7 +56,7 @@ const CardStore = ({cards}) => {
     }
 
     return (
-        <div className={styles.storeWrapper}>
+        <div>
             <h2>Card Store</h2>
             <h4>${freeCurrency}</h4>
             <div>
