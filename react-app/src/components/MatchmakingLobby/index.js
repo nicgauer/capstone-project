@@ -118,9 +118,7 @@ const MatchmakingLobby = () => {
     return (
         <div>
             {!(AIgame && !gameLost && !gameWon && gameData) && !(!AIgame && !gameLost && !gameWon && gameFound && gameData) && <Navigation currentLocation={'home'} />}
-            {gameLost && (
-                <DefeatDisplay />
-            )}
+            {gameLost && (<DefeatDisplay />)}
             {gameWon && (<VictoryDisplay /> )}
 
             {AIgame && !gameLost && !gameWon && gameData && (
@@ -141,9 +139,9 @@ const MatchmakingLobby = () => {
 
                     <div className={styles.deckSelectorContainer}>
                         <h1>CHOOSE YOUR DECK</h1>
-                        {selectedDeckDisplay && (
+                        {selectedDeck && (
                             <div>
-                                <h3>Current Deck -- {selectedDeckDisplay}</h3>
+                                <h3>Current Deck -- {selectedDeck.name}</h3>
                                 <h4>Deck Size -- {selectedDeck.cards.length}</h4>
                                 <NavLink to="/collection">
                                     Edit Deck
@@ -155,7 +153,7 @@ const MatchmakingLobby = () => {
                             value={selectedDeckDisplay}
                             onChange={(e) => selectedDeckHandler(e.target.value)}
                             >
-                                {/* {console.log(decks)} */}
+                                {console.log(selectedDeck)}
                                 {decks.map((deck, i) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
                         </select>
                     </div>

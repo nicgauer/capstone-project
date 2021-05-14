@@ -120,6 +120,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     
     // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
+        console.log('Game Board Check', playerdeck)
         //Game setup, shuffles deck and draws 5 cards for hand
         let shuffledDeck = shuffle(playerdeck);
         let initialHand = drawHand(shuffledDeck)

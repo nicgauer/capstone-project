@@ -50,7 +50,8 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color:rgba(247, 247, 247, 0.616);
+    background-color:rgba(247, 247, 247, 0.842);
+    width:33vw;
 }
 
 .newDeckContainer {
