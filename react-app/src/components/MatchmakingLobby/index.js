@@ -143,9 +143,22 @@ const MatchmakingLobby = () => {
                             <div>
                                 <h3>Current Deck -- {selectedDeck.name}</h3>
                                 <h4>Deck Size -- {selectedDeck.cards.length}</h4>
+                                {selectedDeck.cards.length < 10 && (
+                                    <div>
+                                        <h1>
+                                            <span style={{'color':'red'}}>WARNING -</span> Deck must have at least 10 cards.
+                                        </h1>
+
+                                        <div className={styles.linkContainer}>
+                                            <NavLink to="/collection">
+                                                <button className={styles.mmButton}>Add More Cards</button>
+                                            </NavLink>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className={styles.linkContainer}>
                                     <NavLink to="/collection">
-                                        Edit Deck
+                                        Edit Decks
                                     </NavLink>
                                 </div>
                             </div>
@@ -160,11 +173,13 @@ const MatchmakingLobby = () => {
                         </select>
                     </div>
 
-                    <div className={styles.mainButtonContainer}>
-                        <button className={styles.mmButton} onClick={findGame} disabled={!selectedDeck}>Multiplayer</button>
+                    {(selectedDeck && selectedDeck.cards.length >= 10) && (
+                        <div className={styles.mainButtonContainer}>
+                        <button className={styles.mmButton} onClick={findGame}>Multiplayer</button>
 
-                        <button className={styles.mmButton} onClick={playAIgame} disabled={!selectedDeck}>Single Player</button>
+                        <button className={styles.mmButton} onClick={playAIgame}>Single Player</button>
                     </div>
+                    )}
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>

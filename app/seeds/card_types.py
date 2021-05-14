@@ -5,7 +5,7 @@ def seed_card_types():
     tiger_man = CardType(
         name='Tiger Man',
         type='unit',
-        attack=600,
+        attack=400,
         defense=200,
         description="After being bit by a radioactive tiger, Tony was transported to a different dimension.  Now, he battles endlessly in search of his favorite comfort food, frosted flakes.",
         rarity=0,
@@ -166,7 +166,7 @@ def seed_card_types():
     a_duck = CardType(
         name='A Duck',
         type='unit',
-        attack=400,
+        attack=200,
         defense=550,
         description="quack quack quack",
         rarity=0,
@@ -179,7 +179,7 @@ def seed_card_types():
         name='A Goose',
         type='unit',
         attack=650,
-        defense=1200,
+        defense=1000,
         description="Watch out for that guy",
         rarity=0,
         picture_url='https://i.imgur.com/NcOMN3G.jpg',
@@ -394,7 +394,7 @@ def seed_card_types():
         attack=1550,
         defense=750,
         rarity=3,
-        description='The Hero Of Time, I think',
+        description='The Hero Of Time',
         evolution_name='Young Link'
     )
 
@@ -404,7 +404,7 @@ def seed_card_types():
         name='Invader Zim',
         type='unit',
         picture_url='https://i.imgur.com/xSZIuvT.jpg?fb',
-        attack=600,
+        attack=500,
         defense=400,
         rarity=2,
         description='Copyright Infringement',
@@ -412,7 +412,237 @@ def seed_card_types():
 
     db.session.add(invader_zim)
 
+    toyota_corolla = CardType(
+        name='A 1996 Toyota Corolla',
+        type='unit',
+        picture_url='https://media.ed.edmunds-media.com/for-sale/4e-1nxba02e6vz571793/img-1-600x400.jpg',
+        attack=300,
+        defense=300,
+        rarity=1,
+        description='CLEAN TITLE/NEW TIMING BELT/CALL NOW'
+    )
 
+    db.session.add(toyota_corolla)
+
+    barack_obama_tan_suit = CardType(
+        name='Tan Suit Barack Obama',
+        type='unit',
+        picture_url='https://i.imgur.com/rb6eYte.jpg',
+        attack=400,
+        defense=500,
+        rarity=1,
+        description='While President Barack Obama was busy addressing the nation during yesterday’s press conference, social media only noticed one thing-his tan suit.'
+    )
+
+    db.session.add(barack_obama_tan_suit)
+
+    barack_obama_jedi = CardType(
+        name='Jedi Barack Obama',
+        type='unit',
+        picture_url='https://thefederalist.com/wp-content/uploads/2014/11/white-house.jpg',
+        attack=1200,
+        defense=600,
+        rarity=3,
+        evolution_name='Tan Suit Barack Obama',
+        description="uhhhhhh these are not the droids... that you're looking for!"
+    )
+
+    db.session.add(barack_obama_jedi)
+
+    party_barack = CardType(
+        name='Party Barack',
+        type='unit',
+        picture_url='https://i.imgur.com/MbaQr.png',
+        attack=600,
+        defense=1200,
+        rarity=2,
+        evolution_name='Tan Suit Barack Obama',
+        description='Just hangin'
+    )
+
+    db.session.add(party_barack)
+
+    a_rock = CardType(
+        name="90's The Rock",
+        type='unit',
+        attack=400,
+        defense=200,
+        picture_url='https://i.imgur.com/TrwuNH2.jpg',
+        rarity=1,
+        description='Phanny Pack'
+    )
+
+    db.session.add(a_rock)
+
+    aaron_jones = CardType(
+        name="Aaron Jones",
+        type='unit',
+        attack=500,
+        defense=450,
+        picture_url='https://i.imgur.com/MOl9t2K.jpg',
+        rarity=4,
+        description='go pack go'
+    )
+
+    db.session.add(aaron_jones)
+
+    leroy_jenkins = CardType(
+        name='LEEROYYYYYYY JENKINNSSSSS',
+        type='unit',
+        picture_url='https://i.imgur.com/4MqSjFr.jpg',
+        attack=600,
+        defense=100,
+        rarity=1,
+        description='Always confident'
+    )
+
+    db.session.add(leroy_jenkins)
+
+    cthulhu = CardType(
+        name='Cthulhu',
+        type='unit',
+        picture_url='https://i.imgur.com/mjPY2yr.jpg',
+        attack=400,
+        defense=400,
+        rarity=3,
+        description='Probably should be stronger'
+    )
+
+    db.session.add(cthulhu)
+
+    king_arthur = CardType(
+        name='King Arthur of Camelot',
+        type='unit',
+        picture_url='https://i.imgur.com/oHTG3kv.jpg',
+        attack=650,
+        defense=500,
+        rarity=3,
+        description='KING OF THE BRITTONS'
+    )
+
+    db.session.add(king_arthur)
+
+    knight_who_says_ni = CardType(
+        name='Knight Who Says "Ni!"',
+        type='unit',
+        picture_url='https://i.imgur.com/Odyx5ayh.jpg',
+        attack=500,
+        defense=650,
+        rarity=3,
+        description='Ni!  Ni!  Ni!'
+    )
+
+    db.session.add(knight_who_says_ni)
+
+    legendary_mirelurk = CardType(
+        name='Legendary Mirelurk',
+        type='unit',
+        picture_url='https://i.imgur.com/tAI7kLo.jpg',
+        attack=600,
+        defense=100,
+        rarity=2,
+        description="HE'S RIPPED!"
+    )
+
+    db.session.add(legendary_mirelurk)
+
+    legendary_mirelurk_killclaw = CardType(
+        name='Legendary Mirelurk Killclaw',
+        type='unit',
+        picture_url='https://64.media.tumblr.com/1b2ab53ff0438091dd84ff9c5898258e/tumblr_p727z6PwZQ1x5ccm3o1_500.jpg',
+        attack=1200,
+        defense=500,
+        rarity=2,
+        description="WATCH OUT HE'S A BIGGUN"
+    )
+
+    whiterun_guard = CardType(
+        name='Whiterun Guard',
+        type='unit',
+        picture_url='https://i.imgur.com/dXyipwS.jpg',
+        attack=200,
+        defense=200,
+        rarity=0,
+        description='I used to be an adventure like you...'
+    )
+
+    db.session.add(whiterun_guard)
+
+    burma_guard = CardType(
+        name='Burma Guard',
+        type='unit',
+        picture_url='https://i.imgur.com/FhTexKsh.jpg',
+        attack=200,
+        defense=200,
+        rarity=0,
+        description="I don't think we're going to make it out of here alive!"
+    )
+
+    db.session.add(burma_guard)
+
+    generic_bald_guy = CardType(
+        name='Generic Bald Guy',
+        type='unit',
+        picture_url='https://st.depositphotos.com/1000350/1663/i/950/depositphotos_16632665-stock-photo-shocked-bald-man-holding-comb.jpg',
+        attack=200,
+        defense=200,
+        rarity=0,
+        description='Just a bald guy'
+    )
+
+    db.session.add(generic_bald_guy)
+
+    mr_clean = CardType(
+        name='Mr Clean',
+        type='unit',
+        picture_url='https://i.imgur.com/xtdagQH.png',
+        attack=800,
+        defense=800,
+        rarity=1,
+        description="Keep it clean or I'll get mean!",
+        evolution_name='Generic Bald Guy'
+    )
+
+    db.session.add(mr_clean)
+
+    avatar_aang = CardType(
+        name='Avatar Aang',
+        type='unit',
+        picture_url='http://images5.fanpop.com/image/photos/31100000/Aang-avatar-aang-31177440-495-495.jpg',
+        attack=1250,
+        defense=700,
+        rarity=2,
+        description='The last airbender',
+        evolution_name='Generic Bald Guy'
+    )
+
+    db.session.add(avatar_aang)
+
+    one_punch_man = CardType(
+        name='One Punch Man',
+        type='unit',
+        picture_url='https://i.pinimg.com/originals/15/c5/58/15c558a7dada7d816e577f7114aee158.jpg',
+        attack=1500,
+        defense=1000,
+        rarity=4,
+        description='100 pushups, 100 situps, 100km run each day!',
+        evolution_name='Generic Bald Guy'
+    )
+
+    db.session.add(one_punch_man)
+
+    thanos = CardType(
+        name='Thanos',
+        type='unit',
+        picture_url='https://i.imgur.com/8CCsEEP.jpg',
+        attack=1200,
+        defense=800,
+        rarity=4,
+        description='*snaps finger*',
+        evolution_name='Generic Bald Guy'
+    )
+
+    db.session.add(thanos)
 
     ###### SPELLS ######
 
