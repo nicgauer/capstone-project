@@ -11,7 +11,7 @@ body {
     background-image:url('../../assets/abstract_blue_background_vector_set.jpg');
     background-position: top;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: 100%;
 }
 
 .logWrapperSmall {

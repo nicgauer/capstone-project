@@ -1,8 +1,8 @@
 .navbar {
     display:flex;
     justify-content:space-around;
-    padding-top: 15px;
-    padding-bottom:5px;
+    padding-top: 10px;
+    padding-bottom:10px;
     background-color:rgba(15, 23, 129, 0.897);
 }
 
@@ -13,12 +13,13 @@
 
 .link {
     color:white;
-    font-size: 15px;
+    font-size: 18px;
     text-decoration:none;
     cursor: pointer;
 }
 
 .link:hover {
+    font-size: 18px;
     text-decoration: underline;
 }
 

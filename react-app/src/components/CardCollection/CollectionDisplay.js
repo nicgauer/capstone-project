@@ -82,6 +82,12 @@ const CollectionDisplay = ({cards}) => {
         setNewDeckModal(false)
     }
 
+    const displayParser = () => {
+        if(dropdown === 'allCards') return 'All Cards'
+        if(dropdown === 'box') return 'Unassigned Cards'
+        return deckName(Number(dropdown))
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.collectionHeader}>
@@ -96,6 +102,10 @@ const CollectionDisplay = ({cards}) => {
                             <option value={"allCards"}>All Cards</option>
                             <option value={"box"}>Unassigned Cards</option>
                         </select>
+                    </div>
+                    <div className={styles.centerSpacer}>
+                        <h5 className={styles.displaying}>{displayParser(displaying)}</h5>
+                        <h5>{displaying.length} cards</h5>
                     </div>
                     <div className={styles.rightSpacer}>
                         <button className={styles.newDeckButton} onClick={newDeckButtonHandler}>Create New Deck</button>
