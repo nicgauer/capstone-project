@@ -138,7 +138,7 @@ const MatchmakingLobby = () => {
                     <RulesPage />
 
                     <div className={styles.deckSelectorContainer}>
-                        <h1>CHOOSE YOUR DECK</h1>
+                        {/* <h1>CHOOSE YOUR DECK</h1> */}
                         {selectedDeck && (
                             <div>
                                 <h3>Current Deck -- {selectedDeck.name}</h3>
@@ -158,19 +158,19 @@ const MatchmakingLobby = () => {
                                 )}
                                 <div className={styles.linkContainer}>
                                     <NavLink to="/collection">
-                                        Edit Decks
+                                        Edit Deck
                                     </NavLink>
                                 </div>
                             </div>
                             
                             )}
-                        <select
+                        {/* <select
                             value={selectedDeckDisplay}
                             onChange={(e) => selectedDeckHandler(e.target.value)}
                             >
                                 {console.log(selectedDeck)}
                                 {decks.map((deck, i) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
-                        </select>
+                        </select> */}
                     </div>
 
                     {(selectedDeck && selectedDeck.cards.length >= 10) && (

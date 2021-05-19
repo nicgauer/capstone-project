@@ -418,7 +418,7 @@ def seed_card_types():
         picture_url='https://media.ed.edmunds-media.com/for-sale/4e-1nxba02e6vz571793/img-1-600x400.jpg',
         attack=300,
         defense=300,
-        rarity=1,
+        rarity=0,
         description='CLEAN TITLE/NEW TIMING BELT/CALL NOW'
     )
 

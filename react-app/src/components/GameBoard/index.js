@@ -446,6 +446,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             setLog((prev) => [data.log, ...prev])
         })
 
+        //Unsubscribes from socket events on unmount
+        return () => {
+            socket.removeAllListeners();
+        }
+
     }, [])
 
     // ---------- DRAW PHASE ---------- \\

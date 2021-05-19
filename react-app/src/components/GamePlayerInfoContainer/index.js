@@ -24,8 +24,6 @@ const GamePlayerInfoContainer = ({
         }, [health])
 
         const countdownEffect = (current) => {
-            console.log('CountDown!', current)
-            console.log('Health!', health)
             if(myTimeout){
                 clearTimeout(myTimeout)
             }

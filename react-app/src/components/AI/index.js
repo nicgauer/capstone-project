@@ -167,6 +167,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     //ends game of spell kills client
                     if(data.user_health < 0 && !gameEnded) {
                         gameEnded = true;
+
                         socket.emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
@@ -391,6 +392,16 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         })
 
+        return () => {
+            // opponentUnitSlot1 = null;
+            // opponentUnitSlot2 = null;
+            // opponentUnitSlot3 = null;
+
+            // playerUnitSlot1 = null;
+            // playerUnitSlot2 = null;
+            // playerUnitSlot3 = null;
+            socket.removeAllListeners();
+        }
 
     }, [])
 

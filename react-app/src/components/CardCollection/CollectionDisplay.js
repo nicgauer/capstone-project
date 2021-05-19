@@ -108,7 +108,7 @@ const CollectionDisplay = ({cards}) => {
                         <h5>{displaying.length} cards</h5>
                     </div>
                     <div className={styles.rightSpacer}>
-                        <button className={styles.newDeckButton} onClick={newDeckButtonHandler}>Create New Deck</button>
+                        <button className={styles.newDeckButton} onClick={newDeckButtonHandler} disabled={true}>Create New Deck</button>
                     </div>
                 </div>
             </div>

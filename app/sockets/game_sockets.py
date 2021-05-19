@@ -37,6 +37,7 @@ def host_room(data):
 def ai_game(data):
     join_room(data['user_id'])
 
+
 @socketio.on("start_draw_phase")
 def start_draw_phase(data):
     # data includes - user_id, room_id, turn_number
