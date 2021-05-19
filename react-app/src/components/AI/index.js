@@ -297,7 +297,6 @@ const AI = ({socket, gameData, AIdeck}) => {
         socket.on('unit_attack', data => {
             //if this client attacked
             if(data.user_id === user.id){
-                console.log('unit attcked')
 
                 //If new health is below 1, end game
                 if(data.target_health < 1 && !gameEnded){

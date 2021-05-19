@@ -70,6 +70,11 @@ const MatchmakingLobby = () => {
                 setGameWon(true);
             }
     })
+
+    return () => {
+        socket.removeAllListeners();
+    }
+
     }, [])
 
     const findGame = () => {
