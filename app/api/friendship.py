@@ -47,10 +47,13 @@ def confirm_friend_request(id):
 @login_required
 def friendcode_add():
     req = request.json
-    code = req.split(':')
-    target = User.get(code[1])
+    print('\n------------------\n')
+    print(req)
+    print('\n------------------\n')
+    code = req["code"].split(':')
+    target = User.query.get(int(code[1]))
     if target:
-        if target.to_dict()['username'] == code[0]:
+        if target.to_dict()['username'].replace(' ', '-') == code[0]:
             new_request = Friendship(
                 user1_id=int(req['sender']),
                 user2_id=int(code[1]),

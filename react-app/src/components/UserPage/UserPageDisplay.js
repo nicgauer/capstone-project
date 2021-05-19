@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {useSelector} from 'react-redux';
 import {useHistory, NavLink} from 'react-router-dom'
 import styles from './UserPageDisplay.module.css';
-import { confirmFriend, sendFriendRequest } from '../../services/friendship';
+import { confirmFriend, sendFriendRequest, friendCodeRequest } from '../../services/friendship';
 import { Modal } from '../../context/Modal';
 
 const UserPageDisplay = ({ user, friends }) => {
@@ -13,6 +13,7 @@ const UserPageDisplay = ({ user, friends }) => {
     const [requested, setRequested] = useState(false);
     const [currentlyFriends, setCurrentlyFriends] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [fcReq, setFCREQ] = useState('')
 
     useEffect(() => {
         const orF = friendFilter(friends)
@@ -28,7 +29,7 @@ const UserPageDisplay = ({ user, friends }) => {
         }
         arr.forEach(
             friend => {
-                if(!friend.confirmed){
+                if(!friend.confirmed && friend.user1.id !== loggedInUser.id){
                     orgFriends.requests.push(friend)
                     if(friend.user1.id === loggedInUser.id) setRequested(true);
                 }
@@ -84,6 +85,12 @@ const UserPageDisplay = ({ user, friends }) => {
         return `${loggedInUser.username.replace(' ', '-')}:${loggedInUser.id}`
     }
 
+    const sendFriendCodeRequest = async (e) => {
+        e.preventDefault();
+        const fc = await friendCodeRequest(fcReq, loggedInUser.id,);
+        setShowModal(false);
+    }
+
     return (
         <div className={styles.pageWrapper}>
             <div>
@@ -111,7 +118,10 @@ const UserPageDisplay = ({ user, friends }) => {
                             Send this to your friends so they can add you!  Or
                         </p>
                         <h1>Send Friend Request through Friend Code</h1>
-                        <input type="text" />
+                        <form onSubmit={sendFriendCodeRequest}>
+                            <input type="text" value={fcReq} onChange={e => setFCREQ(e.target.value)} />
+                            <button type="submit">Send Request</button>
+                        </form>
                     </div>
                 </Modal> )}                   
             <div>

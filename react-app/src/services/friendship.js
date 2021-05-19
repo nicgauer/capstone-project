@@ -12,3 +12,17 @@ export const getFriends = async (id) => {
     const response = await fetch(`/api/friends/${id}`)
     return response.json();
 }
+
+export const friendCodeRequest = async (code, sender) => {
+    const response = await fetch(`/api/friends/friendcode`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            code,
+            sender
+        })
+    })
+    return await response.json();
+}
