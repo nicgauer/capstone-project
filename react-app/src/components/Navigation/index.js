@@ -38,6 +38,11 @@ const Navigation = ({currentLocation}) => {
                     <NavLink className={currentLocation === 'collection' ? styles.current : styles.link} to='/collection'>Card Collection</NavLink>
                 </div>
             )}
+            {user && (
+                <div className={styles.navlink}>
+                    <NavLink className={currentLocation === 'profile' ? styles.current : styles.link} to={`/users/${user.id}`}>Profile</NavLink>
+                </div>
+            )}
         </nav>
     )
 }

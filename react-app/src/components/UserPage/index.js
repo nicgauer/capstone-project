@@ -23,7 +23,7 @@ const UserPage = () => {
 
     return (
         <div>
-            <Navigation />
+            <Navigation currentLocation={'profile'} />
             {!loaded && (<Loading />)}
             {loaded && user && (<UserPageDisplay user={user.user} friends={user.friends} />)}
             {loaded && !user && (<PageNotFound />)}

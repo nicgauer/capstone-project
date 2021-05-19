@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import {useSelector} from 'react-redux';
+import {useHistory, NavLink} from 'react-router-dom'
 import styles from './UserPageDisplay.module.css';
 import { confirmFriend, sendFriendRequest } from '../../services/friendship';
+import { Modal } from '../../context/Modal';
 
 const UserPageDisplay = ({ user, friends }) => {
     const loggedInUser = useSelector((state) => state.session.user);
+    const history = useHistory();
     const [friendsList, setFriendsList] = useState([])
     const [friendRequests, setFriendRequests] = useState([]);
     const [requested, setRequested] = useState(false);
     const [currentlyFriends, setCurrentlyFriends] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         const orF = friendFilter(friends)
@@ -71,6 +75,15 @@ const UserPageDisplay = ({ user, friends }) => {
         await confirmFriend(id)
     }
 
+    const visitFriendHandler = (id) => {
+        history.push(`/users/${id}`)
+        window.location.reload()
+    }
+
+    const generateFC = () => {
+        return `${loggedInUser.username.replace(' ', '-')}:${loggedInUser.id}`
+    }
+
     return (
         <div className={styles.pageWrapper}>
             <div>
@@ -84,12 +97,28 @@ const UserPageDisplay = ({ user, friends }) => {
                                     </button>
                                 </div>
                             )}
+                {loggedInUser.id === user.id && (
+                    <div>
+                        <button onClick={() => setShowModal(true)}>Friend Code</button>
+                    </div>
+                )}
             </div>
+                {showModal && (<Modal onClose={() => setShowModal(false)}>
+                    <div className={styles.fcModal}>
+                        <h2>Your friend code is</h2>
+                        <h1>{generateFC()}</h1>
+                        <p>
+                            Send this to your friends so they can add you!  Or
+                        </p>
+                        <h1>Send Friend Request through Friend Code</h1>
+                        <input type="text" />
+                    </div>
+                </Modal> )}                   
             <div>
                 <h1>Friends List</h1>
                 {friendsList.length > 0 && (
                     friendsList.map(friend => (
-                        <div>
+                        <div onClick={() => visitFriendHandler(friend.id)}>
                             <h1>{friend.username}</h1>
                             <h2>W - {friend.wins}</h2>
                             <h2>L - {friend.losses}</h2>
@@ -102,7 +131,7 @@ const UserPageDisplay = ({ user, friends }) => {
                     <h1>Friend Requests</h1>
                     {friendRequests.length > 0 && (
                         friendRequests.map(req => (
-                            <div>
+                            <div onClick={() => visitFriendHandler(req.user.id)}>
                                 <h1>{req.user.username}</h1>
                                 <h2>W - {req.user.wins}</h2>
                                 <h2>L - {req.user.losses}</h2>

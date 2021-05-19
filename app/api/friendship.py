@@ -16,6 +16,13 @@ def get_user_friends(id):
 @friendship_routes.route('/send/<int:sender>/<int:recipient>')
 @login_required
 def send_friend_request(sender, recipient):
+    pendingRequest = Friendship.query.filter((Friendship.user2_id == sender) & (Friendship.user1_id == recipient)).all()
+
+    if pendingRequest:
+        pendingRequest.confirmed = True
+        db.session.commit()
+        return pendingRequest.to_dict()
+
     friend = Friendship(
         user1_id=int(sender),
         user2_id=int(recipient),
@@ -34,3 +41,22 @@ def confirm_friend_request(id):
         friend.confirmed = True
     db.session.commit()
     return friend.to_dict()
+
+
+@friendship_routes.route('/friendcode', methods=['POST'])
+@login_required
+def friendcode_add():
+    req = request.json
+    code = req.split(':')
+    target = User.get(code[1])
+    if target:
+        if target.username == code[0]:
+            new_request = Friendship(
+                user1_id=int(req['sender']),
+                user2_id=int(code[1]),
+                confirmed=False
+            )
+            db.session.add(new_request)
+            db.session.commit()
+            return new_request.to_dict()
+    return {"error": 'Incorrect friend code'}
