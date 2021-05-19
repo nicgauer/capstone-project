@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {useSelector} from 'react-redux';
 import styles from './UserPageDisplay.module.css';
-import { confirmFriend } from '../../services/friendship';
+import { confirmFriend, sendFriendRequest } from '../../services/friendship';
 
 const UserPageDisplay = ({ user, friends }) => {
     const loggedInUser = useSelector((state) => state.session.user);
     const [friendsList, setFriendsList] = useState([])
     const [friendRequests, setFriendRequests] = useState([]);
+    const [requested, setRequested] = useState(false);
+    const [currentlyFriends, setCurrentlyFriends] = useState(false);
 
     useEffect(() => {
         const orF = friendFilter(friends)
@@ -15,6 +17,7 @@ const UserPageDisplay = ({ user, friends }) => {
     }, [])
 
     const friendFilter = (arr) => {
+        console.log(arr)
         let orgFriends = {
             confirmed: [],
             requests: []
@@ -23,10 +26,13 @@ const UserPageDisplay = ({ user, friends }) => {
             friend => {
                 if(!friend.confirmed){
                     orgFriends.requests.push(friend)
+                    if(friend.user1.id === loggedInUser.id) setRequested(true);
                 }
-                if((loggedInUser.id != friend.user1.id) && friend.confirmed){
+                if((user.id != friend.user1.id) && friend.confirmed){
+                    if(friend.user1.id === loggedInUser.id) setCurrentlyFriends(true);
                     orgFriends.confirmed.push(friend.user1)
-                }else if((loggedInUser.id != friend.user2.id) && friend.confirmed){
+                }else if((user.id != friend.user2.id) && friend.confirmed){
+                    if(friend.user2.id === loggedInUser.id) setCurrentlyFriends(true);
                     orgFriends.confirmed.push(friend.user2)
                 }
             }
@@ -52,6 +58,11 @@ const UserPageDisplay = ({ user, friends }) => {
         return requests
     }
 
+    const sendRequestHandler = async () => {
+        setRequested(true);
+        await sendFriendRequest(loggedInUser.id, user.id);
+    }
+
     const confirmRequestHandler = async (id) => {
         let fr = [ ...friendRequests ]
         let target = fr.find(t => t.id == id)
@@ -63,9 +74,16 @@ const UserPageDisplay = ({ user, friends }) => {
     return (
         <div className={styles.pageWrapper}>
             <div>
-                <h1>{user.username}</h1>
+                <h1>Welcome, {user.username}</h1>
                 <h2>W - {user.wins}</h2>
                 <h2>L - {user.losses}</h2>
+                {loggedInUser.id != user.id && !currentlyFriends && (
+                                <div>
+                                    <button onClick={sendRequestHandler} disabled={requested}>
+                                        {requested ? 'Friend Request Sent' : 'Send Friend Request'}
+                                    </button>
+                                </div>
+                            )}
             </div>
             <div>
                 <h1>Friends List</h1>

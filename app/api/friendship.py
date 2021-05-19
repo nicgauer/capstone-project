@@ -9,7 +9,7 @@ friendship_routes = Blueprint('friendship', __name__)
 @friendship_routes.route('/<int:id>')
 @login_required
 def get_user_friends(id):
-    friends = Friendship.query.filter(((Friendship.user1_id == id) or (Friendship.user2_id == id))).all()
+    friends = Friendship.query.filter(((Friendship.user1_id == id) | (Friendship.user2_id == id))).all()
     return {"friends": [friend.to_dict() for friend in friends]}
 
 

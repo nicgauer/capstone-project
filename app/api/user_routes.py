@@ -16,7 +16,7 @@ def users():
 @login_required
 def user(id):
     user = User.query.get(id)
-    friends = Friendship.query.filter(((Friendship.user1_id == id) or (Friendship.user2_id == id))).all()
+    friends = Friendship.query.filter(((Friendship.user1_id == id) | (Friendship.user2_id == id))).all()
     return {"user": user.to_dict(), "friends": [friend.to_dict() for friend in friends]}
 
 

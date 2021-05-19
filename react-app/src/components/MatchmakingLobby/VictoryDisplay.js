@@ -6,7 +6,7 @@ import { NavLink } from 'react-router-dom';
 import styles from './MatchmakingLobby.module.css'
 
 
-const VictoryDisplay = () => {
+const VictoryDisplay = ({ opponentId }) => {
     const user = useSelector(state => state.session.user);
     const dispatch = useDispatch();
 
@@ -40,6 +40,13 @@ const VictoryDisplay = () => {
                             </button>
                         </NavLink>
                     </div>
+                    {opponentId && (
+                        <div>
+                            <NavLink to={`/users/${opponentId}`}>
+                                View Opponent Information
+                            </NavLink>
+                        </div>
+                    )}
                 </div>
     )
 }

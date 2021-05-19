@@ -4,6 +4,7 @@ import {getUser} from '../../services/user';
 import UserPageDisplay from './UserPageDisplay';
 import Loading from '../Loading';
 import PageNotFound from '../PageNotFound';
+import Navigation from '../Navigation';
 
 
 const UserPage = () => {
@@ -22,6 +23,7 @@ const UserPage = () => {
 
     return (
         <div>
+            <Navigation />
             {!loaded && (<Loading />)}
             {loaded && user && (<UserPageDisplay user={user.user} friends={user.friends} />)}
             {loaded && !user && (<PageNotFound />)}

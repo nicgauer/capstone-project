@@ -29,6 +29,7 @@ const MatchmakingLobby = () => {
     const [gameLost, setGameLost] = useState(false);
     const [gameWon, setGameWon] = useState(false);
     const [AIgame, setAIgame] = useState(false);
+    const [opponentId, setOpponentId] = useState(null);
 
     useEffect(() => {    
     (async () => {
@@ -53,6 +54,11 @@ const MatchmakingLobby = () => {
             gd.opponent_name = data.guest_username
         }else {
             gd.opponent_name = data.host_username
+        }
+        if(data.turn_order[0] === user.id){
+            setOpponentId(data.turn_order[1])
+        }else{
+            setOpponentId(data.turn_order[0])
         }
         setGameData(gd)
         setGameFound(true)
@@ -123,8 +129,8 @@ const MatchmakingLobby = () => {
     return (
         <div>
             {!(AIgame && !gameLost && !gameWon && gameData) && !(!AIgame && !gameLost && !gameWon && gameFound && gameData) && <Navigation currentLocation={'home'} />}
-            {gameLost && (<DefeatDisplay />)}
-            {gameWon && (<VictoryDisplay /> )}
+            {gameLost && (<DefeatDisplay opponentId={opponentId} />)}
+            {gameWon && (<VictoryDisplay opponentId={opponentId} /> )}
 
             {AIgame && !gameLost && !gameWon && gameData && (
                 <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />

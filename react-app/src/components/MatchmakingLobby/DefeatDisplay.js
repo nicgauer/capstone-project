@@ -4,7 +4,7 @@ import {addLoss} from '../../store/session';
 import styles from './MatchmakingLobby.module.css'
 import { NavLink } from 'react-router-dom';
 
-const DefeatDisplay = () => {
+const DefeatDisplay = ({ opponentId }) => {
     const user = useSelector(state => state.session.user);
     const dispatch = useDispatch();
 
@@ -39,6 +39,14 @@ const DefeatDisplay = () => {
                             </button>
                         </NavLink>
                     </div>
+
+                    {opponentId && (
+                        <div>
+                            <NavLink to={`/users/${opponentId}`}>
+                                View Opponent Information
+                            </NavLink>
+                        </div>
+                    )} 
                 </div>
     )
 }
