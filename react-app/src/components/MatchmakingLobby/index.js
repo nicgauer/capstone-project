@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
+import {getFriends} from '../../services/friendship';
 // import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 import AI from '../AI';
@@ -30,15 +31,26 @@ const MatchmakingLobby = () => {
     const [gameWon, setGameWon] = useState(false);
     const [AIgame, setAIgame] = useState(false);
     const [opponentId, setOpponentId] = useState(null);
+    const [friends, setFriends] = useState([]);
+    const [invites, setInvites] = useState([]);
 
     useEffect(() => {    
     (async () => {
         const d = await getUserDecks(user.id);
+        const f = await getFriends(user.id);
+        
         // console.log(d.decks)
         // console.log(d.decks[0])
         setDecks(d.decks)
         setSelectedDeck(d.decks[0])
         setSelectedDeckDisplay(d.decks[0].name)
+        setFriends(f.friends.map(fr => {
+            if(fr.user1.id === user.id){
+                return fr.user2
+            }else {
+                return fr.user1
+            }
+        }))
     })()
     socket.on("waiting_for_game", data => {
         // console.log('waiting for game fired')
@@ -76,6 +88,14 @@ const MatchmakingLobby = () => {
                 setGameWon(true);
             }
     })
+
+    socket.on("found_games", data => {
+        if(data.invites){
+            setInvites(data.invites);
+        }
+    })
+
+    checkForInvites();
 
     return () => {
         socket.removeAllListeners();
@@ -123,6 +143,29 @@ const MatchmakingLobby = () => {
         setSelectedDeckDisplay(d.name)
         console.log(d.name)
         setSelectedDeck(d)
+    }
+
+    const checkForInvites = () => {
+        socket.emit("check_for_invites", {
+            user_id:user.id
+        })
+    }
+
+    const inviteToGame = (targetId) => {
+        socket.emit("invite_to_game", {
+            user_id:user.id,
+            target_id:targetId,
+        })
+    }
+
+    const acceptInvite = (targetId) => {
+        let friend = friends.find(friend => friend.id === targetId);
+        socket.emit("accept_invite", {
+            user_id:user.id,
+            username:user.username,
+            host_id:targetId,
+            host_name:friend.username,
+        })
     }
 
 
@@ -186,11 +229,26 @@ const MatchmakingLobby = () => {
 
                     {(selectedDeck && selectedDeck.cards.length >= 10) && (
                         <div className={styles.mainButtonContainer}>
-                        <button className={styles.mmButton} onClick={findGame}>Multiplayer</button>
+                        <button className={styles.mmButton} onClick={findGame}>Random Multiplayer</button>
 
                         <button className={styles.mmButton} onClick={playAIgame}>Single Player</button>
                     </div>
                     )}
+
+                    <div>
+                        <h1>Friends List</h1>
+                        <button onClick={checkForInvites}>refresh</button>
+                        {friends.length > 0 && (
+                            friends.map(friend => 
+                                <div>
+                                    <h1>{friend.username}</h1>
+                                    {!invites.includes(friend.id) && <button onClick={() => inviteToGame(friend.id)}>Invite to Game</button>}
+                                    {invites.includes(friend.id) && <button onClick={() => acceptInvite(friend.id)}>Accept Invite</button>}
+                                </div>
+                            )
+                            )}
+
+                    </div>
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>

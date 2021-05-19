@@ -50,7 +50,7 @@ def friendcode_add():
     code = req.split(':')
     target = User.get(code[1])
     if target:
-        if target.username == code[0]:
+        if target.to_dict()['username'] == code[0]:
             new_request = Friendship(
                 user1_id=int(req['sender']),
                 user2_id=int(code[1]),

@@ -3,11 +3,17 @@ from app import socketio
 
 
 open_games = []
+active_invites = []
 
 
 @socketio.on("connect")
 def handle_connect():
     print("Client Connected")
+
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    print("Client Disconnect")
 
 
 @socketio.on("find_game")
@@ -36,6 +42,45 @@ def host_room(data):
 @socketio.on("ai_game")
 def ai_game(data):
     join_room(data['user_id'])
+
+
+@socketio.on("invite_to_game")
+def invite_to_game(data):
+    # data includes - user_id, target_id, username
+    active_invites.append({
+        "host":data["user_id"],
+        "invitee":data["target_id"],
+    })
+    join_room(data['user_id'])
+    emit('waiting_for_game', data, room=data['user_id'], broadcast=True)
+
+
+@socketio.on("accept_invite")
+def accept_invite(data):
+    # data includes - host_id, user_id, host_name, username
+    ai = list(filter(lambda i: (i["invitee"] != data["user_id"]) & (i["host"] != data["host_id"]), active_invites))
+    join_room(data['host_id'])
+    print('Active Invites', ai)
+    new_data = {
+        "room_id": data["host_id"],
+        "host_username": data["host_name"],
+        "turn_order": [data['host_id'], data['user_id']],
+        "guest_username": data['username']
+    }
+    emit('setup_game', new_data, room=data["host_id"], broadcast=True)
+
+
+@socketio.on("check_for_invites")
+def check_for_invites(data):
+    # data includes - user_id 
+    join_room(f"invites{data['user_id']}")
+    i = filter(lambda i: i["invitee"] == data["user_id"], active_invites)
+    if i:
+        newData = {
+            "invites": [inv["host"] for inv in i]
+        }
+        emit('found_games', newData, broadcast=True)
+    leave_room(f"invites{data['user_id']}")
 
 
 @socketio.on("start_draw_phase")
