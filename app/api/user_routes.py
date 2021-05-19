@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required
-from app.models import User, db
+from app.models import Friendship, User, db
 
 user_routes = Blueprint('users', __name__)
 
@@ -16,7 +16,8 @@ def users():
 @login_required
 def user(id):
     user = User.query.get(id)
-    return user.to_dict()
+    friends = Friendship.query.filter(((Friendship.user1_id == id) or (Friendship.user2_id == id))).all()
+    return {"user": user.to_dict(), "friends": [friend.to_dict() for friend in friends]}
 
 
 @user_routes.route('/w/<int:id>')

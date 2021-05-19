@@ -15,6 +15,8 @@ class User(db.Model, UserMixin):
   losses = db.Column(db.Integer, default=0)
   cards = db.relationship("Card", back_populates="owner")
   decks = db.relationship("Deck", back_populates="user")
+  friends1 = db.relationship("Friendship", foreign_keys='Friendship.user1_id', back_populates="user1")
+  friends2 = db.relationship("Friendship", foreign_keys='Friendship.user2_id', back_populates="user2")
 
 
   @property

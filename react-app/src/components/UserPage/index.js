@@ -23,7 +23,7 @@ const UserPage = () => {
     return (
         <div>
             {!loaded && (<Loading />)}
-            {loaded && user && (<UserPageDisplay user={user} />)}
+            {loaded && user && (<UserPageDisplay user={user.user} friends={user.friends} />)}
             {loaded && !user && (<PageNotFound />)}
         </div>
     )
