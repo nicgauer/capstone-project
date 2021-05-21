@@ -1042,7 +1042,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
 
                 //Adds to log
-                payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' attack by ${effAmt}`
+                payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' defense by ${effAmt}`
 
                 //Payload is a variable used that contains all necessary info
                 socket.emit('use_spell', payload);

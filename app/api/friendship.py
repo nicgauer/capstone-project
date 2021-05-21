@@ -47,9 +47,6 @@ def confirm_friend_request(id):
 @login_required
 def friendcode_add():
     req = request.json
-    print('\n------------------\n')
-    print(req)
-    print('\n------------------\n')
     code = req["code"].split(':')
     target = User.query.get(int(code[1]))
     if target:

@@ -9,8 +9,8 @@ import {getFriends} from '../../services/friendship';
 import RulesPage from './rules';
 import AI from '../AI';
 import Navigation from '../Navigation';
-import VictoryDisplay from './VictoryDisplay'
-import DefeatDisplay from './DefeatDisplay'
+import VictoryDisplay from './VictoryDisplay';
+import DefeatDisplay from './DefeatDisplay';
 
 import styles from './MatchmakingLobby.module.css';
 
@@ -98,6 +98,7 @@ const MatchmakingLobby = () => {
     checkForInvites();
 
     return () => {
+        cancelFindGame();
         socket.removeAllListeners();
     }
 
@@ -110,6 +111,17 @@ const MatchmakingLobby = () => {
         })
     }
 
+    const cancelFindGame = () => {
+        socket.emit("cancel_matchmaking", {
+            user_id: user.id
+        })
+    }
+
+    const matchmakingCancel = () => {
+        cancelFindGame();
+        setWaiting(false);
+    }
+
     const playAIgame = () => {
         socket.emit("ai_game", {
             user_id: user.id,
@@ -120,7 +132,7 @@ const MatchmakingLobby = () => {
             turnOrder = [user.id, 0]
         }
         const gd = {
-            room_id:user.id,
+            room_id:`${user.id}ai`,
             turn_order:turnOrder,
             opponent_name: 'Duel Bot'
         }
@@ -253,6 +265,7 @@ const MatchmakingLobby = () => {
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>
                     <h1>Waiting for game...</h1>
+                    <button onClick={matchmakingCancel}>Cancel</button>
                 </div>)}
         </div>
     )

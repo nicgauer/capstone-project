@@ -190,22 +190,22 @@ body {
 .actionButton {
     background-color:rgba(206, 0, 0, 0.75);
     color:white;
-    font-size: 14px;
+    font-size: 15px;
     font-weight:700;
     cursor:pointer;
     position: fixed;
     bottom:10%;
     right:5%;
     border-radius:50%;
-    height:120px;
-    width:120px;
+    height:150px;
+    width:150px;
     transition-property: all;
     transition-duration: .3s;
     transition-delay: .1s;
 }
 
 .actionButton:hover {
-    box-shadow: 0px 0px 14px rgba(121, 0, 0, 0.8);
+    box-shadow: 0px 0px 16px rgba(121, 0, 0, 0.664);
     background-color:  rgb(155, 0, 0);
     color:rgb(199, 199, 199);
     font-weight:700;
@@ -214,3 +214,16 @@ body {
     transform: scale(1.05, 1.05);
     }
 
+
+.helpButton {
+    background-color:rgba(4, 151, 24, 0.63);
+    font-size: 15px;
+    font-weight:700;
+    cursor:pointer;
+    position: fixed;
+    top:5%;
+    right:5%;
+    border-radius:50%;
+    height:70px;
+    width:70px;
+}

@@ -7,6 +7,8 @@ import CardDisplay from '../CardDisplay';
 import BoardCardDisplay from './BoardCardDisplay'
 import GamePlayerInfoContainer from '../GamePlayerInfoContainer';
 import GameChat from './chat';
+import { Modal } from '../../context/Modal';
+import RulesPage from '../MatchmakingLobby/rules';
 
 import explosion from '../../assets/explosion.gif';
 
@@ -93,6 +95,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     //Log controls
     const [log, setLog] = useState(["Game Started!"]);
     const [logToggle, setLogToggle] = useState(false);
+
+    const [helpModal, setHelpModal] = useState(false);
 
     // ---------- HELPERS ---------- \\
 
@@ -839,7 +843,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 }
 
                 //Adds to log
-                payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' attack by ${effAmt}`
+                payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' defense by ${effAmt}`
 
                 //Payload is a variable used that contains all necessary info
                 socket.emit('use_spell', payload);
@@ -1107,7 +1111,16 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 <button className={styles.actionButton} onClick={endTurnHandler}>End Turn</button>
             )}
 
-            <GameChat socket={socket} username={user.username} room_id={room_id} />
+            {gameData.opponent_name !== 'Duel Bot' && <GameChat socket={socket} username={user.username} room_id={room_id} />}
+            
+            <button className={styles.helpButton} onClick={() => setHelpModal(true)}>Help</button>
+            {helpModal && (
+                <Modal onClose={() => setHelpModal(false)}>
+                    <div style={{'background-color':'white', 'text-align':'center', 'border-radius':'35px'}}>
+                        <RulesPage />
+                    </div>
+                </Modal>
+            )}
         </div>
     )
 }

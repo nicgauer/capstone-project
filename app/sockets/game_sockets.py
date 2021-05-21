@@ -6,6 +6,20 @@ open_games = []
 active_invites = []
 
 
+def find_invite(lst, key1, value1, key2, value2):
+    for i, dic in enumerate(lst):
+        if dic[key1] == value1 and dic[key2] == value2:
+            return i
+    return -1
+
+
+def find_open_game(lst, key, value):
+    for i, dic in enumerate(lst):
+        if dic[key] == value:
+            return i
+    return -1
+
+
 @socketio.on("connect")
 def handle_connect():
     print("Client Connected")
@@ -39,9 +53,17 @@ def host_room(data):
         emit('waiting_for_game', data, room=data['room_id'], broadcast=True)
 
 
+@socketio.on("cancel_matchmaking")
+def cancel_matchmaking(data):
+    # data includes - user_id
+    index = find_open_game(open_games, "user_id", data['user_id'])
+    if index > -1:
+        open_games.pop(index)
+
+
 @socketio.on("ai_game")
 def ai_game(data):
-    join_room(data['user_id'])
+    join_room(f"{data['user_id']}ai")
 
 
 @socketio.on("invite_to_game")
@@ -58,9 +80,12 @@ def invite_to_game(data):
 @socketio.on("accept_invite")
 def accept_invite(data):
     # data includes - host_id, user_id, host_name, username
-    ai = list(filter(lambda i: (i["invitee"] != data["user_id"]) & (i["host"] != data["host_id"]), active_invites))
+    # ai = list(filter(lambda i: (i["invitee"] != data["user_id"]) & (i["host"] != data["host_id"]), active_invites))
+    invite = find_invite(active_invites, "host", data["host_id"], "invitee", data["user_id"])
+    if invite > -1:
+        active_invites.pop(invite)
+
     join_room(data['host_id'])
-    print('Active Invites', ai)
     new_data = {
         "room_id": data["host_id"],
         "host_username": data["host_name"],
@@ -68,6 +93,14 @@ def accept_invite(data):
         "guest_username": data['username']
     }
     emit('setup_game', new_data, room=data["host_id"], broadcast=True)
+
+
+@socketio.on("cancel_invite")
+def cancel_invite(data):
+    # data includes - host_id, user_id, host_name, username
+    invite = find_invite(active_invites, "host", data["host_id"], "invitee", data["user_id"])
+    if invite > -1:
+        active_invites.pop(invite)
 
 
 @socketio.on("check_for_invites")

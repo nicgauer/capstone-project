@@ -53,6 +53,17 @@ body {
     width:33vw;
 }
 
+.helpModal {
+    padding:25px;
+    border:1px solid black;
+    border-radius: 8px;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color:rgba(121, 125, 179, 0.89);
+}
+
 .newDeckContainer {
     padding:25px;
     border:1px solid black;

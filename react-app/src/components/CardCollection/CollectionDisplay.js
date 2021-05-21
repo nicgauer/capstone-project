@@ -17,6 +17,7 @@ const CollectionDisplay = ({cards}) => {
     const [showModal, setShowModal] = useState(false);
     const [newDeckModal, setNewDeckModal] = useState(false);
     const [newDeckName, setNewDeckName] = useState('New Deck');
+    const [helpModal, setHelpModal] = useState(false);
 
     const displaySelectHandler = (e) => {
         setDropdown(e.target.value);
@@ -108,7 +109,7 @@ const CollectionDisplay = ({cards}) => {
                         <h5>{displaying.length} cards</h5>
                     </div>
                     <div className={styles.rightSpacer}>
-                        <button className={styles.newDeckButton} onClick={newDeckButtonHandler} disabled={true}>Create New Deck</button>
+                        <button className={styles.newDeckButton} onClick={() => setHelpModal(true)}>Help</button>
                     </div>
                 </div>
             </div>
@@ -136,13 +137,14 @@ const CollectionDisplay = ({cards}) => {
                                 <CardDisplay card={selected.card_type} />
 
                                 {!selected.deck_id ? 
-                                (<div>
-                                    <select 
+                                (<div className={styles.selectedRemoveContainer}>
+                                    <h3>Currently Unassigned</h3>
+                                    {/* <select 
                                         value={selectedDropdown}
                                         onChange={(e) => setSelectedDropdown(e.target.value)}
                                         >
                                         {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
-                                    </select>
+                                    </select> */}
                                     <button onClick={addToDeck}>Add to deck</button>
                                 </div>)
                                 :
@@ -153,6 +155,16 @@ const CollectionDisplay = ({cards}) => {
                             </div>
                     </Modal>
                     )}
+
+                {helpModal && (
+                    <Modal onClose={() => setHelpModal(false)}>
+                        <div className={styles.helpModal}>
+                            <h2>Help</h2>
+                            <p>To Add a card to your deck, click on the card and click 'add to deck'!</p>
+                            <p>If a card is already in your deck, click on the card and click 'remove from deck'!</p>
+                        </div>
+                    </Modal>
+                )}
 
             <div className={styles.collectionWrapper}>
                 {displaying.map(card => 

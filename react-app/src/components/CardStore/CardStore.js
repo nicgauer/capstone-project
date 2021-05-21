@@ -4,6 +4,7 @@ import { boosterPack, buyBoosterFC } from '../../services/card_store'
 import CardDisplay from '../CardDisplay';
 import { Modal } from '../../context/Modal';
 import styles from './CardStore.module.css'
+import {NavLink} from 'react-router-dom'
 
 const rng = (max) => {
     return Math.floor(Math.random() * max)
@@ -68,7 +69,8 @@ const CardStore = ({cards}) => {
                         {newPack.map(card => 
                             (
                                 <CardDisplay card={card} />
-                                ))}
+                            ))}
+                        <NavLink to='/collection'>Add Cards To Deck</NavLink>
                     </div>
                 </Modal>
                 )}
