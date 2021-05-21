@@ -52,6 +52,9 @@ const MatchmakingLobby = () => {
             }
         }))
     })()
+    
+    cancelFindGame();
+
     socket.on("waiting_for_game", data => {
         // console.log('waiting for game fired')
         setWaiting(true)
@@ -96,6 +99,7 @@ const MatchmakingLobby = () => {
     })
 
     checkForInvites();
+
 
     return () => {
         cancelFindGame();

@@ -93,7 +93,7 @@ const UserPageDisplay = ({ user, friends }) => {
 
     return (
         <div className={styles.pageWrapper}>
-            <div>
+            <div className={styles.userContainer}>
                 <h1>Welcome, {user.username}</h1>
                 <h2>W - {user.wins}</h2>
                 <h2>L - {user.losses}</h2>

@@ -47,7 +47,7 @@ def host_room(data):
         else:
             join_room(data['user_id'])
     else:
-        open_games.append({'user_id': data["user_id"], 'username': data["username"] })
+        open_games.append({'user_id': data["user_id"], 'username': data["username"]})
         data['room_id'] = data["user_id"]
         join_room(data['user_id'])
         emit('waiting_for_game', data, room=data['room_id'], broadcast=True)
@@ -101,6 +101,7 @@ def cancel_invite(data):
     invite = find_invite(active_invites, "host", data["host_id"], "invitee", data["user_id"])
     if invite > -1:
         active_invites.pop(invite)
+
 
 
 @socketio.on("check_for_invites")
