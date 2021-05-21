@@ -74,3 +74,16 @@
     background-size: cover;
     height: 100vh;
 }
+
+.rulesButton {
+    background-color:rgba(4, 151, 24, 0.63);
+    font-size: 15px;
+    font-weight:700;
+    cursor:pointer;
+    position: fixed;
+    top:5%;
+    right:5%;
+    border-radius:50%;
+    height:70px;
+    width:70px;
+}

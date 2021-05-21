@@ -11,6 +11,7 @@ import AI from '../AI';
 import Navigation from '../Navigation';
 import VictoryDisplay from './VictoryDisplay';
 import DefeatDisplay from './DefeatDisplay';
+import { Modal } from '../../context/Modal';
 
 import styles from './MatchmakingLobby.module.css';
 
@@ -33,6 +34,7 @@ const MatchmakingLobby = () => {
     const [opponentId, setOpponentId] = useState(null);
     const [friends, setFriends] = useState([]);
     const [invites, setInvites] = useState([]);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {    
     (async () => {
@@ -52,7 +54,7 @@ const MatchmakingLobby = () => {
             }
         }))
     })()
-    
+
     cancelFindGame();
 
     socket.on("waiting_for_game", data => {
@@ -205,7 +207,12 @@ const MatchmakingLobby = () => {
             {!AIgame && !gameLost && !gameWon && !gameFound && !waiting && decks &&
                 (<div className={styles.mainWrapper}>
                     
-                    <RulesPage />
+                    <button className={styles.rulesButton} onClick={() => setShowModal(true)}>Read Rules</button>
+
+                    {showModal && (<Modal onClose={() => setShowModal(false)}>
+                            <RulesPage />
+                        </Modal>
+                    )}
 
                     <div className={styles.deckSelectorContainer}>
                         {/* <h1>CHOOSE YOUR DECK</h1> */}
