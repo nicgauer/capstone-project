@@ -23,6 +23,7 @@ const MatchmakingLobby = () => {
     const user = useSelector(state => state.session.user);
     const dispatch = useDispatch();
     const [decks, setDecks] = useState(null);
+    const [aiDecks, setAiDecks] = useState(null);
     const [selectedDeck, setSelectedDeck] = useState(null);
     const [selectedDeckDisplay, setSelectedDeckDisplay] = useState(null);
     const [gameFound, setGameFound] = useState(false);
@@ -38,6 +39,7 @@ const MatchmakingLobby = () => {
 
     useEffect(() => {    
     (async () => {
+        const ad = await getUserDecks(1);
         const d = await getUserDecks(user.id);
         const f = await getFriends(user.id);
         
@@ -46,6 +48,7 @@ const MatchmakingLobby = () => {
         setDecks(d.decks)
         setSelectedDeck(d.decks[0])
         setSelectedDeckDisplay(d.decks[0].name)
+        setAiDecks(ad.decks);
         setFriends(f.friends.map(fr => {
             if(fr.user1.id === user.id){
                 return fr.user2
@@ -198,7 +201,7 @@ const MatchmakingLobby = () => {
                 )}
 
             {AIgame && !gameLost && !gameWon && gameData && (
-                <AI socket={socket} gameData={gameData} AIdeck={selectedDeck.cards} />
+                <AI socket={socket} gameData={gameData} AIdeck={aiDecks[rng(aiDecks.length - 1)].cards} />
                 )}
 
             {!AIgame && !gameLost && !gameWon && gameFound && gameData && (

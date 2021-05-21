@@ -3,8 +3,16 @@ from app.models import User, Deck, Card, db
 from app.forms import LoginForm
 from app.forms import SignUpForm
 from flask_login import current_user, login_user, logout_user, login_required
+import random
 
 auth_routes = Blueprint('auth', __name__)
+
+deck_one_cards = [45, 45, 45, 46, 46, 46, 52, 55, 5, 5, 5, 6, 6, 7, 34, 34, 73, 74, 41, 1]
+deck_two_cards = [2, 2, 2, 3, 3, 4, 4, 55, 67, 75, 73, 6, 6, 7, 5, 5, 73, 38, 38, 13]
+deck_three_cards = [2, 2, 2, 3, 3, 4, 4, 55, 67, 75, 73, 23, 24, 22, 14, 15, 73, 38, 38, 13]
+deck_four_cards = [17, 17, 17, 18, 18, 19, 29, 29, 30, 30, 43, 47, 47, 47, 48, 49, 50, 58, 55, 62]
+
+decks = [deck_one_cards, deck_two_cards, deck_three_cards, deck_four_cards]
 
 
 def validation_errors_to_error_messages(validation_errors):
@@ -67,7 +75,7 @@ def sign_up():
             username=form.data['username'],
             email=form.data['email'],
             password=form.data['password'], 
-            free_currency=2000
+            free_currency=1000
         )
         db.session.add(user)
         db.session.commit()
@@ -79,12 +87,15 @@ def sign_up():
         db.session.add(new_deck)
         db.session.commit()
 
-        new_card = Card(
-            user_id=user.to_dict()['id'],
-            deck_id=new_deck.to_dict()['id'],
-            card_type=4
-        )
-        db.session.add(new_card)
+        card_arr = random.choice(decks)
+        for card in card_arr:
+            new_card = Card(
+                user_id=user.to_dict()['id'],
+                card_type=card,
+                deck_id=new_deck.to_dict_lite()['id'],
+            )
+            db.session.add(new_card)
+            
         db.session.commit()
         
         login_user(user)
