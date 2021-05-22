@@ -3,16 +3,10 @@ from app.models import User, Deck, Card, db
 from app.forms import LoginForm
 from app.forms import SignUpForm
 from flask_login import current_user, login_user, logout_user, login_required
+from app.utils import decks
 import random
 
 auth_routes = Blueprint('auth', __name__)
-
-deck_one_cards = [45, 45, 45, 46, 46, 46, 52, 55, 5, 5, 5, 6, 6, 7, 34, 34, 73, 74, 41, 1]
-deck_two_cards = [2, 2, 2, 3, 3, 4, 4, 55, 67, 75, 73, 6, 6, 7, 5, 5, 73, 38, 38, 13]
-deck_three_cards = [2, 2, 2, 3, 3, 4, 4, 55, 67, 75, 73, 23, 24, 22, 14, 15, 73, 38, 38, 13]
-deck_four_cards = [17, 17, 17, 18, 18, 19, 29, 29, 30, 30, 43, 47, 47, 47, 48, 49, 50, 58, 55, 62]
-
-decks = [deck_one_cards, deck_two_cards, deck_three_cards, deck_four_cards]
 
 
 def validation_errors_to_error_messages(validation_errors):

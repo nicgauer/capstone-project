@@ -12,3 +12,36 @@
 .userContainer {
     border: 1px solid black;
 }
+
+.recordContainer {
+    display:flex;
+    justify-content:center;
+}
+
+.recordTextLoss {
+    margin-left: 10px;
+}
+
+.recordTextWin {
+    margin-right: 10px;
+}
+
+.friendsCount {
+    cursor: pointer;
+}
+
+.friendsCount:hover {
+    text-decoration: underline;
+}
+
+.friendsListModal {
+    background-color:rgba(240,240,240,0.9);
+    border-radius:35px;
+    box-shadow: 0px 0px 6px rgba(170, 170, 170, 0.582);
+    padding: 40px;
+}
+
+.friendsListContainer {
+    overflow: scroll;
+    overflow-y: hidden;
+}

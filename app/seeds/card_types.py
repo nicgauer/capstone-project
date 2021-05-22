@@ -253,8 +253,8 @@ def seed_card_types():
     eggdog = CardType(
         name="Egg Dog",
         type='unit',
-        attack=800,
-        defense=850,
+        attack=500,
+        defense=450,
         rarity=3,
         description='Half egg, half dog',
         picture_url='https://i.imgur.com/CLlulF3.jpg?fb'
@@ -365,8 +365,8 @@ def seed_card_types():
     treebeard = CardType(
         name='Treebeard',
         type='unit',
-        attack=600,
-        defense=900,
+        attack=850,
+        defense=1100,
         rarity=2,
         description="That tree is Moving???",
         picture_url='https://i.imgur.com/CVy07wV.png',
@@ -556,6 +556,8 @@ def seed_card_types():
         description="WATCH OUT HE'S A BIGGUN"
     )
 
+    db.session.add(legendary_mirelurk_killclaw)
+
     whiterun_guard = CardType(
         name='Whiterun Guard',
         type='unit',
@@ -673,7 +675,7 @@ def seed_card_types():
         type='spell',
         description="Restores 600 points of health",
         effect='heal:600',
-        rarity=2,
+        rarity=3,
         picture_url='https://i.pinimg.com/736x/13/75/19/13751947a266a2f4d7e19093e2ca0d8e.jpg'
     )
 
@@ -706,7 +708,7 @@ def seed_card_types():
         type='spell',
         description='Deals 600 points of damage to your opponent',
         effect='damage:600',
-        rarity=2,
+        rarity=3,
         picture_url='https://i.imgur.com/0SmIl8Q.jpg'
     )
 
@@ -717,7 +719,7 @@ def seed_card_types():
         type='spell',
         description='Draw one card from your deck',
         effect='draw:1',
-        rarity=2,
+        rarity=0,
         picture_url='https://d36m266ykvepgv.cloudfront.net/uploads/media/0TBjuAAFTv/s-775-515/high-five.jpg'
     )
 
@@ -739,7 +741,7 @@ def seed_card_types():
         type='spell',
         description="Increase all your units' attack by 300",
         effect='increaseAllAttack:300',
-        rarity=2,
+        rarity=1,
         picture_url='https://i.imgur.com/xMfSsPD.jpg'
     )
 
@@ -805,7 +807,7 @@ def seed_card_types():
         type="spell",
         description="A harmless insult.  Decreases opponents' units attack by 300.",
         effect='decreaseAllAttack:300',
-        rarity=2,
+        rarity=1,
         picture_url='https://i.imgur.com/k7u9i2f.jpg'
     )
 
@@ -838,7 +840,7 @@ def seed_card_types():
         type='spell',
         description="You say something nice.  Decreases opponent's units' defense by 300",
         effect='decreaseAllDefense:300',
-        rarity=2,
+        rarity=1,
         picture_url='https://c8.alamy.com/comp/MTAG1N/office-worker-congratulating-her-colleague-for-a-good-job-MTAG1N.jpg'
     )
 

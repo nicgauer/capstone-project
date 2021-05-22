@@ -14,6 +14,7 @@ const UserPageDisplay = ({ user, friends }) => {
     const [currentlyFriends, setCurrentlyFriends] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [fcReq, setFCREQ] = useState('')
+    const [friendsListModal, setFriendsListModal] = useState(false);
 
     useEffect(() => {
         const orF = friendFilter(friends)
@@ -94,9 +95,15 @@ const UserPageDisplay = ({ user, friends }) => {
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.userContainer}>
-                <h1>Welcome, {user.username}</h1>
-                <h2>W - {user.wins}</h2>
-                <h2>L - {user.losses}</h2>
+                <h1>{user.username}</h1>
+                <h2>{user.wins + user.losses} total games played</h2>
+
+                <div className={styles.recordContainer}>
+                    <h4 className={styles.recordTextWin}>W - {user.wins}</h4>
+                    <h4 className={styles.recordTextLoss}>L - {user.losses}</h4>
+                </div>
+
+                <h2 onClick={() => setFriendsListModal(true)} className={styles.friendsCount}>{friends.length === 1 ? `${friends.length} Friend` : `${friends.length} Friends`}</h2>
                 {loggedInUser.id != user.id && !currentlyFriends && (
                                 <div>
                                     <button onClick={sendRequestHandler} disabled={requested}>
@@ -112,30 +119,44 @@ const UserPageDisplay = ({ user, friends }) => {
             </div>
                 {showModal && (<Modal onClose={() => setShowModal(false)}>
                     <div className={styles.fcModal}>
+                        <h1>Friend Code System</h1>
+                        <p>We use a friend code system to protect our users from unwanted requests.  To send a request to a friend, enter their friend code below.  
+                            Your friend can also enter your friend code on their profile.  If they have, make sure to check your friend requests to accept it.
+                        </p>
                         <h2>Your friend code is</h2>
                         <h1>{generateFC()}</h1>
-                        <p>
-                            Send this to your friends so they can add you!  Or
-                        </p>
                         <h1>Send Friend Request through Friend Code</h1>
                         <form onSubmit={sendFriendCodeRequest}>
                             <input type="text" value={fcReq} onChange={e => setFCREQ(e.target.value)} />
                             <button type="submit">Send Request</button>
                         </form>
                     </div>
-                </Modal> )}                   
-            <div>
-                <h1>Friends List</h1>
-                {friendsList.length > 0 && (
-                    friendsList.map(friend => (
-                        <div onClick={() => visitFriendHandler(friend.id)}>
-                            <h1>{friend.username}</h1>
-                            <h2>W - {friend.wins}</h2>
-                            <h2>L - {friend.losses}</h2>
-                        </div>
-                    ))
-                    )}
-            </div>
+                </Modal> )}
+
+            {friendsListModal && (
+                <Modal onClose={() => setFriendsListModal(false)}>
+                    <div className={styles.friendsListModal}>
+                        {friendsList.length > 0 && (
+                            <div className={styles.friendsListContainer}>
+                                <h1>Friends List</h1>
+                                {friendsList.map(friend => (
+                                    <div onClick={() => visitFriendHandler(friend.id)}>
+                                        <h1>{friend.username}</h1>
+                                        <h2>W - {friend.wins}</h2>
+                                        <h2>L - {friend.losses}</h2>
+                                    </div>
+                                ))}
+                            </div>
+                            )}
+                        {friendsList.length === 0 && (
+                            <div>
+                                <h2>You have no friends!!</h2>
+                                <p>Add friends using the friend code system, or add your opponents as friends after games in random multiplayer!</p>
+                            </div>
+                        )}
+                    </div>
+                </Modal>
+            )}                   
             {loggedInUser.id === user.id && (
                 <div>
                     <h1>Friend Requests</h1>

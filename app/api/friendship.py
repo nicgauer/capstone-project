@@ -18,10 +18,10 @@ def get_user_friends(id):
 def send_friend_request(sender, recipient):
     pendingRequest = Friendship.query.filter((Friendship.user2_id == sender) & (Friendship.user1_id == recipient)).all()
 
-    if pendingRequest:
-        pendingRequest.confirmed = True
+    if len(pendingRequest) > 0:
+        pendingRequest[0].confirmed = True
         db.session.commit()
-        return pendingRequest.to_dict()
+        return pendingRequest[0].to_dict()
 
     friend = Friendship(
         user1_id=int(sender),
@@ -48,6 +48,13 @@ def confirm_friend_request(id):
 def friendcode_add():
     req = request.json
     code = req["code"].split(':')
+    pendingRequest = Friendship.query.filter((Friendship.user2_id == int(req['sender'])) & (Friendship.user1_id == int(code[1]))).all()
+
+    if len(pendingRequest) > 0:
+        pendingRequest[0].confirmed = True
+        db.session.commit()
+        return pendingRequest[0].to_dict()
+
     target = User.query.get(int(code[1]))
     if target:
         if target.to_dict()['username'].replace(' ', '-') == code[0]:
