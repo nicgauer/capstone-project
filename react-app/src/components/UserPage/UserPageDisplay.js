@@ -96,6 +96,7 @@ const UserPageDisplay = ({ user, friends }) => {
         <div className={styles.pageWrapper}>
             <div className={styles.userContainer}>
                 <h1>{user.username}</h1>
+                {user.id !== loggedInUser.id && <h2>{user.status}</h2>}
                 <h2>{user.wins + user.losses} total games played</h2>
 
                 <div className={styles.recordContainer}>

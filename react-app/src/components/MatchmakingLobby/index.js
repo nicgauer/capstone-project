@@ -36,6 +36,7 @@ const MatchmakingLobby = () => {
     const [friends, setFriends] = useState([]);
     const [invites, setInvites] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [friendsModal, setFriendsModal] = useState(false);
 
     useEffect(() => {    
     (async () => {
@@ -60,6 +61,10 @@ const MatchmakingLobby = () => {
 
     cancelFindGame();
 
+    socket.emit("online", {
+        user_id: user.id,
+    })
+
     socket.on("waiting_for_game", data => {
         // console.log('waiting for game fired')
         setWaiting(true)
@@ -82,6 +87,9 @@ const MatchmakingLobby = () => {
         }
         setGameData(gd)
         setGameFound(true)
+        socket.emit("ingame", {
+            user_id: user.id,
+        })
     })
 
     socket.on("game_ended", async data => {
@@ -104,7 +112,6 @@ const MatchmakingLobby = () => {
     })
 
     checkForInvites();
-
 
     return () => {
         cancelFindGame();
@@ -173,9 +180,12 @@ const MatchmakingLobby = () => {
     }
 
     const inviteToGame = (targetId) => {
+        let friend = friends.find(friend => friend.id === targetId);
         socket.emit("invite_to_game", {
             user_id:user.id,
+            username:user.username,
             target_id:targetId,
+            target_name:friend.username,
         })
     }
 
@@ -187,6 +197,11 @@ const MatchmakingLobby = () => {
             host_id:targetId,
             host_name:friend.username,
         })
+    }
+
+    const friendsHandler = () => {
+        checkForInvites();
+        setFriendsModal(true);
     }
 
 
@@ -257,24 +272,28 @@ const MatchmakingLobby = () => {
                         <div className={styles.mainButtonContainer}>
                         <button className={styles.mmButton} onClick={findGame}>Random Multiplayer</button>
 
-                        <button className={styles.mmButton} onClick={playAIgame}>Single Player</button>
+                        <button className={styles.mmButton} onClick={playAIgame}>Play Against AI</button>
+
+                        <button className={styles.mmButton} onClick={friendsHandler}>Play With Friends</button>
                     </div>
                     )}
 
-                    <div>
-                        <h1>Friends List</h1>
-                        <button onClick={checkForInvites}>refresh</button>
-                        {friends.length > 0 && (
-                            friends.map(friend => 
-                                <div>
-                                    <h1>{friend.username}</h1>
-                                    {!invites.includes(friend.id) && <button onClick={() => inviteToGame(friend.id)}>Invite to Game</button>}
-                                    {invites.includes(friend.id) && <button onClick={() => acceptInvite(friend.id)}>Accept Invite</button>}
-                                </div>
-                            )
-                            )}
-
-                    </div>
+                    {friendsModal && <Modal onClose={() => setFriendsModal(false)}>
+                        <div className={styles.friendsListModal}>
+                            <h1>Friends List</h1>
+                            <button onClick={checkForInvites}>refresh</button>
+                            {friends.length > 0 && (
+                                friends.map(friend => 
+                                    <div>
+                                        <h1>{friend.username}</h1>
+                                        <h3>{friend.status}</h3>
+                                        {!invites.includes(friend.id) && <button onClick={() => inviteToGame(friend.id)}>Invite to Game</button>}
+                                        {invites.includes(friend.id) && <button onClick={() => acceptInvite(friend.id)}>Accept Invite</button>}
+                                    </div>
+                                )
+                                )}
+                        </div>
+                    </Modal>}
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
                 (<div>

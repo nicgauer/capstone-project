@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 
 
 const shuffle = (array) => {
-    // console.log(array, "SHUFFLE");
+    console.log(array, "SHUFFLE");
     //Fisher-Yates (aka Knuth) Shuffle
     //from http://sedition.com/perl/javascript-fy.html
     // let array = arr.map(c => c.card_type)
@@ -26,8 +26,8 @@ const drawHand = (deck) => {
         let card = deck.pop()
         h.push(card)
     }
-    // console.log(h)
-    // console.log(deck)
+    console.log(h)
+    console.log(deck)
     return h
 }
 
@@ -43,8 +43,8 @@ const AI = ({socket, gameData, AIdeck}) => {
     // const [opponentHealth, setOpponentHealth] = useState(1000);
 
     let turnNumber = 1;
-    let playerHealth = 1000;
-    let opponentHealth = 1000;
+    let playerHealth = 2000;
+    let opponentHealth = 2000;
 
     // let drawPhase = false;
     // let placementPhase = false;
@@ -87,7 +87,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         let h = [...hand]
         // setHand(h.filter(c => c.id != card.id));
         hand = h.filter(c => c.id != card.id)
-        console.log('remove from hand hand', hand);
+        // console.log('remove from hand hand', hand);
     }
 
 
@@ -100,7 +100,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         //Checks to see if this client is first in turn order
         if(turnOrder[0] === user.id){
             //Tells back end this client is beginning turn
-            console.log('AI starting first turn')
+            // console.log('AI starting first turn')
             socket.emit('start_draw_phase', {
                 user_id:user.id,
                 room_id:room_id,
@@ -114,7 +114,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         socket.on("draw_phase_start", data => {
             //Checks to see if it's this client's turn
             if(data.user_id === user.id) {
-                console.log('AI starting draw!')
+                // console.log('AI starting draw!')
                 //if AI's turn, activate draw phase flag
                 drawPhase()
             }
@@ -126,7 +126,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         socket.on("card_drawn", data => {
             //If AI drew card
             if(data.user_id === user.id) {
-                console.log('AI drew card!')
+                // console.log('AI drew card!')
                 // let waitAmt = 500 * rng(5)
                 // setTimeout(() => {
                 //     //Tells backed this client is starting next phase
@@ -148,7 +148,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         socket.on("placement_phase_start", data => {
             //If this user is starting placement phase
             if(data.user_id === user.id) {
-                console.log('AI is starting placement phase!')
+                // console.log('AI is starting placement phase!')
                 placementPhase();
             }
         })
@@ -283,7 +283,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         socket.on("combat_phase_start", data => {
             //If this client combat phase
             if (data.user_id === user.id){
-                console.log("combat phase start")
+                // console.log("combat phase start")
                 //Ends placement phase, begins combat phase
                 // let waitAmt = 500 * rng(5)
                 // setTimeout(() => {
@@ -434,13 +434,13 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     //Adds card to hand and removes it from deck
     const drawCard = () => {
-        console.log("pre draw card deck", deck);
+        // console.log("pre draw card deck", deck);
         let d = [...deck]
         let h = [...hand]
         let card = d.pop()
         h.push(card)
-        console.log("draw card deck", d)
-        console.log("draw card hand", h)
+        // console.log("draw card deck", d)
+        // console.log("draw card hand", h)
         // setHand(h)
         // setDeck(d)
         hand = h;
@@ -452,7 +452,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         let th = [...hand]
         let h = th.filter(c => c.id != card_id);
         for(let i = 0; i < amt; i++){
-            console.log('Draw Card Spell Loop', h)
+            // console.log('Draw Card Spell Loop', h)
             let card = d.pop()
             h.push(card)
         }
@@ -507,16 +507,14 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
             }
         })
-        console.log('hand after org', hand)
-        console.log('Org Hand!!!', orgHand)
+        // console.log('hand after org', hand)
+        // console.log('Org Hand!!!', orgHand)
 
         placementStepOne(orgHand);
     }
 
+    //Plays draw card hands
     const placementStepOne = (orgHand) => {
-        console.log('Placement Phase, Draw Card Phase')
-        console.log("hand", hand)
-        console.log("deck", deck)
         let draw = orgHand.draw
         if(orgHand.draw.length > 0){
             let played_spell = draw.pop();
@@ -534,8 +532,8 @@ const AI = ({socket, gameData, AIdeck}) => {
         }
     }
 
+    //Considers playing health spells
     const placementStepTwo = (orgHand) => {
-        console.log('Thinking about playing health spell')
         if(orgHand.health.length > 0){
             let health = orgHand.health
             let played_spell = health.pop();
@@ -545,8 +543,8 @@ const AI = ({socket, gameData, AIdeck}) => {
         placementStepThree(orgHand);
     }
 
+    //Plays destroying spells
     const placementStepThree = (orgHand) => {
-        console.log('Thinking about placing a damage spell')
         let destroy = orgHand.destroy;
         if(orgHand.destroy.length > 0){
             //Checks to see if opponent has a unit
@@ -601,11 +599,14 @@ const AI = ({socket, gameData, AIdeck}) => {
                 if(played_spell) playSpell(played_spell)
             }
         }
-            placementStepFour(orgHand)
+            basicPlacement(orgHand)
     }
 
-    const placementStepFour = (orgHand) => {
+    //Evolutions
+    const evolutionPlacement = (orgHand) => {
+        // console.log('Evolution Placement')
         let evolvedUnits = orgHand.evolvedUnits
+        // console.log(evolvedUnits);
         if(evolvedUnits.length > 0){
             let played_unit = null;
             let slot = null;
@@ -647,6 +648,9 @@ const AI = ({socket, gameData, AIdeck}) => {
     
             //Places unit
             if(played_unit){
+                // console.log('Playing', played_unit)
+                orgHand.evolvedUnits = evolvedUnits.filter(u => u.id !== played_unit.id)
+                // console.log('filtered hand', orgHand.evolvedUnits)
                 removeFromHand(played_unit);
                 //Sends info to backend
                 socket.emit('place_unit', {
@@ -657,22 +661,22 @@ const AI = ({socket, gameData, AIdeck}) => {
                     unit_slot: slot,
                     log: `${user.username} places ${played_unit.name}`
                 })
-                //Activate next placement phase step after waiting                   
-                let waitAmt = 500 * rng(5)
-                    // setTimeout(() => {
-                        placementStepSix(orgHand);
-                    // }, waitAmt)
+                
+                if(orgHand.evolvedUnits.length > 0) {
+                    evolutionPlacement(orgHand);
+                }else {
+                    placementStepSix(orgHand);
+                }
             }else{
-                placementStepFive(orgHand)
+                placementStepSix(orgHand);
             }
         }else {
-            placementStepFive(orgHand)
+            placementStepSix(orgHand)
         }
     }
 
-    const placementStepFive = (orgHand) => {
+    const basicPlacement = (orgHand) => {
         let basicUnits = orgHand.basicUnits
-        console.log('Thinking about placing basic unit')
         if(basicUnits.length > 0){
             let played_unit = null;
             let slot = null;
@@ -726,9 +730,9 @@ const AI = ({socket, gameData, AIdeck}) => {
                     log: `${user.username} places ${played_unit.card_type.name}`
                 })
             }
-            placementStepSix(orgHand);
+            evolutionPlacement(orgHand);
         }else {
-            placementStepSix(orgHand);
+            evolutionPlacement(orgHand);
         }
     }
 
@@ -748,7 +752,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 }
             })
             if(used_spell){
-                console.log("Attempting to use ", used_spell)
+                // console.log("Attempting to use ", used_spell)
                 playSpell(used_spell.card_type);
 
                 //Activate next placement phase step after waiting                   
@@ -867,9 +871,18 @@ const AI = ({socket, gameData, AIdeck}) => {
 
             //Destroys opposing units with defense below a certain amount
             case 'destroyOpponentUnitsBelowDef':
-                if(opponentUnitSlot1 && opponentUnitSlot1.defense < effAmt) targets.push(1)
-                if(opponentUnitSlot2 && opponentUnitSlot2.defense < effAmt) targets.push(2)
-                if(opponentUnitSlot3 && opponentUnitSlot3.defense < effAmt) targets.push(3)
+                if(opponentUnitSlot1 && opponentUnitSlot1.defense < effAmt) {
+                    targets.push(1)
+                    opponentUnitSlot1 = null;
+                }
+                if(opponentUnitSlot2 && opponentUnitSlot2.defense < effAmt) {
+                    targets.push(2)
+                    opponentUnitSlot2 = null;
+                }
+                if(opponentUnitSlot3 && opponentUnitSlot3.defense < effAmt) {
+                    targets.push(3)
+                    opponentUnitSlot3 = null;
+                }
                 
                 socket.emit('use_spell', {
                     room_id: room_id,
@@ -880,9 +893,18 @@ const AI = ({socket, gameData, AIdeck}) => {
             break;
             
             case 'destroyOpponentUnitsAboveDef':
-                if(opponentUnitSlot1 && opponentUnitSlot1.defense > effAmt) targets.push(1)
-                if(opponentUnitSlot2 && opponentUnitSlot2.defense > effAmt) targets.push(2)
-                if(opponentUnitSlot3 && opponentUnitSlot3.defense > effAmt) targets.push(3)
+                if(opponentUnitSlot1 && opponentUnitSlot1.defense > effAmt) {
+                    targets.push(1)
+                    opponentUnitSlot1 = null
+                }
+                if(opponentUnitSlot2 && opponentUnitSlot2.defense > effAmt) {
+                    targets.push(2)
+                    opponentUnitSlot2 = null
+                }
+                if(opponentUnitSlot3 && opponentUnitSlot3.defense > effAmt) {
+                    targets.push(3)
+                    opponentUnitSlot3 = null
+                }
                 
                 socket.emit('use_spell', {
                     room_id: room_id,
@@ -893,9 +915,18 @@ const AI = ({socket, gameData, AIdeck}) => {
             break;
 
             case 'destroyOpponentUnitsBelowAtt':
-                if(opponentUnitSlot1 && opponentUnitSlot1.attack < effAmt) targets.push(1)
-                if(opponentUnitSlot2 && opponentUnitSlot2.attack < effAmt) targets.push(2)
-                if(opponentUnitSlot3 && opponentUnitSlot3.attack < effAmt) targets.push(3)
+                if(opponentUnitSlot1 && opponentUnitSlot1.attack < effAmt) {
+                    targets.push(1)
+                    opponentUnitSlot1 = null
+                }
+                if(opponentUnitSlot2 && opponentUnitSlot2.attack < effAmt) {
+                    targets.push(2)
+                    opponentUnitSlot2 = null
+                }
+                if(opponentUnitSlot3 && opponentUnitSlot3.attack < effAmt) {
+                    targets.push(3)
+                    opponentUnitSlot3 = null
+                }
                 
                 socket.emit('use_spell', {
                     room_id: room_id,
@@ -906,9 +937,18 @@ const AI = ({socket, gameData, AIdeck}) => {
             break;
 
             case 'destroyOpponentUnitsAboveAtt':
-                if(opponentUnitSlot1 && opponentUnitSlot1.attack > effAmt) targets.push(1)
-                if(opponentUnitSlot2 && opponentUnitSlot2.attack > effAmt) targets.push(2)
-                if(opponentUnitSlot3 && opponentUnitSlot3.attack > effAmt) targets.push(3)
+                if(opponentUnitSlot1 && opponentUnitSlot1.attack > effAmt) {
+                    targets.push(1)
+                    opponentUnitSlot1 = null
+                }
+                if(opponentUnitSlot2 && opponentUnitSlot2.attack > effAmt) {
+                    targets.push(2)
+                    opponentUnitSlot2 = null
+                }
+                if(opponentUnitSlot3 && opponentUnitSlot3.attack > effAmt) {
+                    targets.push(3)
+                    opponentUnitSlot3 = null
+                }
                 
                 socket.emit('use_spell', {
                     room_id: room_id,
@@ -925,21 +965,21 @@ const AI = ({socket, gameData, AIdeck}) => {
                 //Clone each card object and modify necessary values
                 if(playerUnitSlot1) {
                     let t = {...playerUnitSlot1}
-                    console.log(t)
+                    // console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
                     payload.pu1 = t;
                 }
 
                 if(playerUnitSlot2) {
                     let t = {...playerUnitSlot2}
-                    console.log(t)
+                    // console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
                     payload.pu2 = t;
                 }
 
                 if(playerUnitSlot3) {
                     let t = {...playerUnitSlot3}
-                    console.log(t)
+                    // console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
                     payload.pu3 = t;
                 }
@@ -1094,7 +1134,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 result = playerUnitSlot1.attack
             }
 
-            console.log("Slot1 check",target)
+            // console.log("Slot1 check",target)
             if(target){
                 if(target === 1 && targetName !== 'directly'){
                     opponentUnitSlot1 = null;
@@ -1179,7 +1219,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 result = playerUnitSlot2.attack
             }
 
-            console.log("Slot2 check",target)
+            // console.log("Slot2 check",target)
             if(target){
                 if(target === 1 && targetName !== 'directly'){
                     opponentUnitSlot1 = null;
@@ -1265,7 +1305,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 result = playerUnitSlot3.attack
             }
 
-            console.log("Slot3 check",target)
+            // console.log("Slot3 check",target)
             if(target){
                 if(target === 1 && targetName !== 'directly'){
                     opponentUnitSlot1 = null;

@@ -14,7 +14,7 @@ import explosion from '../../assets/explosion.gif';
 
 
 const shuffle = (array) => {
-    // console.log(array, "SHUFFLE");
+    console.log(array, "SHUFFLE");
     //Fisher-Yates (aka Knuth) Shuffle
     //from http://sedition.com/perl/javascript-fy.html
     // let array = arr.map(c => c.card_type)
@@ -38,8 +38,8 @@ const drawHand = (deck) => {
         let card = deck.pop()
         h.push(card)
     }
-    // console.log(h)
-    // console.log(deck)
+    console.log(h)
+    console.log(deck)
     return h
 }
 
@@ -54,8 +54,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const [deck, setDeck] = useState(playerdeck)
 
     //Health point display and counter
-    const [playerHealth, setPlayerHealth] = useState(1000)
-    const [opponentHealth, setOpponentHealth] = useState(1000)
+    const [playerHealth, setPlayerHealth] = useState(2000)
+    const [opponentHealth, setOpponentHealth] = useState(2000)
 
     //Phase controllers for action unlock
     const [drawPhase, setDrawPhase] = useState(false)
@@ -124,7 +124,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     
     // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
-        console.log('Game Board Check', playerdeck)
+        // console.log('Game Board Check', playerdeck)
         //Game setup, shuffles deck and draws 5 cards for hand
         let shuffledDeck = shuffle(playerdeck);
         let initialHand = drawHand(shuffledDeck)
@@ -240,7 +240,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                         })
                     }
                     setPlayerHealth(data.user_health)
-                    console.log('Setting Player Health To ' + data.user_health)
+                    // console.log('Setting Player Health To ' + data.user_health)
                 }
 
                 //Handles destruction effects
@@ -284,7 +284,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                         })
                     }
                     setPlayerHealth(data.opp_health)
-                    console.log('Setting Player Health To ' + data.opp_health)
+                    // console.log('Setting Player Health To ' + data.opp_health)
                 }
 
                 //updates user health if changes
@@ -356,8 +356,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 //Updates both clients' health
                 setOpponentHealth(data.target_health);
                 setPlayerHealth(data.user_health);
-                console.log('Setting Opponent Health To ' + data.target_health)
-                console.log('Setting Player Health To ' + data.user_health)
+                // console.log('Setting Opponent Health To ' + data.target_health)
+                // console.log('Setting Player Health To ' + data.user_health)
                 
 
                 //If combat was a loss, destroy player unit that attacked
@@ -386,8 +386,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 //Update both players' health
                 setPlayerHealth(data.target_health);
                 setOpponentHealth(data.user_health);
-                console.log('Setting Opponent Health To ' + data.user_health)
-                console.log('Setting Player Health To ' + data.target_health)
+                // console.log('Setting Opponent Health To ' + data.user_health)
+                // console.log('Setting Player Health To ' + data.target_health)
 
                 //Destroy attacking monster if loss or tie
                 if(data.loss || data.tie){
@@ -498,7 +498,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         let th = [...hand]
         let h = th.filter(c => c.id != card_id);
         for(let i = 0; i < amt; i++){
-            console.log('Draw Card Spell Loop', h)
+            // console.log('Draw Card Spell Loop', h)
             let card = d.pop()
             h.push(card)
         }
@@ -511,10 +511,11 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     const playerUnitSlotHandler = (int) => {
         //Handles placing unit cards from hand AND selecting unit for combat
         //Must be placement phase, have a unit card selected, and not placed a card yet this turn
-        if(placementPhase && selected && (selected.card_type.type === 'unit') && !unitPlaced){
+        if(placementPhase && selected && (selected.card_type.type === 'unit')){
 
             let attack_power_up = null;
             let defense_power_up = null;
+            let evolution = false;
             //If has evolution,
             //Evolution mechanic restraints
             if(selected.card_type.evolution_name) {
@@ -533,35 +534,54 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 if(int === 1 && playerUnitSlot1.defense_power_up) defense_power_up = playerUnitSlot1.defense_power_up
                 if(int === 2 && playerUnitSlot2.defense_power_up) defense_power_up = playerUnitSlot2.defense_power_up
                 if(int === 3 && playerUnitSlot3.defense_power_up) defense_power_up = playerUnitSlot3.defense_power_up
-            }else {
+
+                //EXPERIMENTAL- sets evolution flag to true, allows for any number of evolutions to happen per turn
+                evolution = true;
+
+                let t = {...selected.card_type}
+                if(attack_power_up) t.attack += attack_power_up
+                if(defense_power_up) t.defense += defense_power_up
+                
+
+                //Sends info to backend
+                socket.emit('place_unit', {
+                    room_id:room_id,
+                    user_id: user.id,
+                    hand_size: (hand.length - 1),
+                    card_type: t,
+                    unit_slot: int,
+                    log: `${user.username} places ${selected.card_type.name}`
+                })
+
+                //Removes card from hand
+                    removeFromHand(selected)
+                //Resets selected
+                    setSelected(null);
+
+            } else if (!unitPlaced) {
                 //If no evolution
                 //Prevents placing cards on taken slots
                 if(int === 1 && playerUnitSlot1) return;
                 if(int === 2 && playerUnitSlot2) return;
                 if(int === 3 && playerUnitSlot3) return;
+                
+                //Sends info to backend
+                socket.emit('place_unit', {
+                    room_id:room_id,
+                    user_id: user.id,
+                    hand_size: (hand.length - 1),
+                    card_type: selected.card_type,
+                    unit_slot: int,
+                    log: `${user.username} places ${selected.card_type.name}`
+                })
+                
+                //Resets selected
+                setSelected(null);
+                //prevents multiple placements, allows for infinite evolutions
+                setUnitPlaced(true);
+                //Removes card from hand
+                removeFromHand(selected)
             }
-
-            let t = {...selected.card_type}
-            if(attack_power_up) t.attack += attack_power_up
-            if(defense_power_up) t.defense += defense_power_up
-            
-
-            //Sends info to backend
-            socket.emit('place_unit', {
-                room_id:room_id,
-                user_id: user.id,
-                hand_size: (hand.length - 1),
-                card_type: t,
-                unit_slot: int,
-                log: `${user.username} places ${selected.card_type.name}`
-            })
-
-            //Resets selected
-            setSelected(null);
-            //prevents multiple placements
-            setUnitPlaced(true);
-            //Removes card from hand
-            removeFromHand(selected)
         }
 
         //COMBAT PHASE selector
@@ -696,7 +716,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 //Clone each card object and modify necessary values
                 if(playerUnitSlot1) {
                     let t = {...playerUnitSlot1}
-                    console.log(t)
+                    // console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
                     if(t.attack_power_up) {
                         t.attack_power_up += Number(effAmt);
@@ -708,7 +728,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
                 if(playerUnitSlot2) {
                     let t = {...playerUnitSlot2}
-                    console.log(t)
+                    // console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
                     if(t.attack_power_up) {
                         t.attack_power_up += Number(effAmt);
@@ -720,7 +740,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
                 if(playerUnitSlot3) {
                     let t = {...playerUnitSlot3}
-                    console.log(t)
+                    // console.log(t)
                     t.attack = Number(t.attack) + Number(effAmt);
                     if(t.attack_power_up) {
                         t.attack_power_up += Number(effAmt);

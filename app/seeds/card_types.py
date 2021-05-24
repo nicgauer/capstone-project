@@ -552,8 +552,9 @@ def seed_card_types():
         picture_url='https://64.media.tumblr.com/1b2ab53ff0438091dd84ff9c5898258e/tumblr_p727z6PwZQ1x5ccm3o1_500.jpg',
         attack=1200,
         defense=500,
-        rarity=2,
-        description="WATCH OUT HE'S A BIGGUN"
+        rarity=3,
+        description="WATCH OUT HE'S A BIGGUN",
+        evolution_name='Legendary Mirelurk'
     )
 
     db.session.add(legendary_mirelurk_killclaw)

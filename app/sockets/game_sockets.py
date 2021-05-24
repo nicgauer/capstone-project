@@ -1,9 +1,12 @@
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask import request
 from app import socketio
+from app.models import User, db
 
 
 open_games = []
 active_invites = []
+active_sockets = []
 
 
 def find_invite(lst, key1, value1, key2, value2):
@@ -22,12 +25,49 @@ def find_open_game(lst, key, value):
 
 @socketio.on("connect")
 def handle_connect():
+    print(request.sid)
     print("Client Connected")
 
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    # user = User.query.get(int(current_user.id))
+    # user.status = "offline"
+    # db.session.commit()
+    # print(socketio.handshake.headers.cookie)
+    print(request.sid)
+    index = find_open_game(active_sockets, "sid", request.sid)
+    sock = active_sockets.pop(index)
+    user = User.query.get(int(sock["user_id"]))
+    user.status = "offline"
+    db.session.commit()
     print("Client Disconnect")
+
+
+@socketio.on("online")
+def update_online(data):
+    user = User.query.get(int(data["user_id"]))
+    user.status = "online"
+    db.session.commit()
+    active_sockets.append({"sid":request.sid, "user_id":data["user_id"]})
+    return user.to_dict()
+
+
+@socketio.on("offline")
+def update_offline(data):
+    print('Offline Working')
+    user = User.query.get(int(data["user_id"]))
+    user.status = "offline"
+    db.session.commit()
+    return user.to_dict()
+
+
+@socketio.on("ingame")
+def update_ingame(data):
+    user = User.query.get(int(data["user_id"]))
+    user.status = "in game"
+    db.session.commit()
+    return user.to_dict()
 
 
 @socketio.on("find_game")
@@ -63,18 +103,33 @@ def cancel_matchmaking(data):
 
 @socketio.on("ai_game")
 def ai_game(data):
+    user = User.query.get(int(data["user_id"]))
+    user.status = "in AI game"
+    db.session.commit()
     join_room(f"{data['user_id']}ai")
 
 
 @socketio.on("invite_to_game")
 def invite_to_game(data):
     # data includes - user_id, target_id, username
-    active_invites.append({
-        "host":data["user_id"],
-        "invitee":data["target_id"],
-    })
-    join_room(data['user_id'])
-    emit('waiting_for_game', data, room=data['user_id'], broadcast=True)
+    invite = find_invite(active_invites, "host", data["target_id"], "invitee", data["user_id"])
+    if invite > -1:
+        invite = active_invites.pop(invite)
+        join_room(data['target_id'])
+        new_data = {
+            "room_id": data["target_id"],
+            "host_username": data["target_name"],
+            "turn_order": [data['target_id'], data['user_id']],
+            "guest_username": data['username']
+        }
+        emit('setup_game', new_data, room=data["host_id"], broadcast=True)
+    else:
+        active_invites.append({
+            "host":data["user_id"],
+            "invitee":data["target_id"],
+        })
+        join_room(data['user_id'])
+        emit('waiting_for_game', data, room=data['user_id'], broadcast=True)
 
 
 @socketio.on("accept_invite")

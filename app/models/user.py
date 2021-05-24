@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
   paid_currency = db.Column(db.Integer, default=0)
   wins = db.Column(db.Integer, default=0)
   losses = db.Column(db.Integer, default=0)
+  status = db.Column(db.String)
   cards = db.relationship("Card", back_populates="owner")
   decks = db.relationship("Deck", back_populates="user")
   friends1 = db.relationship("Friendship", foreign_keys='Friendship.user1_id', back_populates="user1")
@@ -42,4 +43,5 @@ class User(db.Model, UserMixin):
       "paid_currency": self.paid_currency,
       "wins": self.wins,
       "losses": self.losses,
+      "status": self.status,
     }

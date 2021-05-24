@@ -87,3 +87,10 @@
     height:70px;
     width:70px;
 }
+
+.friendsListModal {
+    background-color:rgba(185, 185, 185, 0.932);
+    text-align:center;
+    padding:20px;
+    border-radius: 25px;
+}
