@@ -286,7 +286,11 @@ const MatchmakingLobby = () => {
                                 friends.map(friend => 
                                     <div>
                                         <h1>{friend.username}</h1>
-                                        <h3>{friend.status}</h3>
+                                        <h2 className={styles.status}>
+                                        <div className={friend.status === 'online' ? styles.online :
+                                                        friend.status === 'in game' || friend.status === 'in AI game' ? styles.ingame : styles.offline} />
+                                            {friend.status}
+                                        </h2>
                                         {!invites.includes(friend.id) && <button onClick={() => inviteToGame(friend.id)}>Invite to Game</button>}
                                         {invites.includes(friend.id) && <button onClick={() => acceptInvite(friend.id)}>Accept Invite</button>}
                                     </div>

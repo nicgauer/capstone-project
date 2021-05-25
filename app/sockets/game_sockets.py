@@ -37,10 +37,11 @@ def handle_disconnect():
     # print(socketio.handshake.headers.cookie)
     print(request.sid)
     index = find_open_game(active_sockets, "sid", request.sid)
-    sock = active_sockets.pop(index)
-    user = User.query.get(int(sock["user_id"]))
-    user.status = "offline"
-    db.session.commit()
+    if index > -1:
+        sock = active_sockets.pop(index)
+        user = User.query.get(int(sock["user_id"]))
+        user.status = "offline"
+        db.session.commit()
     print("Client Disconnect")
 
 
@@ -49,16 +50,7 @@ def update_online(data):
     user = User.query.get(int(data["user_id"]))
     user.status = "online"
     db.session.commit()
-    active_sockets.append({"sid":request.sid, "user_id":data["user_id"]})
-    return user.to_dict()
-
-
-@socketio.on("offline")
-def update_offline(data):
-    print('Offline Working')
-    user = User.query.get(int(data["user_id"]))
-    user.status = "offline"
-    db.session.commit()
+    active_sockets.append({"sid": request.sid, "user_id": data["user_id"]})
     return user.to_dict()
 
 

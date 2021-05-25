@@ -89,6 +89,16 @@ const CollectionDisplay = ({cards}) => {
         return deckName(Number(dropdown))
     }
 
+    const amountInDeck = (cardTypeId) => {
+        let count = 0;
+        cards[selectedDropdown].forEach((c) => {
+            if(c.card_type.id === cardTypeId){
+                count++;
+            }
+        })
+        return count
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.collectionHeader}>
@@ -139,18 +149,21 @@ const CollectionDisplay = ({cards}) => {
                                 {!selected.deck_id ? 
                                 (<div className={styles.selectedRemoveContainer}>
                                     <h3>Currently Unassigned</h3>
+                                    <h4>{amountInDeck(selected.card_type.id)} copies of this card in deck</h4>
                                     {/* <select 
                                         value={selectedDropdown}
                                         onChange={(e) => setSelectedDropdown(e.target.value)}
                                         >
                                         {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
                                     </select> */}
-                                    {cards[selectedDropdown].length < 20 && <button onClick={addToDeck}>Add to deck</button>}
+                                    {cards[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) < 3 && <button onClick={addToDeck}>Add to deck</button>}
+                                    {cards[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) === 3 && <h4>Cannot add more than 3 cards of the same type</h4>}
                                     {cards[selectedDropdown].length >= 20 && <h4>Deck is full!  Remove a cards in order to add more.</h4>}
                                 </div>)
                                 :
                                 (<div className={styles.selectedRemoveContainer}>
                                     <h3>Currently in {deckName(selected.deck_id)}</h3>
+                                    <h4>{amountInDeck(selected.card_type.id)} copies of this card in deck</h4>
                                     <button onClick={removeFromDeck}>Remove from Deck</button>
                                 </div>)}
                             </div>

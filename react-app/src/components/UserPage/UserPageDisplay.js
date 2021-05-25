@@ -13,8 +13,9 @@ const UserPageDisplay = ({ user, friends }) => {
     const [requested, setRequested] = useState(false);
     const [currentlyFriends, setCurrentlyFriends] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [fcReq, setFCREQ] = useState('')
+    const [fcReq, setFCREQ] = useState('');
     const [friendsListModal, setFriendsListModal] = useState(false);
+    const [friendRequestModal, setFriendRequestModal] = useState(false);
 
     useEffect(() => {
         const orF = friendFilter(friends)
@@ -92,11 +93,19 @@ const UserPageDisplay = ({ user, friends }) => {
         setShowModal(false);
     }
 
+    const friendRequestModalHandler = () => {
+        if(friendRequests.length > 0) setFriendRequestModal(true);
+    }
+
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.userContainer}>
                 <h1>{user.username}</h1>
-                {user.id !== loggedInUser.id && <h2>{user.status}</h2>}
+                {user.id !== loggedInUser.id && <h2 className={styles.status}>
+                    <div className={user.status === 'online' ? styles.online :
+                                    user.status === 'in game' || user.status === 'in AI game' ? styles.ingame : styles.offline} />
+                        {user.status}
+                    </h2>}
                 <h2>{user.wins + user.losses} total games played</h2>
 
                 <div className={styles.recordContainer}>
@@ -143,6 +152,11 @@ const UserPageDisplay = ({ user, friends }) => {
                                 {friendsList.map(friend => (
                                     <div onClick={() => visitFriendHandler(friend.id)}>
                                         <h1>{friend.username}</h1>
+                                        <h2 className={styles.status}>
+                                            <div className={friend.status === 'online' ? styles.online :
+                                                            friend.status === 'in game' || friend.status === 'in AI game' ? styles.ingame : styles.offline} />
+                                                {friend.status}
+                                            </h2>
                                         <h2>W - {friend.wins}</h2>
                                         <h2>L - {friend.losses}</h2>
                                     </div>
@@ -159,19 +173,25 @@ const UserPageDisplay = ({ user, friends }) => {
                 </Modal>
             )}                   
             {loggedInUser.id === user.id && (
-                <div>
-                    <h1>Friend Requests</h1>
-                    {friendRequests.length > 0 && (
-                        friendRequests.map(req => (
-                            <div onClick={() => visitFriendHandler(req.user.id)}>
-                                <h1>{req.user.username}</h1>
-                                <h2>W - {req.user.wins}</h2>
-                                <h2>L - {req.user.losses}</h2>
-                                <button onClick={() => confirmRequestHandler(req.id)}>Confirm {req.user.username} as a friend</button>
-                            </div>
-                        ))
+                <h2 onClick={friendRequestModalHandler} className={styles.friendsCount}>{friendRequests.length > 1 ? `${friendRequests.length} Friend Requests` : friendRequests.length === 1 ? `${friendRequests.length} Friend Request` : 'No Friend Requests'}</h2>
+            )}
+
+            {friendRequestModal && (
+                <Modal onClose={() => setFriendRequestModal(false)}>
+                    <div>
+                        <h1>Friend Requests</h1>
+                        {friendRequests.length > 0 && (
+                            friendRequests.map(req => (
+                                <div onClick={() => visitFriendHandler(req.user.id)}>
+                                    <h1>{req.user.username}</h1>
+                                    <h2>W - {req.user.wins}</h2>
+                                    <h2>L - {req.user.losses}</h2>
+                                    <button onClick={() => confirmRequestHandler(req.id)}>Confirm {req.user.username} as a friend</button>
+                                </div>
+                            ))
                     )}
-                </div>
+                    </div>
+                </Modal>
             )}
         </div>
     )
