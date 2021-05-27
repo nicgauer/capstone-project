@@ -66,7 +66,6 @@ const CardStore = ({cards}) => {
                     <button className={freeCurrency < 500 ? styles.boosterButtonDisabled : styles.boosterButton} onClick={fcPullBooster} disabled={freeCurrency < 500}>{freeCurrency < 500 ? `Need ${500 - freeCurrency} more $!` : "Buy Booster"}</button>
                     {newPack && showModal && (
                         <Modal onClose={() => setShowModal(false)}>
-                        <h3 className={styles.newPack}>-- New Pack --</h3>
                         <div className={styles.newPackDisplay}>
                             {newPack.map(card => 
                                 (

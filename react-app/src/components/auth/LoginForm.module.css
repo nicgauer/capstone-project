@@ -1,0 +1,58 @@
+.loginWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content:center;
+    box-sizing: inherit;
+    padding: 0;
+}
+
+.loginForm {
+    display: flex;
+    flex-direction: column;
+    width: 376px;
+}
+.usernameInput, .emailInput, .passwordInput{
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    margin-bottom: 16px;
+}
+.usernameBox, .passwordBox, .emailBox {
+    padding: 11px 12px 13px;
+    font-size: 18px;
+    height: 20px;
+    border: 1px solid #868686;
+    color: rgba(var(--sk_primary_foreground,29,28,29),1);
+    border-radius: 5px;
+}
+
+.passwordBox:focus, .emailBox:focus {
+    outline-color:#5D9EE7;
+    outline-width:2px;
+    outline-offset:2px;
+    box-shadow:0 0 6px 4px rgba(93, 158, 231, 0.5)
+}
+
+.loginButton {
+    margin-top:25px;
+    background-color: rgb(113,133,255);;
+    color: #fff;
+    border: none;
+    width: 100%;
+    font-size: 18px;
+    font-weight: 900;
+    height: 44px;
+    min-width: 96px;
+    padding: 0 16px 3px;
+    border-radius: 5px;
+}
+
+.loginButton:hover{
+    opacity: .7;
+    cursor: pointer;
+}
+
+.signUp {
+    text-align: center;
+}

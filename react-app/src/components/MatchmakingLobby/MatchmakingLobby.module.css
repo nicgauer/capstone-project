@@ -95,6 +95,53 @@
     border-radius: 25px;
 }
 
+.friendDisplay {
+    border: 1px solid black;
+    background: rgb(113,133,255);
+    background: linear-gradient(90deg, rgba(113,133,255,1) 0%, rgba(48,91,244,1) 50%, rgba(143,177,255,1) 100%);
+    padding:20px;
+    min-width:33vw;
+    margin: 5px;
+}
+
+.friendInfo {
+    display:flex;
+    justify-content:space-between;
+    padding-left:20px;
+    padding-right:20px;
+}
+
+.friendsListTitle {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.refreshButton {
+    margin-left:25px;
+    padding:5px;
+    cursor: pointer;
+}
+
+.cancelButton {
+    cursor:pointer;
+    padding:10px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+    background:rgba(201, 38, 38, 0.747);
+    color:white;
+    font-weight: 900;
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.4);
+    font-size:20px;
+}
+
+.cancelButton:hover {
+    background:rgba(156, 30, 30, 0.877);
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.685);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
 
 .status {
     display:flex;

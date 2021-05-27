@@ -280,19 +280,25 @@ const MatchmakingLobby = () => {
 
                     {friendsModal && <Modal onClose={() => setFriendsModal(false)}>
                         <div className={styles.friendsListModal}>
-                            <h1>Friends List</h1>
-                            <button onClick={checkForInvites}>refresh</button>
+
+                            <div className={styles.friendsListTitle}>
+                                <h1>Friends List</h1>
+                                <button className={styles.refreshButton} onClick={checkForInvites}>refresh</button>
+                            </div>
+
                             {friends.length > 0 && (
                                 friends.map(friend => 
-                                    <div>
-                                        <h1>{friend.username}</h1>
-                                        <h2 className={styles.status}>
-                                        <div className={friend.status === 'online' ? styles.online :
-                                                        friend.status === 'in game' || friend.status === 'in AI game' ? styles.ingame : styles.offline} />
-                                            {friend.status}
-                                        </h2>
-                                        {!invites.includes(friend.id) && <button onClick={() => inviteToGame(friend.id)}>Invite to Game</button>}
-                                        {invites.includes(friend.id) && <button onClick={() => acceptInvite(friend.id)}>Accept Invite</button>}
+                                    <div className={styles.friendDisplay}>
+                                        <div className={styles.friendInfo}>
+                                            <h1>{friend.username}</h1>
+                                            <h2 className={styles.status}>
+                                            <div className={friend.status === 'online' ? styles.online :
+                                                            friend.status === 'in game' || friend.status === 'in AI game' ? styles.ingame : styles.offline} />
+                                                {friend.status}
+                                            </h2>
+                                        </div>
+                                        {!invites.includes(friend.id) && <button className={styles.mmButton} onClick={() => inviteToGame(friend.id)}>Invite to Game</button>}
+                                        {invites.includes(friend.id) && <button className={styles.mmButton} onClick={() => acceptInvite(friend.id)}>Accept Invite</button>}
                                     </div>
                                 )
                                 )}
@@ -300,9 +306,9 @@ const MatchmakingLobby = () => {
                     </Modal>}
                 </div>)}
             {!gameLost && !gameWon && !gameFound && waiting && 
-                (<div>
+                (<div className={styles.mainWrapper}>
                     <h1>Waiting for game...</h1>
-                    <button onClick={matchmakingCancel}>Cancel</button>
+                    <button className={styles.cancelButton} onClick={matchmakingCancel}>Cancel</button>
                 </div>)}
         </div>
     )
