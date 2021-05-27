@@ -57,24 +57,31 @@ const CardStore = ({cards}) => {
     }
 
     return (
-        <div>
-            <h2>Card Store</h2>
-            <h4>${freeCurrency}</h4>
-            <div>
-                <h3>Purchase Booster Pack for $500</h3>
-                <button className={freeCurrency < 500 ? styles.boosterButtonDisabled : styles.boosterButton} onClick={fcPullBooster} disabled={freeCurrency < 500}>{freeCurrency < 500 ? `Need ${500 - freeCurrency} more $!` : "Buy Booster"}</button>
-                {newPack && showModal && (
-                    <Modal onClose={() => setShowModal(false)}>
-                    <div className={styles.newPackDisplay}>
-                        {newPack.map(card => 
-                            (
-                                <CardDisplay card={card} />
-                            ))}
-                        <NavLink to='/collection'>Add Cards To Deck</NavLink>
-                    </div>
-                </Modal>
-                )}
-            </div>
+        <div className={styles.storeContainer}>
+                <h1>Welcome, {user.username}</h1>
+                <h2>Card Store</h2>
+                <h4>${freeCurrency}</h4>
+                <div>
+                    <h3>Purchase Booster Pack for $500</h3>
+                    <button className={freeCurrency < 500 ? styles.boosterButtonDisabled : styles.boosterButton} onClick={fcPullBooster} disabled={freeCurrency < 500}>{freeCurrency < 500 ? `Need ${500 - freeCurrency} more $!` : "Buy Booster"}</button>
+                    {newPack && showModal && (
+                        <Modal onClose={() => setShowModal(false)}>
+                        <h3 className={styles.newPack}>-- New Pack --</h3>
+                        <div className={styles.newPackDisplay}>
+                            {newPack.map(card => 
+                                (
+                                    <CardDisplay card={card} />
+                                    ))}
+                        </div>
+
+                        <div className={styles.btnContainer}>
+                            <NavLink to='/collection'>
+                                <button className={styles.collectionLinkBtn}>Add Cards To Deck</button>
+                            </NavLink>
+                        </div>
+                    </Modal>
+                    )}
+                </div>
         </div>
     )
 }

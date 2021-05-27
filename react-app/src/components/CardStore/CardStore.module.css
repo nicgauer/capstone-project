@@ -1,11 +1,26 @@
+.storeContainer {
+    background: rgba(255,255,255, 0.3);
+    padding: 75px;
+    border-radius: 25px;
+    border: 3px solid black;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.4)
+}
 
 .newPackDisplay {
     display:flex;
     justify-content: center;
+    background: rgba(210, 209, 253, 0.4);
+    padding: 50px;
+    border:3px solid black;
+    border-radius: 15px;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.4)
 }
 
 .storeWrapper {
     text-align: center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
     background-image:url('../../assets/abstract_blue_background_vector_set.jpg');
     background-position: center;
     background-repeat: no-repeat;
@@ -43,3 +58,23 @@
         border-radius:5px;
         padding:15px;
     }
+
+.collectionLinkBtn {
+    padding:20px;
+    cursor: pointer;
+    border-radius:5px;
+    background:rgba(180, 180, 180, 0.2);
+    color:white;
+    border:2px solid white;
+    font-weight: 600;
+}
+
+.btnContainer {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.newPack {
+    color:white;
+    text-align: center;
+}

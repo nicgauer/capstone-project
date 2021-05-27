@@ -163,7 +163,7 @@ const CollectionDisplay = ({cards}) => {
                                 :
                                 (<div className={styles.selectedRemoveContainer}>
                                     <h3>Currently in {deckName(selected.deck_id)}</h3>
-                                    <h4>{amountInDeck(selected.card_type.id)} copies of this card in deck</h4>
+                                    <h4>{amountInDeck(selected.card_type.id) === 1 ? `${amountInDeck(selected.card_type.id)} copy` : `${amountInDeck(selected.card_type.id)} copies`} of this card in deck</h4>
                                     <button onClick={removeFromDeck}>Remove from Deck</button>
                                 </div>)}
                             </div>
@@ -176,6 +176,7 @@ const CollectionDisplay = ({cards}) => {
                             <h2>Help</h2>
                             <p>To Add a card to your deck, click on the card and click 'add to deck'!</p>
                             <p>If a card is already in your deck, click on the card and click 'remove from deck'!</p>
+                            <p>Remember -- Decks must have 20 cards.  Up to 3 copies of the same card can be placed in your deck.</p>
                         </div>
                     </Modal>
                 )}

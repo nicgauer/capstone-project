@@ -106,6 +106,11 @@ const UserPageDisplay = ({ user, friends }) => {
                                     user.status === 'in game' || user.status === 'in AI game' ? styles.ingame : styles.offline} />
                         {user.status}
                     </h2>}
+                {loggedInUser.id === user.id && (
+                    <div>
+                        <button className={styles.fcmButton} onClick={() => setShowModal(true)}>Friend Code Menu</button>
+                    </div>
+                )}
                 <h2>{user.wins + user.losses} total games played</h2>
 
                 <div className={styles.recordContainer}>
@@ -121,10 +126,9 @@ const UserPageDisplay = ({ user, friends }) => {
                                     </button>
                                 </div>
                             )}
+
                 {loggedInUser.id === user.id && (
-                    <div>
-                        <button onClick={() => setShowModal(true)}>Friend Code</button>
-                    </div>
+                    <h2 onClick={friendRequestModalHandler} className={styles.friendsCount}>{friendRequests.length > 1 ? `${friendRequests.length} Friend Requests` : friendRequests.length === 1 ? `${friendRequests.length} Friend Request` : 'No Friend Requests'}</h2>
                 )}
             </div>
                 {showModal && (<Modal onClose={() => setShowModal(false)}>
@@ -172,9 +176,6 @@ const UserPageDisplay = ({ user, friends }) => {
                     </div>
                 </Modal>
             )}                   
-            {loggedInUser.id === user.id && (
-                <h2 onClick={friendRequestModalHandler} className={styles.friendsCount}>{friendRequests.length > 1 ? `${friendRequests.length} Friend Requests` : friendRequests.length === 1 ? `${friendRequests.length} Friend Request` : 'No Friend Requests'}</h2>
-            )}
 
             {friendRequestModal && (
                 <Modal onClose={() => setFriendRequestModal(false)}>

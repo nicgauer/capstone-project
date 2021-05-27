@@ -32,15 +32,16 @@ const CardStoreWrapper = () => {
     }, [])
 
     return (
-        <div className={styles.storeWrapper}>
+        <div>
             <Navigation currentLocation={'store'} />
-            <h1>Welcome, {user.username}</h1>
-            {loading && !organized && (
-                <h1>loading card store...</h1>
-            )}
-            {!loading && organized && (
-                <CardStore cards={organized} />
-            )}
+            <div className={styles.storeWrapper}>
+                {loading && !organized && (
+                    <h1>loading card store...</h1>
+                    )}
+                {!loading && organized && (
+                    <CardStore cards={organized} />
+                    )}
+            </div>
         </div>
     )
 }
