@@ -154,15 +154,22 @@ const UserPageDisplay = ({ user, friends }) => {
                             <div className={styles.friendsListContainer}>
                                 <h1>Friends List</h1>
                                 {friendsList.map(friend => (
-                                    <div onClick={() => visitFriendHandler(friend.id)}>
-                                        <h1>{friend.username}</h1>
-                                        <h2 className={styles.status}>
-                                            <div className={friend.status === 'online' ? styles.online :
-                                                            friend.status === 'in game' || friend.status === 'in AI game' ? styles.ingame : styles.offline} />
-                                                {friend.status}
-                                            </h2>
-                                        <h2>W - {friend.wins}</h2>
-                                        <h2>L - {friend.losses}</h2>
+                                    <div className={styles.friendDisplay} onClick={() => visitFriendHandler(friend.id)}>
+                                        <div className={styles.friendInfo}>
+
+                                            <h1>{friend.username}</h1>
+                                            <h2 className={styles.status}>
+                                                <div className={friend.status === 'online' ? styles.online :
+                                                                friend.status === 'in game' || friend.status === 'in AI game' ? styles.ingame : styles.offline} />
+                                                    {friend.status}
+                                                </h2>
+
+                                        </div>
+
+                                        <div className={styles.friendRecord}>
+                                            <h2>W - {friend.wins}</h2>
+                                            <h2>L - {friend.losses}</h2>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
