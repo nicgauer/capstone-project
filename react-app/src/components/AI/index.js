@@ -32,7 +32,7 @@ const AI = ({socket, gameData, AIdeck}) => {
     const turnOrder = gameData.turn_order;
     const user = {
         username:'Duel Bot',
-        id:1
+        id:0
     }
     let turnNumber = 1;
     let playerHealth = 2000;

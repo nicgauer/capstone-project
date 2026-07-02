@@ -111,8 +111,8 @@ def cancel_matchmaking(data):
 @socketio.on("ai_game")
 def ai_game(data):
     user = db.session.get(User, int(data["user_id"]))
-    if user is None:
-        return
+    # if user is None:
+    #     return
     user.status = "in AI game"
     db.session.commit()
     join_room(f"{data['user_id']}ai")
