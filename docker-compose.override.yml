@@ -1,0 +1,8 @@
+# Local development override — not deployed to the droplet (the deploy
+# workflow only copies docker-compose.yml and Caddyfile). With this file
+# present, `docker compose up --build` builds the image locally instead
+# of pulling from GHCR.
+services:
+  app:
+    build: .
+    image: capstone-project-local

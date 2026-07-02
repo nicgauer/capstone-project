@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
@@ -36,13 +36,9 @@ app.cli.add_command(seed_commands)
 
 app.config.from_object(Config)
 
-if os.environ.get("FLASK_ENV") == "production":
-    origins = [
-        "https://super-battle-cards.herokuapp.com",
-        "http://super-battle-cards.herokuapp.com",
-    ]
-else:
-    origins = '*'
+# Comma-separated list of allowed origins, e.g. "https://example.com"
+_app_origins = os.environ.get("APP_ORIGINS", "*")
+origins = '*' if _app_origins == '*' else _app_origins.split(',')
 
 Payload.max_decode_packets = 50
 socketio = SocketIO(app, cors_allowed_origins=origins)
@@ -58,32 +54,20 @@ db.init_app(app)
 Migrate(app, db)
 
 # Application Security
-CORS(app)
+CORS(app, origins=origins)
 
-# Since we are deploying with Docker and Flask,
-# we won't be using a buildpack when we deploy to Heroku.
-# Therefore, we need to make sure that in production any
-# request made over http is redirected to https.
-# Well.........
-
-
-@app.before_request
-def https_redirect():
-    if os.environ.get('FLASK_ENV') == 'production':
-        if request.headers.get('X-Forwarded-Proto') == 'http':
-            url = request.url.replace('http://', 'https://', 1)
-            code = 301
-            return redirect(url, code=code)
+# HTTP->HTTPS redirection is handled by the Caddy reverse proxy.
+# SECURE_COOKIES must be "false" when serving plain HTTP (e.g. IP-only
+# deploys before a domain exists), or the browser drops the CSRF cookie.
+SECURE_COOKIES = os.environ.get('SECURE_COOKIES', 'true').lower() in ('true', '1')
 
 
 @app.after_request
 def inject_csrf_token(response):
     response.set_cookie('csrf_token',
                         generate_csrf(),
-                        secure=True if os.environ.get(
-                            'FLASK_ENV') == 'production' else False,
-                        samesite='Strict' if os.environ.get(
-                            'FLASK_ENV') == 'production' else None,
+                        secure=SECURE_COOKIES,
+                        samesite='Strict' if SECURE_COOKIES else None,
                         httponly=True)
     return response
 

@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+flask db upgrade
+
+# Game/matchmaking state lives in module-level dicts (app/sockets/game_sockets.py),
+# so this MUST stay a single worker unless a Socket.IO message queue is added.
+exec gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:8000 app:app

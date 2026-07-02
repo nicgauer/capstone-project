@@ -15,9 +15,8 @@ import { Modal } from '../../context/Modal';
 
 import styles from './MatchmakingLobby.module.css';
 
-const endPoint = "http://localhost:5000"
-// const endPoint = "https://super-battle-cards.herokuapp.com"
-const socket = io(endPoint);
+// Same-origin connection: the Flask backend serves both the SPA and Socket.IO
+const socket = io();
 
 const MatchmakingLobby = () => {
     const user = useSelector(state => state.session.user);
