@@ -2,10 +2,8 @@ import React, {useEffect, useState} from 'react';
 
 
 const shuffle = (array) => {
-    console.log(array, "SHUFFLE");
     //Fisher-Yates (aka Knuth) Shuffle
     //from http://sedition.com/perl/javascript-fy.html
-    // let array = arr.map(c => c.card_type)
     var currentIndex = array.length, temporaryValue, randomIndex;
     // While there remain elements to shuffle...
     while (currentIndex !== 0) {
@@ -26,8 +24,6 @@ const drawHand = (deck) => {
         let card = deck.pop()
         h.push(card)
     }
-    console.log(h)
-    console.log(deck)
     return h
 }
 
@@ -38,24 +34,12 @@ const AI = ({socket, gameData, AIdeck}) => {
         username:'Duel Bot',
         id:0
     }
-    // const [turnNumber, setTurnNumber] = useState(1);
-    // const [playerHealth, setPlayerHealth] = useState(1000);
-    // const [opponentHealth, setOpponentHealth] = useState(1000);
-
     let turnNumber = 1;
     let playerHealth = 2000;
     let opponentHealth = 2000;
 
-    // let drawPhase = false;
-    // let placementPhase = false;
-    // let combatPhase = false;
-    // let d = shuffle([...AIdeck]);
-    // let h = drawHand(d);
-
-    // const [hand, setHand] = useState([]);
-    // const [deck, setDeck] = useState(AIdeck);
-
-    let deck = shuffle(AIdeck);
+    //Shuffles a copy so the lobby's deck data is never mutated
+    let deck = shuffle([...AIdeck]);
     let hand = drawHand(deck);
 
     let playerUnitSlot1 = null;
@@ -68,14 +52,6 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     let gameEnded = false;
 
-    // const [playerUnitSlot1, setPlayerUnitSlot1] = useState(null);
-    // const [playerUnitSlot2, setPlayerUnitSlot2] = useState(null);
-    // const [playerUnitSlot3, setPlayerUnitSlot3] = useState(null);
-
-    // const [opponentUnitSlot1, setOpponentUnitSlot1] = useState(null);
-    // const [opponentUnitSlot2, setOpponentUnitSlot2] = useState(null);
-    // const [opponentUnitSlot3, setOpponentUnitSlot3] = useState(null);
-
     // ----- HELPERS ----- \\
 
     const rng = (max) => {
@@ -85,18 +61,11 @@ const AI = ({socket, gameData, AIdeck}) => {
 
     const removeFromHand = (card) => {
         let h = [...hand]
-        // setHand(h.filter(c => c.id != card.id));
         hand = h.filter(c => c.id != card.id)
-        // console.log('remove from hand hand', hand);
     }
 
 
     useEffect(() => {
-        // let shuffledDeck = shuffle(AIdeck);
-        // let initialHand = drawHand(shuffledDeck)
-        // setDeck(shuffledDeck);
-        // setHand(initialHand);
-
         //Checks to see if this client is first in turn order
         if(turnOrder[0] === user.id){
             //Tells back end this client is beginning turn
@@ -391,15 +360,17 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         })
 
+        //Unsubscribes from this component's socket events on unmount,
+        //leaving listeners owned by other components (lobby, chat) intact
         return () => {
-            // opponentUnitSlot1 = null;
-            // opponentUnitSlot2 = null;
-            // opponentUnitSlot3 = null;
-
-            // playerUnitSlot1 = null;
-            // playerUnitSlot2 = null;
-            // playerUnitSlot3 = null;
-            socket.removeAllListeners();
+            socket.off("draw_phase_start");
+            socket.off("card_drawn");
+            socket.off("placement_phase_start");
+            socket.off("spell_used");
+            socket.off("unit_placed");
+            socket.off("combat_phase_start");
+            socket.off("unit_attack");
+            socket.off("turn_ended");
         }
 
     }, [])

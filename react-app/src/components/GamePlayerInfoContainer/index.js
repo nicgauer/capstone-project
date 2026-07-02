@@ -1,55 +1,43 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import styles from './GamePlayerInfoContainer.module.css';
 
-const GamePlayerInfoContainer = ({ 
-    playerName, 
+const GamePlayerInfoContainer = ({
+    playerName,
     handSize,
     deckSize,
     health
     }) => {
-        const [disHealth, setDisHealth] = useState();
+        const [disHealth, setDisHealth] = useState(health);
         const [red, setRed] = useState(false);
         const [green, setGreen] = useState(false);
-        const [myTimeout, setMyTimeout] = useState(null);
-        
-        useEffect(() => {
-            setDisHealth(health);
-        }, [])
+        //Ref (not state) so cleanup always sees the latest pending timer
+        const timeoutRef = useRef(null);
 
         useEffect(() => {
             countdownEffect(disHealth)
             return () => {
-                if(myTimeout) clearTimeout(myTimeout)
+                if(timeoutRef.current) clearTimeout(timeoutRef.current)
             }
         }, [health])
 
         const countdownEffect = (current) => {
-            if(myTimeout){
-                clearTimeout(myTimeout)
+            if(timeoutRef.current){
+                clearTimeout(timeoutRef.current)
             }
 
-            if(health === current) {
-                setGreen(false);
-                setRed(false);
-            }
             if(health > current){
                 if(!green) setGreen(true);
                 current += 10
                 setDisHealth(current);
-                let t = setTimeout(countdownEffect, 50, current);
-                setMyTimeout(t);
+                timeoutRef.current = setTimeout(countdownEffect, 50, current);
             }else if(health < current){
                 if(!red) setRed(true);
                 current -= 10;
                 setDisHealth(current);
-                let t = setTimeout(countdownEffect, 50, current);
-                setMyTimeout(t);
+                timeoutRef.current = setTimeout(countdownEffect, 50, current);
             }else{
                 setGreen(false);
                 setRed(false);
-                if(myTimeout){
-                    clearTimeout(myTimeout)
-                }
             }
         }
 
@@ -58,8 +46,6 @@ const GamePlayerInfoContainer = ({
             styleObj = {color:"red"}
         }else if (green){
             styleObj = {color:"green"}
-        }else {
-            styleObj = {color:"black"}
         }
 
 

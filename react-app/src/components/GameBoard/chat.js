@@ -9,19 +9,22 @@ const GameChat = ({socket, username, room_id}) => {
     const [unreads, setUnreads] = useState(0)
 
     useEffect(() => {
-        socket.on("chat_message", data => {
-            console.log('reciever log', toggle)
+        const onChatMessage = data => {
             setMessages((prev) => [...prev, data.message])
-        })
+        }
+        socket.on("chat_message", onChatMessage)
+        return () => {
+            socket.off("chat_message", onChatMessage)
+        }
     },[])
 
     useEffect(() => {
+        if (messages.length === 0) return
         unreadHandler()
     }, [messages.length])
 
     const sendMessage = (e) => {
         e.preventDefault()
-        console.log('sender log', toggle)
         socket.emit("message_chat", {
             room_id: room_id,
             message: {
@@ -34,7 +37,7 @@ const GameChat = ({socket, username, room_id}) => {
 
     const unreadHandler = () => {
         if(!toggle){
-            setUnreads((prev) => prev += 1)
+            setUnreads((prev) => prev + 1)
         }
     }
 
@@ -45,15 +48,14 @@ const GameChat = ({socket, username, room_id}) => {
         }else{
             setToggle(false);
         }
-        console.log("Toggle chat", toggle)
     }
 
     return (
         <div className={styles.chatRoom}>
             <div className={toggle ? styles.chatWrapperVisible : styles.chatWrapperHidden}>
                 <div className={styles.messageContainer}>
-                    {messages && messages.map(message => (
-                        <div className={styles.messageBox}>
+                    {messages && messages.map((message, i) => (
+                        <div key={i} className={styles.messageBox}>
                             <h3>{message.username}</h3>
                             <p>{message.body}</p>
                         </div>
@@ -61,7 +63,7 @@ const GameChat = ({socket, username, room_id}) => {
                 </div>
                 <form onSubmit={sendMessage}>
                     <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                    <button type='submit'>=></button>
+                    <button type='submit'>{'=>'}</button>
                 </form>
             </div>
             <button onClick={toggleChat} className={styles.chatToggle}>Chat ({unreads})</button>

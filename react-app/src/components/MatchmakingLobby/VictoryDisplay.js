@@ -16,7 +16,7 @@ const VictoryDisplay = ({ opponentId }) => {
 
 
     useEffect(() => {
-        (async () => await dispatch(addWin(user.id)))();
+        (async () => await dispatch(addWin()))();
     }, [])
 
     return (

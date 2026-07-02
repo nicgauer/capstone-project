@@ -9,9 +9,11 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "5.0.1",
     "redux": "^4.0.5",
-    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "redux-logger": "^3.0.6"
   },
   "scripts": {
     "start": "react-scripts start",

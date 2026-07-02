@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import { useSelector } from 'react-redux';
 
 import styles from './GameBoard.module.css'
@@ -14,7 +14,6 @@ import explosion from '../../assets/explosion.gif';
 
 
 const shuffle = (array) => {
-    console.log(array, "SHUFFLE");
     //Fisher-Yates (aka Knuth) Shuffle
     //from http://sedition.com/perl/javascript-fy.html
     // let array = arr.map(c => c.card_type)
@@ -38,8 +37,6 @@ const drawHand = (deck) => {
         let card = deck.pop()
         h.push(card)
     }
-    console.log(h)
-    console.log(deck)
     return h
 }
 
@@ -50,6 +47,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
     // ---------- STATES ---------- \\
     const [turnNumber, setTurnNumber] = useState(1)
+    //Ref mirrors turnNumber so mount-only socket handlers read the current value
+    const turnNumberRef = useRef(1)
     const [hand, setHand] = useState([])
     const [deck, setDeck] = useState(playerdeck)
 
@@ -124,9 +123,8 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     
     // ---------- USE EFFECTS ---------- \\
     useEffect(() => {
-        // console.log('Game Board Check', playerdeck)
-        //Game setup, shuffles deck and draws 5 cards for hand
-        let shuffledDeck = shuffle(playerdeck);
+        //Game setup, shuffles a copy of the deck (never mutate the prop) and draws 5 cards
+        let shuffledDeck = shuffle([...playerdeck]);
         let initialHand = drawHand(shuffledDeck)
         setDeck(shuffledDeck);
         setHand(initialHand);
@@ -152,6 +150,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 setLog((prev) => ['draw phase start!', data.log, ...prev])
             }
             //Updates both users' turn count
+            turnNumberRef.current = data.turn_number;
             setTurnNumber(data.turn_number);
         })
 
@@ -443,16 +442,24 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
                 socket.emit("start_draw_phase", {
                     room_id:room_id,
                     user_id: userId,
-                    turn_number: turnNumber + 1
+                    turn_number: turnNumberRef.current + 1
                 })
             }
             //Updates both clients
             setLog((prev) => [data.log, ...prev])
         })
 
-        //Unsubscribes from socket events on unmount
+        //Unsubscribes from this component's socket events on unmount,
+        //leaving listeners owned by other components (lobby, chat) intact
         return () => {
-            socket.removeAllListeners();
+            socket.off("draw_phase_start");
+            socket.off("card_drawn");
+            socket.off("placement_phase_start");
+            socket.off("unit_placed");
+            socket.off("spell_used");
+            socket.off("combat_phase_start");
+            socket.off("unit_attack");
+            socket.off("turn_ended");
         }
 
     }, [])
@@ -1005,45 +1012,31 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
         setLogToggle((prev) => !prev)
     }
 
-    const explosionHandler = (t) => {
-        switch(t) {
-            case 1:
-                setExplosionEffect1(true)
-                setTimeout(() => {
-                    setExplosionEffect1(false)
-                }, 650)
-                break;
-            case 2:
-                setExplosionEffect2(true)
-                setTimeout(() => {
-                    setExplosionEffect2(false)
-                }, 650)
-                break;
-            case 3:
-                setExplosionEffect3(true)
-                setTimeout(() => {
-                    setExplosionEffect3(false)
-                }, 650)
-                break;
-            case 4:
-                setExplosionEffect4(true)
-                setTimeout(() => {
-                    setExplosionEffect4(false)
-                }, 650)
-                break;
-            case 5:
-                setExplosionEffect5(true)
-                setTimeout(() => {
-                    setExplosionEffect5(false)
-                }, 650)
-                break;
-            case 6:
-                setExplosionEffect6(true)
-                setTimeout(() => {
-                    setExplosionEffect6(false)
-                }, 650)
-                break;
+    const explosionTimeouts = useRef([])
+
+    //Clears any pending explosion timers on unmount
+    useEffect(() => {
+        return () => {
+            explosionTimeouts.current.forEach(clearTimeout)
         }
+    }, [])
+
+    const explosionSetters = {
+        1: setExplosionEffect1,
+        2: setExplosionEffect2,
+        3: setExplosionEffect3,
+        4: setExplosionEffect4,
+        5: setExplosionEffect5,
+        6: setExplosionEffect6,
+    }
+
+    const explosionHandler = (t) => {
+        const setEffect = explosionSetters[t]
+        if (!setEffect) return
+        setEffect(true)
+        explosionTimeouts.current.push(setTimeout(() => {
+            setEffect(false)
+        }, 650))
     }
 
     // ---------- JSX ---------- \\
@@ -1051,7 +1044,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
     return (
         <div className={styles.boardWrapper}>
             <div className={logToggle ? styles.logWrapperLarge : styles.logWrapperSmall} onClick={expandLogHandler}>
-                {log.length > 0 && log.map(message => <p>{message}</p>)}
+                {log.length > 0 && log.map((message, i) => <p key={log.length - i}>{message}</p>)}
             </div>
 
 
@@ -1109,7 +1102,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
 
             <div className={styles.handWrapper}>
             {hand && hand.map((card, i) => (
-                <div onClick={() => handSelector(i)} className={(selected && selected.id === card.id) ? styles.selectedHandCard : placementPhase && card.card_type.type === 'spell' ? styles.placeableSpellCard : placementPhase ? styles.placeableHandCard : styles.handCard}>
+                <div key={card.id} onClick={() => handSelector(i)} className={(selected && selected.id === card.id) ? styles.selectedHandCard : placementPhase && card.card_type.type === 'spell' ? styles.placeableSpellCard : placementPhase ? styles.placeableHandCard : styles.handCard}>
                     <CardDisplay card={card.card_type} />
                 </div>
                 )) }
@@ -1136,7 +1129,7 @@ const GameBoard = ({socket, gameData, playerdeck}) => {
             <button className={styles.helpButton} onClick={() => setHelpModal(true)}>Help</button>
             {helpModal && (
                 <Modal onClose={() => setHelpModal(false)}>
-                    <div style={{'background-color':'white', 'text-align':'center', 'border-radius':'35px'}}>
+                    <div style={{backgroundColor:'white', textAlign:'center', borderRadius:'35px'}}>
                         <RulesPage />
                     </div>
                 </Modal>

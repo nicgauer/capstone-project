@@ -9,6 +9,8 @@ import { useSelector } from 'react-redux';
 
 const CollectionDisplay = ({cards}) => {
     const user = useSelector(state => state.session.user);
+    //Local copy of the organized collection; handlers update it immutably
+    const [collection, setCollection] = useState(() => ({...cards}))
     const [decks, setDecks] = useState([...cards.decks])
     const [displaying, setDisplaying] = useState(cards.allCards);
     const [dropdown, setDropdown] = useState('allCards')
@@ -21,7 +23,7 @@ const CollectionDisplay = ({cards}) => {
 
     const displaySelectHandler = (e) => {
         setDropdown(e.target.value);
-        setDisplaying(cards[e.target.value]);
+        setDisplaying(collection[e.target.value]);
         setSelected(null);
     }
 
@@ -33,28 +35,34 @@ const CollectionDisplay = ({cards}) => {
     const addToDeck = () => {
         addCardToDeck(selected.id, selectedDropdown)
 
-        let b = [...cards.box]
-        b.splice(b.findIndex(c => c.id == selected.id), 1);
-        cards.box = b;
-        selected.deck_id = selectedDropdown;
-        cards[selectedDropdown].push(selected);
+        const moved = {...selected, deck_id: selectedDropdown};
+        const newBox = collection.box.filter(c => c.id !== selected.id);
+        setCollection(prev => ({
+            ...prev,
+            box: newBox,
+            [selectedDropdown]: [...prev[selectedDropdown], moved],
+            allCards: prev.allCards.map(c => c.id === moved.id ? moved : c),
+        }));
         setSelected(null);
         setShowModal(false)
-        setDisplaying(cards.box);
+        setDisplaying(newBox);
     }
 
     const removeFromDeck = () => {
         removeCardFromDeck(selected.id)
 
         const deckId = selected.deck_id;
-        let d = [...cards[deckId]]
-        d.splice(d.findIndex(c => c.id === selected.id), 1);
-        cards[deckId] = d
-        selected.deck_id = null;
-        cards.box.push(selected);
+        const moved = {...selected, deck_id: null};
+        const newBox = [...collection.box, moved];
+        setCollection(prev => ({
+            ...prev,
+            [deckId]: prev[deckId].filter(c => c.id !== selected.id),
+            box: newBox,
+            allCards: prev.allCards.map(c => c.id === moved.id ? moved : c),
+        }));
         setSelected(null);
         setShowModal(false)
-        setDisplaying(cards.box);
+        setDisplaying(newBox);
     }
 
     const deckName = (id) => {
@@ -69,14 +77,13 @@ const CollectionDisplay = ({cards}) => {
 
     const newDeckSubmitHandler = async (e) => {
         e.preventDefault();
-        
-        const nd = await newDeck(user.id, newDeckName)
-        let newDecks = [...decks, nd]
-        cards[nd.id] = [];
-        setDecks(newDecks);
-        setShowModal(false) 
+
+        const nd = await newDeck(newDeckName)
+        setCollection(prev => ({...prev, [nd.id]: []}));
+        setDecks([...decks, nd]);
+        setShowModal(false)
         setNewDeckModal(false)
-        setDisplaying(cards[nd.id])
+        setDisplaying([])
     }
 
     const deckModalCloseHandler = () => {
@@ -92,7 +99,7 @@ const CollectionDisplay = ({cards}) => {
 
     const amountInDeck = (cardTypeId, deckId = selectedDropdown) => {
         let count = 0;
-        cards[deckId].forEach((c) => {
+        collection[deckId].forEach((c) => {
             if(c.card_type.id === cardTypeId){
                 count++;
             }
@@ -157,9 +164,9 @@ const CollectionDisplay = ({cards}) => {
                                         >
                                         {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
                                     </select> */}
-                                    {cards[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) < 3 && <button onClick={addToDeck}>Add to deck</button>}
-                                    {cards[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) === 3 && <h4>Cannot add more than 3 cards of the same type</h4>}
-                                    {cards[selectedDropdown].length >= 20 && <h4>Deck is full!  Remove a cards in order to add more.</h4>}
+                                    {collection[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) < 3 && <button onClick={addToDeck}>Add to deck</button>}
+                                    {collection[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) === 3 && <h4>Cannot add more than 3 cards of the same type</h4>}
+                                    {collection[selectedDropdown].length >= 20 && <h4>Deck is full!  Remove a cards in order to add more.</h4>}
                                 </div>)
                                 :
                                 (<div className={styles.selectedRemoveContainer}>
@@ -183,8 +190,8 @@ const CollectionDisplay = ({cards}) => {
                 )}
 
             <div className={styles.collectionWrapper}>
-                {displaying.map(card => 
-                    <div onClick={() => selectHandler(card)}>
+                {displaying.map(card =>
+                    <div key={card.id} onClick={() => selectHandler(card)}>
                         <CardDisplay card={card.card_type} />
                     </div>
                 )}

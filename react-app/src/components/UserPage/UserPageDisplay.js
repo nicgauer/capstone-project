@@ -24,7 +24,6 @@ const UserPageDisplay = ({ user, friends }) => {
     }, [])
 
     const friendFilter = (arr) => {
-        console.log(arr)
         let orgFriends = {
             confirmed: [],
             requests: []
@@ -67,7 +66,7 @@ const UserPageDisplay = ({ user, friends }) => {
 
     const sendRequestHandler = async () => {
         setRequested(true);
-        await sendFriendRequest(loggedInUser.id, user.id);
+        await sendFriendRequest(user.id);
     }
 
     const confirmRequestHandler = async (id) => {
@@ -89,7 +88,7 @@ const UserPageDisplay = ({ user, friends }) => {
 
     const sendFriendCodeRequest = async (e) => {
         e.preventDefault();
-        const fc = await friendCodeRequest(fcReq, loggedInUser.id,);
+        await friendCodeRequest(fcReq);
         setShowModal(false);
     }
 
@@ -154,7 +153,7 @@ const UserPageDisplay = ({ user, friends }) => {
                             <div className={styles.friendsListContainer}>
                                 <h1>Friends List</h1>
                                 {friendsList.map(friend => (
-                                    <div className={styles.friendDisplay} onClick={() => visitFriendHandler(friend.id)}>
+                                    <div key={friend.id} className={styles.friendDisplay} onClick={() => visitFriendHandler(friend.id)}>
                                         <div className={styles.friendInfo}>
                                             <h1>{friend.username}</h1>
                                             <h2 className={styles.status}>
@@ -188,7 +187,7 @@ const UserPageDisplay = ({ user, friends }) => {
                         <h1>Friend Requests</h1>
                         {friendRequests.length > 0 && (
                             friendRequests.map(req => (
-                                <div onClick={() => visitFriendHandler(req.user.id)}>
+                                <div key={req.id} onClick={() => visitFriendHandler(req.user.id)}>
                                     <h1>{req.user.username}</h1>
                                     <h2>W - {req.user.wins}</h2>
                                     <h2>L - {req.user.losses}</h2>

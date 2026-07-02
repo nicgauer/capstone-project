@@ -14,7 +14,7 @@ const DefeatDisplay = ({ opponentId }) => {
 
 
     useEffect(() => {
-        (async () => await dispatch(addLoss(user.id)))();
+        (async () => await dispatch(addLoss()))();
     }, [])
 
 

@@ -7,6 +7,8 @@ const setUser = (user) => ({
     payload: user
 })
 
+export const setSessionUser = setUser;
+
 const removeUser = () => ({
     type: REMOVE_USER
 })
@@ -29,22 +31,23 @@ export const authenticate = () => async (dispatch) => {
     
 }
 
-export const addWin = (id) => async (dispatch) => {
-    const response = await fetch(`/api/users/w/${id}`, {
+export const addWin = () => async (dispatch) => {
+    const response = await fetch('/api/users/w', {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         }
     })
     const data = await response.json();
-    console.log(data, "add win")
     if (data.errors) {
         return;
     }
     dispatch(setUser(data))
 }
 
-export const addLoss = (id) => async (dispatch) => {
-    const response = await fetch(`/api/users/l/${id}`, {
+export const addLoss = () => async (dispatch) => {
+    const response = await fetch('/api/users/l', {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         }

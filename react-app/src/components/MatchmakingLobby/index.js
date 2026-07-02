@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import { NavLink } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import GameBoard from '../GameBoard';
 import {getUserDecks} from '../../services/deck';
 import {getFriends} from '../../services/friendship';
-// import {addWin, addLoss} from '../../store/session'
 import RulesPage from './rules';
 import AI from '../AI';
 import Navigation from '../Navigation';
@@ -20,11 +19,10 @@ const socket = io();
 
 const MatchmakingLobby = () => {
     const user = useSelector(state => state.session.user);
-    const dispatch = useDispatch();
     const [decks, setDecks] = useState(null);
     const [aiDecks, setAiDecks] = useState(null);
+    const [aiDeck, setAiDeck] = useState(null);
     const [selectedDeck, setSelectedDeck] = useState(null);
-    const [selectedDeckDisplay, setSelectedDeckDisplay] = useState(null);
     const [gameFound, setGameFound] = useState(false);
     const [waiting, setWaiting] = useState(false);
     const [gameData, setGameData] = useState(null);
@@ -37,17 +35,14 @@ const MatchmakingLobby = () => {
     const [showModal, setShowModal] = useState(false);
     const [friendsModal, setFriendsModal] = useState(false);
 
-    useEffect(() => {    
+    useEffect(() => {
     (async () => {
         const ad = await getUserDecks(1);
         const d = await getUserDecks(user.id);
         const f = await getFriends(user.id);
-        
-        // console.log(d.decks)
-        // console.log(d.decks[0])
+
         setDecks(d.decks)
         setSelectedDeck(d.decks[0])
-        setSelectedDeckDisplay(d.decks[0].name)
         setAiDecks(ad.decks);
         setFriends(f.friends.map(fr => {
             if(fr.user1.id === user.id){
@@ -64,12 +59,11 @@ const MatchmakingLobby = () => {
         user_id: user.id,
     })
 
-    socket.on("waiting_for_game", data => {
-        // console.log('waiting for game fired')
+    const onWaitingForGame = data => {
         setWaiting(true)
-    })
-    
-    socket.on("setup_game", data => {
+    }
+
+    const onSetupGame = data => {
         const gd = {
             room_id:data.room_id,
             turn_order:data.turn_order,
@@ -89,35 +83,43 @@ const MatchmakingLobby = () => {
         socket.emit("ingame", {
             user_id: user.id,
         })
-    })
+    }
 
-    socket.on("game_ended", async data => {
+    const onGameEnded = data => {
         setAIgame(false);
         socket.emit("room_leave", {
             user_id: user.id,
             room_id: data.room_id
         })
-            if(data.loser_id === user.id){
-                setGameLost(true);
-            }else{
-                setGameWon(true);
-            }
-    })
+        if(data.loser_id === user.id){
+            setGameLost(true);
+        }else{
+            setGameWon(true);
+        }
+    }
 
-    socket.on("found_games", data => {
+    const onFoundGames = data => {
         if(data.invites){
             setInvites(data.invites);
         }
-    })
+    }
+
+    socket.on("waiting_for_game", onWaitingForGame)
+    socket.on("setup_game", onSetupGame)
+    socket.on("game_ended", onGameEnded)
+    socket.on("found_games", onFoundGames)
 
     checkForInvites();
 
     return () => {
         cancelFindGame();
-        socket.removeAllListeners();
+        socket.off("waiting_for_game", onWaitingForGame);
+        socket.off("setup_game", onSetupGame);
+        socket.off("game_ended", onGameEnded);
+        socket.off("found_games", onFoundGames);
     }
 
-    }, [])
+    }, [user.id])
 
     const findGame = () => {
         socket.emit('find_game', {
@@ -151,6 +153,8 @@ const MatchmakingLobby = () => {
             turn_order:turnOrder,
             opponent_name: 'Duel Bot'
         }
+        //Picks the AI's deck once at game start so re-renders don't re-roll it
+        setAiDeck(aiDecks[rng(aiDecks.length)])
         setGameData(gd)
         setAIgame(true);
     }
@@ -161,15 +165,6 @@ const MatchmakingLobby = () => {
 
     const reloadHandler = () => {
         window.location.reload();
-    }
-
-    const selectedDeckHandler = (e) => {
-        console.log(e)
-        // console.log(decks)
-        let d = decks.find(deck => deck.id === Number(e))
-        setSelectedDeckDisplay(d.name)
-        console.log(d.name)
-        setSelectedDeck(d)
     }
 
     const checkForInvites = () => {
@@ -214,8 +209,8 @@ const MatchmakingLobby = () => {
                 <GameBoard socket={socket} gameData={gameData} playerdeck={selectedDeck.cards} />
                 )}
 
-            {AIgame && !gameLost && !gameWon && gameData && (
-                <AI socket={socket} gameData={gameData} AIdeck={aiDecks[rng(aiDecks.length - 1)].cards} />
+            {AIgame && !gameLost && !gameWon && gameData && aiDeck && (
+                <AI socket={socket} gameData={gameData} AIdeck={aiDeck.cards} />
                 )}
 
             {!AIgame && !gameLost && !gameWon && gameFound && gameData && (
@@ -232,7 +227,6 @@ const MatchmakingLobby = () => {
                     )}
 
                     <div className={styles.deckSelectorContainer}>
-                        {/* <h1>CHOOSE YOUR DECK</h1> */}
                         {selectedDeck && (
                             <div>
                                 <h3>Current Deck -- {selectedDeck.name}</h3>
@@ -256,15 +250,8 @@ const MatchmakingLobby = () => {
                                     </NavLink>
                                 </div>
                             </div>
-                            
+
                             )}
-                        {/* <select
-                            value={selectedDeckDisplay}
-                            onChange={(e) => selectedDeckHandler(e.target.value)}
-                            >
-                                {console.log(selectedDeck)}
-                                {decks.map((deck, i) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
-                        </select> */}
                     </div>
 
                     {(selectedDeck && selectedDeck.cards.length >= 10) && (
@@ -286,8 +273,8 @@ const MatchmakingLobby = () => {
                             </div>
 
                             {friends.length > 0 && (
-                                friends.map(friend => 
-                                    <div className={styles.friendDisplay}>
+                                friends.map(friend =>
+                                    <div key={friend.id} className={styles.friendDisplay}>
                                         <div className={styles.friendInfo}>
                                             <h1>{friend.username}</h1>
                                             <h2 className={styles.status}>
