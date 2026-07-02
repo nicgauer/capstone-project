@@ -28,6 +28,7 @@ const drawHand = (deck) => {
 }
 
 const AI = ({socket, gameData, AIdeck}) => {
+    console.log(AIdeck)
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = {
