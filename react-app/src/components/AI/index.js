@@ -28,7 +28,6 @@ const drawHand = (deck) => {
 }
 
 const AI = ({socket, gameData, AIdeck}) => {
-    console.log(AIdeck)
     const room_id = gameData.room_id;
     const turnOrder = gameData.turn_order;
     const user = {
@@ -40,7 +39,8 @@ const AI = ({socket, gameData, AIdeck}) => {
     let opponentHealth = 2000;
 
     //Shuffles a copy so the lobby's deck data is never mutated
-    let deck = shuffle([...AIdeck]);
+    // let deck = shuffle([...AIdeck]);
+    let deck = shuffle(AIdeck);
     let hand = drawHand(deck);
 
     let playerUnitSlot1 = null;
