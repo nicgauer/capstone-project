@@ -7,7 +7,7 @@ COPY react-app/. .
 RUN npm install
 RUN npm run build
 
-FROM python:3.8
+FROM python:3.12-slim
 
 ENV FLASK_APP=app
 
@@ -21,6 +21,5 @@ COPY --from=build-stage /react-app/build/* app/static/
 
 # Install Python Dependencies
 RUN pip install -r requirements.txt
-RUN pip install psycopg2
 
 CMD ["./entrypoint.sh"]

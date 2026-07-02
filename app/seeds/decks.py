@@ -1,4 +1,5 @@
 from app.models import db, Card, Deck
+from sqlalchemy import text
 from app.utils import decks
 
 # deck_one_cards = [45, 45, 45, 46, 46, 46, 52, 55, 5, 5, 5, 6, 6, 7, 34, 34, 73, 74, 41, 1]
@@ -31,5 +32,5 @@ def seed_ai_decks():
 
 
 def undo_ai_decks():
-    db.session.execute('TRUNCATE users RESTART IDENTITY CASCADE;')
+    db.session.execute(text('TRUNCATE users RESTART IDENTITY CASCADE;'))
     db.session.commit()

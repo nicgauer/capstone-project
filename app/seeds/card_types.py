@@ -1,4 +1,5 @@
 from app.models import db, CardType
+from sqlalchemy import text
 
 
 def seed_card_types():
@@ -938,5 +939,5 @@ def seed_card_types():
     db.session.commit()
 
 def undo_card_types():
-    db.session.execute('TRUNCATE users RESTART IDENTITY CASCADE;')
+    db.session.execute(text('TRUNCATE users RESTART IDENTITY CASCADE;'))
     db.session.commit()
