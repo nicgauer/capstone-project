@@ -51,13 +51,29 @@ jobs:
           source: "docker-compose.yml,Caddyfile"
           target: /opt/capstone
 
-      - name: Pull and restart services
+      # Regenerates .env from repo secrets on every deploy, so config changes
+      # (rotating SECRET_KEY, etc.) never require a manual SSH session.
+      - name: Write .env and deploy
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOMAIN: ${{ secrets.DOMAIN }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         with:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
+          envs: DOMAIN,SECRET_KEY,POSTGRES_PASSWORD
           script: |
+            cat > /opt/capstone/.env <<ENVEOF
+            DOMAIN=$DOMAIN
+            APP_ORIGINS=https://$DOMAIN
+            SECURE_COOKIES=true
+            SECRET_KEY=$SECRET_KEY
+            POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+            ENVEOF
+            chmod 600 /opt/capstone/.env
+
             cd /opt/capstone
             docker compose pull app
             docker compose up -d

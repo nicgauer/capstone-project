@@ -31,7 +31,8 @@ usermod -aG docker deploy
 
 # Key used by GitHub Actions (generate locally: ssh-keygen -t ed25519 -f deploy_key)
 mkdir -p /home/deploy/.ssh
-echo "<deploy_key.pub contents>" >> /home/deploy/.ssh/authorized_keys
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJvuH7mruK7jeER+mAfzCNfM/O/3jh78hsHwjYcuBox0 nic@Nics-MacBook-Pro.local
+" >> /home/deploy/.ssh/authorized_keys
 chown -R deploy:deploy /home/deploy/.ssh && chmod 700 /home/deploy/.ssh && chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
@@ -48,36 +49,38 @@ ufw allow 443
 ufw enable
 ```
 
-## 4. App directory and .env
+## 4. App directory
 
 ```sh
 mkdir -p /opt/capstone && chown deploy:deploy /opt/capstone
 ```
 
-As `deploy`, create `/opt/capstone/.env` from [.env.example](../.env.example).
-Before a domain exists (IP-only, plain HTTP):
+`.env` is **not** created by hand — the deploy workflow regenerates it from
+GitHub Secrets on every run (see below), so config changes never require SSH.
 
-```
-DOMAIN=http://<droplet-ip>
-APP_ORIGINS=http://<droplet-ip>
-SECURE_COOKIES=false
-SECRET_KEY=<openssl rand -hex 32>
-POSTGRES_PASSWORD=<openssl rand -hex 16>
-```
+## 5. DNS
 
-The explicit `http://` prefix in `DOMAIN` tells Caddy to serve plain HTTP and
-skip certificate provisioning. `SECURE_COOKIES=false` is required over plain
-HTTP or the browser drops the CSRF cookie and login breaks.
+Add an A record for your domain pointing at the droplet IP (plus a `www`
+record if you want it — add it to the [Caddyfile](../Caddyfile) site address
+too). Caddy requires this to resolve *before* it can provision a Let's
+Encrypt certificate, so do this before the first deploy.
 
-## 5. GitHub repository setup
+## 6. GitHub repository setup
 
-Repo → Settings → Secrets and variables → Actions:
+Repo → Settings → Secrets and variables → Actions → New repository secret:
 
 | Secret | Value |
 |---|---|
 | `DROPLET_HOST` | droplet IP |
 | `DROPLET_USER` | `deploy` |
 | `DROPLET_SSH_KEY` | contents of the private `deploy_key` |
+| `DOMAIN` | your domain, e.g. `sbc-tcg.dev` (no `https://`) |
+| `SECRET_KEY` | generate with `openssl rand -hex 32` |
+| `POSTGRES_PASSWORD` | generate with `openssl rand -hex 16` |
+
+The deploy workflow writes `/opt/capstone/.env` from the last three on every
+run: `APP_ORIGINS=https://$DOMAIN` and `SECURE_COOKIES=true` are derived
+automatically since we're always deploying against a real domain.
 
 After the first workflow run pushes the image, make the GHCR package
 **public** (github.com → your profile → Packages → capstone-project →
@@ -86,35 +89,22 @@ credentials. Alternatively, run a one-time
 `docker login ghcr.io -u nicgauer` on the droplet with a classic PAT that has
 `read:packages`.
 
-## 6. First deploy
+## 7. First deploy
 
 1. Push to `master` (or re-run the Deploy workflow). It builds, pushes to
-   GHCR, copies `docker-compose.yml` + `Caddyfile` to `/opt/capstone/`, and
-   runs `docker compose pull app && docker compose up -d`.
-   Migrations run automatically on container start ([entrypoint.sh](../entrypoint.sh)).
+   GHCR, copies `docker-compose.yml` + `Caddyfile` to `/opt/capstone/`,
+   writes `.env` from the secrets above, and runs
+   `docker compose pull app && docker compose up -d`. Migrations run
+   automatically on container start ([entrypoint.sh](../entrypoint.sh)).
 2. Seed once (demo user + card catalog — not idempotent, run only on a fresh DB):
 
    ```sh
    docker compose -f /opt/capstone/docker-compose.yml exec app flask seed all
    ```
 
-3. Visit `http://<droplet-ip>` — sign up, log in, and start a match to verify
-   websockets.
-
-## 7. Domain day
-
-1. Buy the domain, add an A record pointing at the droplet IP (plus `www` if
-   wanted — add it to the Caddyfile site address too).
-2. Edit three lines in `/opt/capstone/.env`:
-
-   ```
-   DOMAIN=example.com
-   APP_ORIGINS=https://example.com
-   SECURE_COOKIES=true
-   ```
-
-3. `cd /opt/capstone && docker compose up -d` — Caddy obtains Let's Encrypt
-   certificates automatically and redirects HTTP→HTTPS.
+3. Visit `https://<your-domain>` — sign up, log in, and start a match to
+   verify websockets. First load may take a few seconds while Caddy obtains
+   the certificate.
 
 ## 8. Backups
 
@@ -133,5 +123,7 @@ Daily Postgres dump via cron (as `deploy`, `crontab -e`):
   process memory (`app/sockets/game_sockets.py`). Never raise gunicorn `-w`
   above 1 without adding a Socket.IO message queue (Redis).
 - Logs: `docker compose logs -f app` (or `caddy` / `db`).
-- The droplet is deliberately dumb: the only hand-managed file is `.env`.
-  Everything else arrives via the deploy workflow.
+- The droplet is deliberately dumb: nothing on it is hand-managed, including
+  `.env`. Everything arrives via the deploy workflow, driven by GitHub
+  Secrets. Rotating `SECRET_KEY`/`POSTGRES_PASSWORD` or changing `DOMAIN` is
+  just updating the secret and re-running the workflow.
