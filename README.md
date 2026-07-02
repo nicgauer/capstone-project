@@ -19,7 +19,7 @@ Visit http://localhost — log in as `demo@aa.io` / `password`, or sign up.
 
 ## Local development (hot reload)
 
-Backend (needs a local Postgres and a `.env`/exported `DATABASE_URL` +
+Backend (needs a local Postgres and a `.env`/exported `DATABASE_URL` + 
 `SECRET_KEY`):
 
 ```bash
