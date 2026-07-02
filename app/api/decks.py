@@ -7,7 +7,7 @@ deck_routes = Blueprint('deck', __name__)
 
 
 @deck_routes.route('/u/<int:id>')
-@login_required
+# @login_required
 def get_user_decks(id):
     decks = Deck.query.options(
         selectinload(Deck.cards).selectinload(Card.ct)
