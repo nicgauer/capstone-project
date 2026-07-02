@@ -18,13 +18,14 @@ const CardCollection = () => {
             const allCards = await getUserCards(user.id);
             organizedCards.allCards = allCards.cards;
             organizedCards.decks = allCards.decks;
+            // Every deck gets an entry even if it currently has no cards,
+            // so CollectionDisplay never indexes into an undefined array.
+            allCards.decks.forEach(deck => {
+                organizedCards[deck.id] = [];
+            })
             allCards.cards.forEach(card => {
                 if(card.deck_id){
-                    if(organizedCards[card.deck_id]) {
-                        organizedCards[card.deck_id].push(card);
-                    }else {
-                        organizedCards[card.deck_id] = [card];
-                    }
+                    organizedCards[card.deck_id].push(card);
                 }else {
                     organizedCards.box.push(card)
                 }

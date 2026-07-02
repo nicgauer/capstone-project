@@ -46,14 +46,15 @@ const CollectionDisplay = ({cards}) => {
     const removeFromDeck = () => {
         removeCardFromDeck(selected.id)
 
-        let d = [...cards[selectedDropdown]]
+        const deckId = selected.deck_id;
+        let d = [...cards[deckId]]
         d.splice(d.findIndex(c => c.id === selected.id), 1);
-        cards[selectedDropdown] = d
+        cards[deckId] = d
         selected.deck_id = null;
         cards.box.push(selected);
         setSelected(null);
         setShowModal(false)
-        setDisplaying(cards[selectedDropdown]);
+        setDisplaying(cards.box);
     }
 
     const deckName = (id) => {
@@ -89,9 +90,9 @@ const CollectionDisplay = ({cards}) => {
         return deckName(Number(dropdown))
     }
 
-    const amountInDeck = (cardTypeId) => {
+    const amountInDeck = (cardTypeId, deckId = selectedDropdown) => {
         let count = 0;
-        cards[selectedDropdown].forEach((c) => {
+        cards[deckId].forEach((c) => {
             if(c.card_type.id === cardTypeId){
                 count++;
             }
@@ -163,7 +164,7 @@ const CollectionDisplay = ({cards}) => {
                                 :
                                 (<div className={styles.selectedRemoveContainer}>
                                     <h3>Currently in {deckName(selected.deck_id)}</h3>
-                                    <h4>{amountInDeck(selected.card_type.id) === 1 ? `${amountInDeck(selected.card_type.id)} copy` : `${amountInDeck(selected.card_type.id)} copies`} of this card in deck</h4>
+                                    <h4>{amountInDeck(selected.card_type.id, selected.deck_id) === 1 ? `${amountInDeck(selected.card_type.id, selected.deck_id)} copy` : `${amountInDeck(selected.card_type.id, selected.deck_id)} copies`} of this card in deck</h4>
                                     <button onClick={removeFromDeck}>Remove from Deck</button>
                                 </div>)}
                             </div>

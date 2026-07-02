@@ -357,7 +357,7 @@ def seed_card_types():
         attack=0,
         defense=400,
         rarity=0,
-        picture_url='http://i.imgur.com/EZkuP8p.jpg',
+        picture_url='https://i.imgur.com/EZkuP8p.jpg',
         description="Just a normal tree"
     )
 
@@ -612,7 +612,7 @@ def seed_card_types():
     avatar_aang = CardType(
         name='Avatar Aang',
         type='unit',
-        picture_url='http://images5.fanpop.com/image/photos/31100000/Aang-avatar-aang-31177440-495-495.jpg',
+        picture_url='https://images5.fanpop.com/image/photos/31100000/Aang-avatar-aang-31177440-495-495.jpg',
         attack=1250,
         defense=700,
         rarity=2,
@@ -777,7 +777,7 @@ def seed_card_types():
         description="Increases all your units' defense by 300",
         effect='increaseAllDefense:300',
         rarity=2,
-        picture_url='http://1.bp.blogspot.com/-JsKfLj9Umyg/TfVWDz1hxnI/AAAAAAAAAkg/YEtsEUkZe6Y/s1600/meysen_3LittlePigs_straw.jpg'
+        picture_url='https://1.bp.blogspot.com/-JsKfLj9Umyg/TfVWDz1hxnI/AAAAAAAAAkg/YEtsEUkZe6Y/s1600/meysen_3LittlePigs_straw.jpg'
     )
 
     db.session.add(straw_house)
