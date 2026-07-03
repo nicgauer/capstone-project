@@ -39,8 +39,7 @@ const AI = ({socket, gameData, AIdeck}) => {
     let opponentHealth = 2000;
 
     //Shuffles a copy so the lobby's deck data is never mutated
-    // let deck = shuffle([...AIdeck]);
-    let deck = shuffle(AIdeck);
+    let deck = shuffle([...AIdeck]);
     let hand = drawHand(deck);
 
     let playerUnitSlot1 = null;
@@ -81,7 +80,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         // ---------- DRAW PHASE ---------- \\
 
         //Notifies both clients when one client starts draw phase
-        socket.on("draw_phase_start", data => {
+        const onDrawPhaseStart = data => {
             //Checks to see if it's this client's turn
             if(data.user_id === user.id) {
                 // console.log('AI starting draw!')
@@ -91,9 +90,10 @@ const AI = ({socket, gameData, AIdeck}) => {
             //Updates both users' turn count
             // setTurnNumber(data.turn_number);
             turnNumber = data.turn_number;
-        })
+        }
+        socket.on("draw_phase_start", onDrawPhaseStart)
 
-        socket.on("card_drawn", data => {
+        const onCardDrawn = data => {
             //If AI drew card
             if(data.user_id === user.id) {
                 // console.log('AI drew card!')
@@ -111,20 +111,22 @@ const AI = ({socket, gameData, AIdeck}) => {
                     })
                 // }, waitAmt)
             }
-        })
-        
+        }
+        socket.on("card_drawn", onCardDrawn)
+
         // ---------- PLACEMENT PHASE ---------- \\
 
-        socket.on("placement_phase_start", data => {
+        const onPlacementPhaseStart = data => {
             //If this user is starting placement phase
             if(data.user_id === user.id) {
                 // console.log('AI is starting placement phase!')
                 placementPhase();
             }
-        })
+        }
+        socket.on("placement_phase_start", onPlacementPhaseStart)
 
         //Spell Used updates both clients when a spell is used
-        socket.on("spell_used", data => {
+        const onSpellUsed = data => {
             //if this client used spell
             if(data.user_id === user.id){
 
@@ -217,9 +219,10 @@ const AI = ({socket, gameData, AIdeck}) => {
                 if(data.ou2) playerUnitSlot2 = data.ou2;
                 if(data.ou3) playerUnitSlot3 = data.ou3;
             }
-        })
+        }
+        socket.on("spell_used", onSpellUsed)
 
-        socket.on("unit_placed", data => {
+        const onUnitPlaced = data => {
             //If this user placed card
             if(data.user_id === user.id) {
                 //Checks which slot unit was placed in
@@ -245,12 +248,13 @@ const AI = ({socket, gameData, AIdeck}) => {
                     opponentUnitSlot3 = data.card_type;
                 }
             }
-        })
+        }
+        socket.on("unit_placed", onUnitPlaced)
 
         // ---------- COMBAT PHASE ---------- \\
 
         //Updates both clients that combat phase has started
-        socket.on("combat_phase_start", data => {
+        const onCombatPhaseStart = data => {
             //If this client combat phase
             if (data.user_id === user.id){
                 // console.log("combat phase start")
@@ -258,13 +262,14 @@ const AI = ({socket, gameData, AIdeck}) => {
                 // let waitAmt = 500 * rng(5)
                 // setTimeout(() => {
                     //Activate placement phase
-                    combatPhase()                    
+                    combatPhase()
                 // }, waitAmt)
             }
-        })
+        }
+        socket.on("combat_phase_start", onCombatPhaseStart)
 
         //Updates both clients when unit was placed
-        socket.on('unit_attack', data => {
+        const onUnitAttack = data => {
             //if this client attacked
             if(data.user_id === user.id){
 
@@ -336,12 +341,13 @@ const AI = ({socket, gameData, AIdeck}) => {
                         playerUnitSlot3 = null;
                     }
                 }
-            })
+            }
+        socket.on("unit_attack", onUnitAttack)
 
             // ---------- END TURN ---------- \\
 
     //Ends turn
-        socket.on('turn_ended', data => {
+        const onTurnEnded = data => {
             //If user who just had turn,
             //Resets all relevant values
             if (data.user_id === user.id){
@@ -359,19 +365,22 @@ const AI = ({socket, gameData, AIdeck}) => {
                     turn_number: turnNumber + 1
                 })
             }
-        })
+        }
+        socket.on("turn_ended", onTurnEnded)
 
-        //Unsubscribes from this component's socket events on unmount,
-        //leaving listeners owned by other components (lobby, chat) intact
+        //Unsubscribes from ONLY this component's own handlers on unmount, by
+        //passing each handler reference. A bare socket.off(event) would drop
+        //every listener for that event on the shared socket, including
+        //GameBoard's, which can silently stall the game.
         return () => {
-            socket.off("draw_phase_start");
-            socket.off("card_drawn");
-            socket.off("placement_phase_start");
-            socket.off("spell_used");
-            socket.off("unit_placed");
-            socket.off("combat_phase_start");
-            socket.off("unit_attack");
-            socket.off("turn_ended");
+            socket.off("draw_phase_start", onDrawPhaseStart);
+            socket.off("card_drawn", onCardDrawn);
+            socket.off("placement_phase_start", onPlacementPhaseStart);
+            socket.off("spell_used", onSpellUsed);
+            socket.off("unit_placed", onUnitPlaced);
+            socket.off("combat_phase_start", onCombatPhaseStart);
+            socket.off("unit_attack", onUnitAttack);
+            socket.off("turn_ended", onTurnEnded);
         }
 
     }, [])

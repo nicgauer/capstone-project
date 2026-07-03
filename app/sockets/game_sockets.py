@@ -110,12 +110,18 @@ def cancel_matchmaking(data):
 
 @socketio.on("ai_game")
 def ai_game(data):
-    user = db.session.get(User, int(data["user_id"]))
-    # if user is None:
-    #     return
-    user.status = "in AI game"
-    db.session.commit()
+    # Join the room BEFORE any DB work: db.session.commit() can yield the
+    # greenlet, and if the client's start_draw_phase broadcast lands before the
+    # join, draw_phase_start is sent to a room this socket hasn't joined yet and
+    # is silently dropped (stalling the whole game).
     join_room(f"{data['user_id']}ai")
+    user = db.session.get(User, int(data["user_id"]))
+    if user is not None:
+        user.status = "in AI game"
+        db.session.commit()
+    # Ack so the client only mounts the game (and emits start_draw_phase) after
+    # the join above has completed.
+    return {"ok": True}
 
 
 @socketio.on("invite_to_game")

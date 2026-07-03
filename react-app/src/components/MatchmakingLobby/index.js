@@ -140,23 +140,27 @@ const MatchmakingLobby = () => {
     }
 
     const playAIgame = () => {
+        //Waits for the server ack (fired only after it join_rooms this socket) before
+        //mounting the game, so the components' start_draw_phase can't broadcast to a
+        //room we haven't joined yet.
         socket.emit("ai_game", {
             user_id: user.id,
+        }, () => {
+            let turnOrder = [0, user.id]
+            const roll = rng(10)
+            if(roll % 2 === 0){
+                turnOrder = [user.id, 0]
+            }
+            const gd = {
+                room_id:`${user.id}ai`,
+                turn_order:turnOrder,
+                opponent_name: 'Duel Bot'
+            }
+            //Picks the AI's deck once at game start so re-renders don't re-roll it
+            setAiDeck(aiDecks[rng(aiDecks.length)])
+            setGameData(gd)
+            setAIgame(true);
         })
-        let turnOrder = [0, user.id]
-        const roll = rng(10)
-        if(roll % 2 === 0){
-            turnOrder = [user.id, 0]
-        }
-        const gd = {
-            room_id:`${user.id}ai`,
-            turn_order:turnOrder,
-            opponent_name: 'Duel Bot'
-        }
-        //Picks the AI's deck once at game start so re-renders don't re-roll it
-        setAiDeck(aiDecks[rng(aiDecks.length)])
-        setGameData(gd)
-        setAIgame(true);
     }
 
     const rng = (max) => {
