@@ -94,8 +94,8 @@ const AI = ({socket, gameData, AIdeck}) => {
         }
     }
 
-    // Wrapper used in place of emit(...) for every AI action
-    const emit = (event, payload) => enqueue(() => emit(event, payload));
+    // Wrapper used in place of socket.emit(...) for every AI action
+    const emit = (event, payload) => enqueue(() => socket.emit(event, payload));
 
 
     const removeFromHand = (card) => {
