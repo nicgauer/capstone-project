@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 
 
 const shuffle = (array) => {
@@ -58,6 +58,34 @@ const AI = ({socket, gameData, AIdeck}) => {
         return Math.floor(Math.random() * max);
     }
 
+    // ----- ACTION QUEUE ----- \\
+    // All of the AI's outbound emits go through this queue instead of firing
+    // synchronously. A single pump dispenses one action at a time with a small
+    // delay, so the whole turn plays out at a watchable pace. Because the
+    // phase-transition emits are queued too, the AI won't receive the next
+    // inbound phase event until the current queued action has fired, so the
+    // entire turn paces off this one mechanism.
+    const queueRef = useRef([]);
+    const timerRef = useRef(null);
+
+    // ~0.6–1.2s per action; roughly covers the human board's 650ms explosion flash
+    const nextDelay = () => 600 + rng(600);
+
+    const pump = () => {
+        const action = queueRef.current.shift();
+        if (!action) { timerRef.current = null; return; }
+        action();                                  // fires one socket.emit
+        timerRef.current = setTimeout(pump, nextDelay());
+    }
+
+    const enqueue = (fn) => {
+        queueRef.current.push(fn);
+        if (timerRef.current === null) pump();     // start the pump if idle
+    }
+
+    // Wrapper used in place of emit(...) for every AI action
+    const emit = (event, payload) => enqueue(() => emit(event, payload));
+
 
     const removeFromHand = (card) => {
         let h = [...hand]
@@ -70,7 +98,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         if(turnOrder[0] === user.id){
             //Tells back end this client is beginning turn
             // console.log('AI starting first turn')
-            socket.emit('start_draw_phase', {
+            emit('start_draw_phase', {
                 user_id:user.id,
                 room_id:room_id,
                 turn_number:1
@@ -100,12 +128,12 @@ const AI = ({socket, gameData, AIdeck}) => {
                 // let waitAmt = 500 * rng(5)
                 // setTimeout(() => {
                 //     //Tells backed this client is starting next phase
-                    // socket.emit("start_placement_phase", {
+                    // emit("start_placement_phase", {
                     //     user_id: user.id,
                     //     room_id: room_id,
                     // })
 
-                    socket.emit("start_placement_phase", {
+                    emit("start_placement_phase", {
                         user_id: user.id,
                         room_id: room_id,
                     })
@@ -140,7 +168,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     if(data.user_health < 0 && !gameEnded) {
                         gameEnded = true;
 
-                        socket.emit('end_game', {
+                        emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
                         })
@@ -182,7 +210,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 if(data.opp_health) {
                     if(data.opp_health <= 0 && !gameEnded) {
                         gameEnded = true;
-                        socket.emit('end_game', {
+                        emit('end_game', {
                             loser_id:user.id,
                             room_id:room_id,
                         })
@@ -281,7 +309,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     }else{
                         loserId = turnOrder[0]
                     }
-                    socket.emit('end_game', {
+                    emit('end_game', {
                         loser_id:loserId,
                         room_id:room_id
                     })
@@ -359,7 +387,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     userId = turnOrder[0]
                 }
                 //Tells backend to start next turn
-                socket.emit("start_draw_phase", {
+                emit("start_draw_phase", {
                     room_id:room_id,
                     user_id: userId,
                     turn_number: turnNumber + 1
@@ -381,6 +409,11 @@ const AI = ({socket, gameData, AIdeck}) => {
             socket.off("combat_phase_start", onCombatPhaseStart);
             socket.off("unit_attack", onUnitAttack);
             socket.off("turn_ended", onTurnEnded);
+
+            //Stops the action pump and drops any un-fired actions so nothing
+            //emits after the component has unmounted (game over / navigate away).
+            if (timerRef.current) clearTimeout(timerRef.current);
+            queueRef.current = [];
         }
 
     }, [])
@@ -394,7 +427,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             drawCard()
 
             //Emits draw update to player
-            socket.emit('draw_card', {
+            emit('draw_card', {
                 room_id:room_id,
                 user_id: user.id,
                 hand_size: (hand.length + 1),
@@ -405,7 +438,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             //Emits end game if AI cannot draw
             if(!gameEnded){
                 gameEnded = true;
-                socket.emit('end_game', {
+                emit('end_game', {
                     loser_id:user.id,
                     room_id:room_id,
                 })
@@ -634,7 +667,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 // console.log('filtered hand', orgHand.evolvedUnits)
                 removeFromHand(played_unit);
                 //Sends info to backend
-                socket.emit('place_unit', {
+                emit('place_unit', {
                     room_id:room_id,
                     user_id: user.id,
                     hand_size: (hand.length),
@@ -702,7 +735,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             if(played_unit) {
                 removeFromHand(played_unit)
                 //Sends info to backend
-                socket.emit('place_unit', {
+                emit('place_unit', {
                     room_id:room_id,
                     user_id: user.id,
                     hand_size: hand.length,
@@ -772,7 +805,7 @@ const AI = ({socket, gameData, AIdeck}) => {
         //Combat phase emitter
         //Rules prohibit combat on turn 1.  Ends turn if pressed on turn 1.
         if(turnNumber === 1){
-            socket.emit('end_turn', {
+            emit('end_turn', {
                 room_id: room_id,
                 user_id: user.id,
                 turn_number: turnNumber,
@@ -780,7 +813,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             })
         }else {
             //Progresses both clients to combat phase
-            socket.emit('start_combat_phase', {
+            emit('start_combat_phase', {
                 room_id:room_id,
                 user_id: user.id,
                 log: `${user.username} begins their combat phase!`
@@ -809,7 +842,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             //Damage deals direct damage to opponent's health
             case 'damage':
                 const oh = opponentHealth - Number(effAmt);
-                socket.emit('use_spell', {
+                emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
                     hand_size: hand.length,
@@ -822,7 +855,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             //Heal heals player's health
             case 'heal':
                 const ph = playerHealth + Number(effAmt)
-                socket.emit('use_spell', {
+                emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
                     effect:'heal',
@@ -835,12 +868,12 @@ const AI = ({socket, gameData, AIdeck}) => {
             case 'draw':
                 if(deck.length - effAmt <= 0 && !gameEnded){
                     gameEnded = true;
-                    socket.emit('end_game', {
+                    emit('end_game', {
                         loser_id:user.id,
                         room_id:room_id
                     })
                 }else{
-                    socket.emit('use_spell', {
+                    emit('use_spell', {
                         room_id: room_id,
                         user_id: user.id,
                         hand_size: hand.length - effAmt, 
@@ -865,7 +898,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     opponentUnitSlot3 = null;
                 }
                 
-                socket.emit('use_spell', {
+                emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
                     destroy: targets,
@@ -887,7 +920,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     opponentUnitSlot3 = null
                 }
                 
-                socket.emit('use_spell', {
+                emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
                     destroy: targets,
@@ -909,7 +942,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     opponentUnitSlot3 = null
                 }
                 
-                socket.emit('use_spell', {
+                emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
                     destroy: targets,
@@ -931,7 +964,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     opponentUnitSlot3 = null
                 }
                 
-                socket.emit('use_spell', {
+                emit('use_spell', {
                     room_id: room_id,
                     user_id: user.id,
                     destroy: targets,
@@ -969,7 +1002,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 payload.log = `${user.username} plays ${card.name}!  Powers up all units' attack by ${effAmt}`
 
                 //Payload is a variable used that contains all necessary info
-                socket.emit('use_spell', payload);
+                emit('use_spell', payload);
             break;
 
             case 'increaseAllDefense':
@@ -999,7 +1032,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 payload.log = `${user.username} plays ${card.name}!  Powers up all units' defense by ${effAmt}`
 
                 //Payload is a variable used that contains all necessary info
-                socket.emit('use_spell', payload);
+                emit('use_spell', payload);
             break;
 
             case 'decreaseAllAttack':
@@ -1032,7 +1065,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' attack by ${effAmt}`
 
                 //Payload is a variable used that contains all necessary info
-                socket.emit('use_spell', payload);
+                emit('use_spell', payload);
             break;
 
             
@@ -1066,7 +1099,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 payload.log = `${user.username} plays ${card.name}!  Decreases all ${gameData.opponent_name}'s units' defense by ${effAmt}`
 
                 //Payload is a variable used that contains all necessary info
-                socket.emit('use_spell', payload);
+                emit('use_spell', payload);
             break;
         }
     }
@@ -1143,7 +1176,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                 tie = true;
             }
 
-            socket.emit("attack", {
+            emit("attack", {
                     room_id:room_id,
                     user_id:user.id,
                     attacker_slot:1,
@@ -1228,7 +1261,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     tie = true;
                 }
     
-                socket.emit("attack", {
+                emit("attack", {
                         room_id:room_id,
                         user_id:user.id,
                         attacker_slot:2,
@@ -1314,7 +1347,7 @@ const AI = ({socket, gameData, AIdeck}) => {
                     tie = true;
                 }
     
-                socket.emit("attack", {
+                emit("attack", {
                         room_id:room_id,
                         user_id:user.id,
                         attacker_slot:3,
@@ -1329,7 +1362,7 @@ const AI = ({socket, gameData, AIdeck}) => {
             }
         }
 
-        socket.emit('end_turn', {
+        emit('end_turn', {
             room_id: room_id,
             user_id: user.id,
             turn_number: turnNumber,

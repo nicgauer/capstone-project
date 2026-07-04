@@ -78,3 +78,69 @@
     color:white;
     text-align: center;
 }
+
+.singleCardSection {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+.storeFilters {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom: 8px;
+}
+
+.filterInput {
+    margin-left:8px;
+}
+
+.filterSelect {
+    margin-left:8px;
+}
+
+.pagination {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    margin-top:4px;
+    margin-bottom: 12px;
+}
+
+.pageButton {
+    padding:5px;
+    cursor:pointer;
+    border-radius:6px;
+    color:white;
+    font-weight:700;
+    background:rgba(40, 184, 11, 0.671);
+}
+
+.pageButton:disabled {
+    opacity:0.5;
+    cursor:default;
+}
+
+.storeListWrapper {
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:20px;
+}
+
+.storeCard {
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content: space-between;
+    gap:6px;
+}
+
+.feedback {
+    color: rgb(11, 143, 55);
+    font-weight: 700;
+}
