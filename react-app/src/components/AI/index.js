@@ -75,12 +75,23 @@ const AI = ({socket, gameData, AIdeck}) => {
         const action = queueRef.current.shift();
         if (!action) { timerRef.current = null; return; }
         action();                                  // fires one socket.emit
-        timerRef.current = setTimeout(pump, nextDelay());
+        //Reschedule only if more work remains. timerRef still holds the (now
+        //expired) timeout id here, so any emit made from inside action() sees a
+        //non-null timer and just enqueues instead of re-entering the pump.
+        if (queueRef.current.length > 0) {
+            timerRef.current = setTimeout(pump, nextDelay());
+        } else {
+            timerRef.current = null;
+        }
     }
 
     const enqueue = (fn) => {
         queueRef.current.push(fn);
-        if (timerRef.current === null) pump();     // start the pump if idle
+        //Start the pump on a timer (never synchronously) so a burst of emits in
+        //one call stack can't recurse into pump before the guard is set.
+        if (timerRef.current === null) {
+            timerRef.current = setTimeout(pump, nextDelay());
+        }
     }
 
     // Wrapper used in place of emit(...) for every AI action

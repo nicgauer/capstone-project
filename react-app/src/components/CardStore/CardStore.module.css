@@ -20,12 +20,19 @@
     text-align: center;
     display:flex;
     justify-content:center;
-    align-items:center;
+    /* flex-start (not center) so content taller than the viewport grows
+       downward and the page scrolls, instead of being clipped above the top */
+    align-items:flex-start;
     background-image:url('../../assets/abstract_blue_background_vector_set.jpg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    height:100vh;
+    /* fixed keeps the background pinned to the viewport while the store scrolls */
+    background-attachment: fixed;
+    /* min-height (not fixed height) lets the wrapper grow with its content */
+    min-height:100vh;
+    padding: 40px 20px;
+    box-sizing: border-box;
 }
 
 .boosterButton {
