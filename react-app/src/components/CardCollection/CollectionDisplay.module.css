@@ -97,3 +97,33 @@ body {
 .selectedRemoveContainer {
     text-align: center;
 }
+
+.filterInput {
+    margin-left:8px;
+}
+
+.filterSelect {
+    margin-left:8px;
+}
+
+.pagination {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    margin-top:4px;
+}
+
+.pageButton {
+    padding:5px;
+    cursor:pointer;
+    border-radius:6px;
+    color:white;
+    font-weight:700;
+    background:rgba(40, 184, 11, 0.671);
+}
+
+.pageButton:disabled {
+    opacity:0.5;
+    cursor:default;
+}

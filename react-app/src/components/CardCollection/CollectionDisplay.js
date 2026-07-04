@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import CardDisplay from '../CardDisplay';
 import styles from './CollectionDisplay.module.css';
 import { addCardToDeck, removeCardFromDeck, newDeck } from '../../services/deck';
@@ -6,13 +6,13 @@ import { Modal } from '../../context/Modal';
 import Navigation from '../Navigation';
 import { useSelector } from 'react-redux';
 
+const PAGE_SIZE = 20;
 
 const CollectionDisplay = ({cards}) => {
     const user = useSelector(state => state.session.user);
     //Local copy of the organized collection; handlers update it immutably
     const [collection, setCollection] = useState(() => ({...cards}))
     const [decks, setDecks] = useState([...cards.decks])
-    const [displaying, setDisplaying] = useState(cards.allCards);
     const [dropdown, setDropdown] = useState('allCards')
     const [selectedDropdown, setSelectedDropdown] = useState(decks[0].id)
     const [selected, setSelected] = useState(null);
@@ -20,14 +20,38 @@ const CollectionDisplay = ({cards}) => {
     const [newDeckModal, setNewDeckModal] = useState(false);
     const [newDeckName, setNewDeckName] = useState('New Deck');
     const [helpModal, setHelpModal] = useState(false);
+    const [nameFilter, setNameFilter] = useState('');
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [page, setPage] = useState(0);
+
+    const filtered = useMemo(() => {
+        const source = collection[dropdown] || [];
+        const q = nameFilter.trim().toLowerCase();
+        return source.filter(c =>
+            c.card_type.name.toLowerCase().includes(q) &&
+            (typeFilter === 'all' || c.card_type.type === typeFilter)
+        );
+    }, [collection, dropdown, nameFilter, typeFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    const pageCards = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+    useEffect(() => { setPage(0); }, [dropdown, nameFilter, typeFilter]);
+
+    useEffect(() => {
+        if (page > totalPages - 1) setPage(totalPages - 1);
+    }, [page, totalPages]);
 
     const displaySelectHandler = (e) => {
         setDropdown(e.target.value);
-        setDisplaying(collection[e.target.value]);
         setSelected(null);
     }
 
     const selectHandler = (card) => {
+        const asNum = Number(dropdown);
+        if (!Number.isNaN(asNum) && decks.some(d => d.id === asNum)) {
+            setSelectedDropdown(asNum);
+        }
         setSelected(card)
         setShowModal(true)
     }
@@ -45,7 +69,6 @@ const CollectionDisplay = ({cards}) => {
         }));
         setSelected(null);
         setShowModal(false)
-        setDisplaying(newBox);
     }
 
     const removeFromDeck = () => {
@@ -62,7 +85,6 @@ const CollectionDisplay = ({cards}) => {
         }));
         setSelected(null);
         setShowModal(false)
-        setDisplaying(newBox);
     }
 
     const deckName = (id) => {
@@ -83,11 +105,11 @@ const CollectionDisplay = ({cards}) => {
         setDecks([...decks, nd]);
         setShowModal(false)
         setNewDeckModal(false)
-        setDisplaying([])
+        setDropdown(nd.id)
     }
 
     const deckModalCloseHandler = () => {
-        setShowModal(false) 
+        setShowModal(false)
         setNewDeckModal(false)
     }
 
@@ -121,10 +143,37 @@ const CollectionDisplay = ({cards}) => {
                             <option value={"allCards"}>All Cards</option>
                             <option value={"box"}>Unassigned Cards</option>
                         </select>
+                        <input
+                            className={styles.filterInput}
+                            type="text"
+                            placeholder="Search by name"
+                            value={nameFilter}
+                            onChange={(e) => setNameFilter(e.target.value)} />
+                        <select
+                            className={styles.filterSelect}
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}>
+                            <option value={"all"}>All Types</option>
+                            <option value={"unit"}>Units</option>
+                            <option value={"spell"}>Spells</option>
+                        </select>
                     </div>
                     <div className={styles.centerSpacer}>
-                        <h5 className={styles.displaying}>{displayParser(displaying)}</h5>
-                        <h5>{displaying.length} cards</h5>
+                        <h5 className={styles.displaying}>{displayParser()}</h5>
+                        <h5>{filtered.length} cards</h5>
+                        {totalPages > 1 && (
+                            <div className={styles.pagination}>
+                                <button
+                                    className={styles.pageButton}
+                                    onClick={() => setPage(p => Math.max(0, p - 1))}
+                                    disabled={page === 0}>Prev</button>
+                                <span>Page {page + 1} of {totalPages}</span>
+                                <button
+                                    className={styles.pageButton}
+                                    onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                    disabled={page >= totalPages - 1}>Next</button>
+                            </div>
+                        )}
                     </div>
                     <div className={styles.rightSpacer}>
                         <button className={styles.newDeckButton} onClick={() => setHelpModal(true)}>Help</button>
@@ -138,7 +187,7 @@ const CollectionDisplay = ({cards}) => {
                         <h1>Create New Deck</h1>
                         <form onSubmit={newDeckSubmitHandler}>
                             <label>DeckName</label>
-                            <input 
+                            <input
                                 type="text"
                                 value={newDeckName}
                                 onChange={(e) => setNewDeckName(e.target.value)} />
@@ -154,16 +203,17 @@ const CollectionDisplay = ({cards}) => {
                                 <h1>Selected Card</h1>
                                 <CardDisplay card={selected.card_type} />
 
-                                {!selected.deck_id ? 
+                                {!selected.deck_id ?
                                 (<div className={styles.selectedRemoveContainer}>
                                     <h3>Currently Unassigned</h3>
-                                    <h4>{amountInDeck(selected.card_type.id)} copies of this card in deck</h4>
-                                    {/* <select 
+                                    <label>Add to deck:</label>
+                                    <select
                                         value={selectedDropdown}
-                                        onChange={(e) => setSelectedDropdown(e.target.value)}
+                                        onChange={(e) => setSelectedDropdown(Number(e.target.value))}
                                         >
                                         {decks.map(deck => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
-                                    </select> */}
+                                    </select>
+                                    <h4>{amountInDeck(selected.card_type.id)} copies of this card in deck</h4>
                                     {collection[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) < 3 && <button onClick={addToDeck}>Add to deck</button>}
                                     {collection[selectedDropdown].length < 20 && amountInDeck(selected.card_type.id) === 3 && <h4>Cannot add more than 3 cards of the same type</h4>}
                                     {collection[selectedDropdown].length >= 20 && <h4>Deck is full!  Remove a cards in order to add more.</h4>}
@@ -190,7 +240,7 @@ const CollectionDisplay = ({cards}) => {
                 )}
 
             <div className={styles.collectionWrapper}>
-                {displaying.map(card =>
+                {pageCards.map(card =>
                     <div key={card.id} onClick={() => selectHandler(card)}>
                         <CardDisplay card={card.card_type} />
                     </div>
